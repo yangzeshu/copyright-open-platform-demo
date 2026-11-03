@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>收益明细 · 版权开放平台</title>
+<style>/* ============================================================
+   版权开放平台 · 公共样式 common.css
+   品牌主色：粉红 #ff2e63，浅色背景，卡片式布局
+   C 端与 B 端共享
+   ============================================================ */
+
+:root {
+  --brand: #ff2e63;
+  --brand-dark: #e0244f;
+  --brand-light: #fff0f4;
+  --brand-weak: rgba(255, 46, 99, 0.06);
+  --brand-grad: linear-gradient(135deg, #ff5c8a 0%, #ff2e63 100%);
+
+  --bg: #f7f8fa;
+  --fill-1: #f7f8fa;
+  --fill-2: #eef0f3;
+  --card: #ffffff;
+  --border: #eef0f3;
+  --border-strong: #e2e5ea;
+
+  --text: #1f2329;
+  --text-2: #51565d;
+  --text-3: #8a9199;
+  --text-invert: #ffffff;
+
+  --ok: #16b364;
+  --warn: #f0a020;
+  --danger: #e5484d;
+  --info: #3b82f6;
+
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --radius-input: 8px;
+  --shadow-card: 0 2px 12px rgba(20, 24, 30, 0.06);
+  --shadow-pop: 0 8px 30px rgba(20, 24, 30, 0.14);
+
+  --sidebar-w: 220px;
+  --topbar-h: 64px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; font-size: 14px; }
+
+/* ---------- 通用布局 ---------- */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- 顶部栏 ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  max-width: 1440px; margin: 0 auto; padding: 0 24px;
+  height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-logo {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--brand-grad);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 16px;
+}
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-divider { width: 1px; height: 16px; background: var(--border-strong); }
+.topbar-sub { font-size: 13px; color: var(--text-3); }
+.topbar-switch { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; font-size: 13px; color: var(--brand); border: 1px solid var(--brand); border-radius: 4px; cursor: pointer; text-decoration: none; margin-left: 2px; }
+.topbar-switch:hover { background: var(--brand); color: #fff; }
+
+.topbar-right { display: flex; align-items: center; gap: 20px; }
+.topbar-icon {
+  width: 20px; height: 20px; color: var(--text-2);
+  position: relative; display: flex; align-items: center;
+}
+.topbar-icon .dot {
+  position: absolute; top: -2px; right: -2px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--brand);
+  border: 1.5px solid #fff;
+}
+.topbar-user { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.topbar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--brand-grad); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.topbar-name { font-size: 14px; color: var(--text); }
+.topbar-caret { width: 14px; height: 14px; color: var(--text-3); }
+
+/* ---------- 主体框架：侧边菜单 + 内容 ---------- */
+.layout {
+  display: flex; min-height: calc(100vh - var(--topbar-h));
+  max-width: 1440px; margin: 0 auto;
+}
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  padding: 20px 12px;
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; margin-bottom: 4px;
+  border-radius: 8px; color: var(--text-2);
+  font-size: 14px; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.sidebar-item:hover { background: var(--fill-2); color: var(--text); }
+.sidebar-item.active {
+  background: var(--brand-weak); color: var(--brand); font-weight: 600;
+}
+.sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-item .arrow { margin-left: auto; width: 14px; height: 14px; transition: transform .2s; }
+
+/* 目录分组：子菜单默认收起，展开后箭头旋转 */
+.sidebar-group .sidebar-sub { display: none; padding-left: 28px; }
+.sidebar-group.open .sidebar-sub { display: block; }
+.sidebar-group.open .arrow { transform: rotate(180deg); }
+.sidebar-sub .sidebar-item { padding: 9px 14px; font-size: 13px; }
+
+.content {
+  flex: 1; min-width: 0;
+  padding: 24px 32px 48px;
+}
+
+/* ---------- 页面标题 ---------- */
+.page-head { margin-bottom: 20px; }
+.page-title { font-size: 20px; font-weight: 700; }
+.page-desc { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--card); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.card + .card { margin-top: 0; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 20px; border-radius: var(--radius-btn);
+  font-size: 14px; font-weight: 500; line-height: 1;
+  transition: all .15s; white-space: nowrap;
+}
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-dark); }
+.btn-outline { border: 1px solid var(--border-strong); color: var(--text-2); background: #fff; }
+.btn-outline:hover { border-color: var(--brand); color: var(--brand); }
+.btn-text { color: var(--brand); padding: 9px 12px; }
+.btn-text:hover { background: var(--brand-weak); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: .9; }
+.btn-plain { background: var(--fill-2); color: var(--text-2); }
+.btn-plain:hover { background: var(--border-strong); }
+.btn-ghost { color: var(--brand); }
+.btn-block { width: 100%; }
+.btn-lg { padding: 12px 28px; font-size: 15px; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---------- 表单 ---------- */
+.form-item { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+.form-label .req { color: var(--danger); margin-left: 2px; }
+.form-input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  background: #fff; color: var(--text); outline: none;
+  transition: border .15s, box-shadow .15s;
+}
+.form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-weak); }
+.form-input::placeholder { color: var(--text-3); }
+textarea.form-input { resize: vertical; min-height: 90px; }
+.form-row { display: flex; gap: 12px; }
+.form-row > * { flex: 1; }
+.form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+
+/* 验证码输入 */
+.code-wrap { display: flex; gap: 10px; }
+.code-wrap .form-input { flex: 1; }
+.code-btn {
+  flex-shrink: 0; min-width: 110px; padding: 0 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  color: var(--brand); font-size: 13px; background: #fff;
+}
+.code-btn:disabled { color: var(--text-3); cursor: not-allowed; }
+
+/* ---------- 状态徽标 ---------- */
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; line-height: 1.5;
+}
+.tag-gray { background: #f0f1f3; color: #6b7280; }
+.tag-blue { background: #e8f1ff; color: #2f6bdc; }
+.tag-red { background: #fdeaea; color: #d13a3f; }
+.tag-orange { background: #fff3e0; color: #e8840a; }
+.tag-green { background: #e6f7ef; color: #149a5a; }
+.tag-pink { background: var(--brand-light); color: var(--brand); }
+.tag-dark { background: #3a3f45; color: #fff; }
+
+/* ---------- 表格 ---------- */
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td {
+  text-align: center; padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.table th { color: var(--text-3); font-weight: 500; background: #fafbfc; white-space: nowrap; }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: #fafbfc; }
+.table .cell-title { color: var(--text); font-weight: 500; }
+
+/* 表格固定列（水平滚动时锁定） */
+.table th.sticky-l, .table td.sticky-l { position: sticky; left: 0; z-index: 2; background: #fff; }
+.table th.sticky-l2, .table td.sticky-l2 { position: sticky; left: 40px; z-index: 2; background: #fff; }
+.table th.sticky-r, .table td.sticky-r { position: sticky; right: 0; z-index: 2; background: #fff; }
+.table th.sticky-l, .table th.sticky-l2, .table th.sticky-r { background: #fafbfc; z-index: 3; }
+.table tbody tr:hover td.sticky-l,
+.table tbody tr:hover td.sticky-l2,
+.table tbody tr:hover td.sticky-r { background: #fafbfc; }
+.table td.sticky-l2 { box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+.table td.sticky-r, .table th.sticky-r { box-shadow: -2px 0 4px rgba(0,0,0,.06); }
+
+/* ---------- 弹窗 ---------- */
+.modal-mask {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20, 24, 30, 0.45);
+  display: none; align-items: center; justify-content: center;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; width: 460px; max-width: 92vw;
+  max-height: 88vh; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-pop);
+  animation: pop .18s ease;
+}
+.modal-head {
+  padding: 24px 24px 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.modal-body {
+  padding: 0 24px; overflow-y: auto; flex: 1;
+}
+.modal-foot {
+  padding: 16px 24px 24px; flex-shrink: 0;
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;
+}
+.modal-lg { width: 620px; }
+@keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { width: 20px; height: 20px; color: var(--text-3); cursor: pointer; }
+
+/* ---------- 空状态 / 提示 ---------- */
+.empty {
+  text-align: center; padding: 48px 20px; color: var(--text-3);
+}
+.empty .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+.empty .empty-text { font-size: 14px; }
+
+/* ---------- 提示条 ---------- */
+.notice {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 16px; border-radius: 10px; font-size: 13px;
+  margin-bottom: 16px;
+}
+.notice-info { background: #e8f1ff; color: #2f6bdc; }
+.notice-warn { background: #fff3e0; color: #e8840a; }
+.notice-success { background: #e6f7ef; color: #149a5a; }
+.notice svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ---------- 步骤条 ---------- */
+.steps { display: flex; align-items: center; margin-bottom: 24px; }
+.step { display: flex; align-items: center; gap: 8px; }
+.step-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  background: var(--fill-2); color: var(--text-3);
+}
+.step.active .step-dot { background: var(--brand); color: #fff; }
+.step.done .step-dot { background: var(--ok); color: #fff; }
+.step-label { font-size: 13px; color: var(--text-3); }
+.step.active .step-label { color: var(--text); font-weight: 600; }
+.step.done .step-label { color: var(--text-2); }
+.step-line { flex: 1; height: 2px; background: var(--border-strong); margin: 0 12px; }
+.step-line.done { background: var(--ok); }
+
+/* ---------- 辅助 ---------- */
+.row { display: flex; align-items: center; gap: 12px; }
+.between { display: flex; align-items: center; justify-content: space-between; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; } .mb-24 { margin-bottom: 24px; }
+.text-3 { color: var(--text-3); } .text-2 { color: var(--text-2); }
+.text-brand { color: var(--brand); } .text-ok { color: var(--ok); } .text-danger { color: var(--danger); }
+.fs-12 { font-size: 12px; } .fs-13 { font-size: 13px; }
+.mono { font-variant-numeric: tabular-nums; }
+
+/* 统计卡 */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 20px 22px; }
+.stat-label { font-size: 13px; color: var(--text-3); }
+.stat-value { font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.stat-value .unit { font-size: 14px; font-weight: 400; color: var(--text-3); margin-left: 2px; }
+.stat-trend { font-size: 12px; margin-top: 4px; }
+
+/* 用户下拉菜单 */
+.user-menu {
+  position: absolute; top: var(--topbar-h); right: 24px; z-index: 150;
+  background: #fff; border-radius: 10px; box-shadow: var(--shadow-pop);
+  min-width: 140px; padding: 6px; overflow: hidden;
+}
+.user-menu a, .user-menu .logout-link {
+  display: block; padding: 9px 14px; border-radius: 6px;
+  font-size: 13px; color: var(--text-2);
+}
+.user-menu a:hover, .user-menu .logout-link:hover { background: var(--brand-weak); color: var(--brand); }
+
+/* toast */
+#toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 300; background: #fff; color: var(--text);
+  padding: 10px 20px; border-radius: 8px; box-shadow: var(--shadow-pop);
+  font-size: 14px; display: none;
+}
+#toast.show { display: block; animation: pop .2s ease; }
+
+/* ===== 时间范围（高仿 antd RangePicker，公共组件） ===== */
+.rp-wrap { position: relative; }
+.rp-box {
+  height: 32px; width: 320px; padding: 4px 11px; border: 1px solid #d9d9d9;
+  border-radius: 6px; background: #fff; display: flex; align-items: center; cursor: pointer; transition: all .2s;
+}
+.rp-box:hover { border-color: var(--brand); }
+.rp-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-val { flex: 1; font-size: 14px; color: var(--text); text-align: center; font-variant-numeric: tabular-nums; }
+.rp-val.ph { color: #bfbfbf; }
+.rp-sep { margin: 0 6px; color: var(--text-3); font-size: 14px; }
+.rp-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  display: none; overflow: hidden; width: 560px;
+}
+.rp-panel.show { display: flex; }
+.rp-presets { width: 130px; border-right: 1px solid var(--border); padding: 8px 0; flex-shrink: 0; }
+.rp-preset { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.rp-preset:hover { background: var(--brand-weak); color: var(--brand); }
+.rp-main { flex: 1; padding: 12px; display: flex; flex-direction: column; }
+.rp-inputs { display: flex; gap: 8px; margin-bottom: 12px; }
+.rp-inputs input { flex: 1; height: 30px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; }
+.rp-inputs input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-cal-wrap { display: flex; gap: 16px; }
+.rp-cal { flex: 1; }
+.rp-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.rp-cal-title { font-size: 13px; font-weight: 600; }
+.rp-nav { display: flex; gap: 4px; }
+.rp-nav button { width: 22px; height: 22px; border: none; background: none; cursor: pointer; color: var(--text-3); border-radius: 4px; font-size: 12px; }
+.rp-nav button:hover { background: #f5f5f5; color: var(--text); }
+.rp-week { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+.rp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.rp-day {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--text); cursor: pointer; border-radius: 4px;
+}
+.rp-day:hover { background: var(--brand-weak); }
+.rp-day.other { color: #bfbfbf; }
+.rp-day.in-range { background: rgba(255,46,99,.1); }
+.rp-day.start, .rp-day.end { background: var(--brand); color: #fff; }
+.rp-day.disabled { color: #d9d9d9; cursor: not-allowed; }
+
+/* ===== 筛选区折叠项 ===== */
+.filter-extra { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ===== 联想输入 ===== */
+.autocomplete { position: relative; }
+.autocomplete .ac-panel {
+  position: fixed; z-index: 400;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  border: 1px solid var(--border); max-height: 220px; overflow-y: auto; display: none;
+}
+.autocomplete .ac-panel.show { display: block; }
+.ac-opt { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.ac-opt:hover { background: var(--brand-weak); color: var(--brand); }
+.ac-opt .hl { color: var(--brand); font-weight: 600; }
+.ac-empty { padding: 12px 14px; font-size: 13px; color: var(--text-3); }
+
+/* ===== 列表多选框 ===== */
+.cb-col { width: 40px; text-align: center; }
+.cb-col input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--brand); }
+
+/* ===== 下拉多选（高仿 antd Select multiple） ===== */
+.ms-wrap { position: relative; }
+.ms-box {
+  min-height: 32px; width: 180px; padding: 2px 28px 2px 6px;
+  border: 1px solid #d9d9d9; border-radius: 6px; background: #fff; cursor: pointer;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 3px; transition: all .2s;
+  position: relative;
+}
+.ms-box:hover { border-color: var(--brand); }
+.ms-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.ms-placeholder { color: #bfbfbf; font-size: 14px; padding: 0 5px; }
+.ms-tag {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 6px;
+  background: #fafafa; border: 1px solid #d9d9d9; border-radius: 4px;
+  font-size: 12px; color: var(--text-2); margin: 1px 0;
+}
+.ms-tag .ms-x { margin-left: 4px; color: #999; cursor: pointer; font-size: 12px; line-height: 1; }
+.ms-tag .ms-x:hover { color: var(--brand); }
+.ms-tag.more { background: #fff; border-style: dashed; color: var(--text-3); }
+.ms-arrow { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: #bfbfbf; pointer-events: none; transition: transform .2s; display: flex; }
+.ms-box.open .ms-arrow { transform: translateY(-50%) rotate(180deg); }
+.ms-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; width: 100%;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  padding: 4px; display: none; max-height: 260px; overflow-y: auto;
+}
+.ms-panel.show { display: block; }
+.ms-opt {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border-radius: 4px; font-size: 14px; cursor: pointer; color: var(--text-2); transition: background .15s;
+}
+.ms-opt:hover { background: #f5f5f5; }
+.ms-opt .opt-check { width: 16px; text-align: center; color: var(--brand); font-weight: 700; visibility: hidden; }
+.ms-opt.checked .opt-check { visibility: visible; }
+.ms-opt.checked { color: var(--brand); font-weight: 600; }
+
+/* 操作列表头居中 */
+.th-op { text-align: center; }
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+<style>
+  /* 筛选 */
+  .filter-box { background: #fafbfc; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 4px; margin-bottom: 16px; }
+  .filter-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .search-panel { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .search-item { display: flex; flex-direction: column; gap: 6px; }
+  .search-item label { font-size: 12px; color: var(--text-3); }
+  .ant-input {
+    height: 32px; padding: 4px 11px; border: 1px solid #d9d9d9; border-radius: 6px;
+    font-size: 14px; color: var(--text); outline: none; background: #fff; transition: all .2s;
+  }
+  .ant-input:hover { border-color: var(--brand); }
+  .ant-input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+  .ant-input::placeholder { color: #bfbfbf; }
+
+  /* 多选 */
+  .ms-wrap { position: relative; }
+  .ms-box {
+    min-height: 32px; width: 180px; padding: 2px 28px 2px 6px;
+    border: 1px solid #d9d9d9; border-radius: 6px; background: #fff; cursor: pointer;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 3px; transition: all .2s; position: relative;
+  }
+  .ms-box:hover { border-color: var(--brand); }
+  .ms-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+  .ms-placeholder { color: #bfbfbf; font-size: 14px; padding: 0 5px; }
+  .ms-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 6px; background: #fafafa; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; color: var(--text-2); margin: 1px 0; }
+  .ms-tag .ms-x { margin-left: 4px; color: #999; cursor: pointer; font-size: 12px; line-height: 1; }
+  .ms-tag .ms-x:hover { color: var(--brand); }
+  .ms-tag.more { background: #fff; border-style: dashed; color: var(--text-3); }
+  .ms-arrow { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: #bfbfbf; pointer-events: none; transition: transform .2s; display: flex; }
+  .ms-box.open .ms-arrow { transform: translateY(-50%) rotate(180deg); }
+  .ms-panel { position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; width: 100%; background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12); padding: 4px; display: none; max-height: 260px; overflow-y: auto; }
+  .ms-panel.show { display: block; }
+  .ms-opt { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 4px; font-size: 14px; cursor: pointer; color: var(--text-2); transition: background .15s; }
+  .ms-opt:hover { background: #f5f5f5; }
+  .ms-opt .opt-check { width: 16px; text-align: center; color: var(--brand); font-weight: 700; visibility: hidden; }
+  .ms-opt.checked .opt-check { visibility: visible; }
+  .ms-opt.checked { color: var(--brand); font-weight: 600; }
+
+  .filter-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-shrink: 0; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); padding-bottom: 12px; }
+
+  /* 合同类型（纯文字，无底色） */
+
+  .op-link { font-size: 13px; color: var(--brand); cursor: pointer; margin-right: 14px; }
+  .op-link:hover { text-decoration: underline; }
+  .contract-no { font-size: 12px; color: var(--text-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+  /* 查看 / 详情弹窗字段 */
+  .group-title { font-size: 13px; font-weight: 600; color: var(--text); padding: 12px 0 4px; margin-top: 4px; border-bottom: 1px solid var(--border-strong); }
+  .desc-row { display: flex; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .desc-row:last-child { border-bottom: none; }
+  .desc-label { width: 130px; color: var(--text-3); flex-shrink: 0; }
+  .desc-value { flex: 1; color: var(--text); word-break: break-all; }
+
+  /* 状态单元格：合同信息重填时在 icon 下方展示「查看原因」 */
+  .status-cell .reason-link { font-size: 12px; color: var(--danger); cursor: pointer; display: block; margin-top: 3px; }
+  .status-cell .reason-link:hover { text-decoration: underline; }
+
+  /* 表单 */
+  .form-item { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+  .form-label .req { color: var(--danger); margin-left: 2px; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row .form-item { flex: 1; }
+  .form-input {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: 8px;
+    background: #fff; color: var(--text); outline: none; font-size: 14px;
+    transition: border .15s, box-shadow .15s;
+  }
+  .form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-weak); }
+  .form-input::placeholder { color: var(--text-3); }
+
+  /* 合同预览文档 */
+  .doc-wrap { background: #fff; border: 1px solid var(--border-strong); border-radius: 10px; padding: 32px 36px; }
+  .doc-title { font-size: 18px; font-weight: 700; text-align: center; color: var(--text); }
+  .doc-no { text-align: center; font-size: 12px; color: var(--text-3); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .doc-line { text-align: center; font-size: 13px; color: var(--text-2); margin-top: 16px; }
+  .doc-h2 { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 22px; }
+  .doc-p { font-size: 13px; color: var(--text-2); line-height: 1.9; margin-top: 6px; }
+  .doc-clause { font-size: 13px; color: var(--text-2); line-height: 1.9; margin-top: 2px; }
+  .doc-sign { display: flex; justify-content: space-between; margin-top: 40px; font-size: 13px; color: var(--text-2); }
+  .doc-sign div { line-height: 2.2; }
+
+  /* 收益明细：金额 hover 提示 */
+  .tip { position: relative; cursor: help; border-bottom: 1px dashed #c0c4cc; }
+  .tip:hover::after {
+    content: attr(data-tip);
+    position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 6px 10px; border-radius: 6px;
+    font-size: 12px; white-space: nowrap; z-index: 60;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  }
+  .ratio-cell { font-size: 12px; line-height: 1.6; color: var(--text-2); }
+  .ms-search { padding: 6px; border-bottom: 1px solid var(--border); }
+  .ms-search input { width: 100%; height: 28px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; outline: none; box-sizing: border-box; }
+  .ms-search input:focus { border-color: var(--brand); }
+  /* 收益明细：sticky 左列阴影（滚动时区分固定列） */
+  .table td.sticky-l, .table th.sticky-l { box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+  /* 收益明细表格：sticky 列需 separate 避免 collapse 下背景透明 */
+  .card table.table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+  .card table.table td { background: #fff; }
+  .card table.table tbody tr:hover td { background: #fafbfc; }
+</style>
+</head>
+<body>
+<div id="topbar-root"></div>
+<div class="layout">
+  <div id="sidebar-root"></div>
+    <div class="content">
+      <div class="page-head">
+        <div class="page-title">收益明细</div>
+        <div class="page-desc">按短剧维度查看授权期内的收益情况</div>
+      </div>
+
+      <div class="card">
+        <div class="filter-box">
+          <div class="filter-row">
+            <div class="search-panel">
+              <div class="search-item">
+                <label>短剧名称</label>
+                <input type="text" class="ant-input" id="searchName" placeholder="请输入短剧名称" style="width:200px">
+              </div>
+              <div class="search-item">
+                <label>短剧ID</label>
+                <input type="text" class="ant-input" id="searchId" placeholder="请输入短剧ID" style="width:180px">
+              </div>
+              <div class="search-item">
+                <label>授权主体</label>
+                <div class="ms-wrap">
+                  <div class="ms-box" id="subjectBox" style="width:240px" onclick="toggleSubjectPanel(event)">
+                    <div id="subjectContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
+                    <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </div>
+                  <div class="ms-panel" id="subjectPanel">
+                    <div class="ms-search"><input type="text" id="subjectSearch" placeholder="输入公司全称搜索" oninput="filterSubjectOptions()"></div>
+                    <div id="subjectOptions"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="search-item">
+                <label>授权方式</label>
+                <div class="ms-wrap">
+                  <div class="ms-box" id="authTypeBox" onclick="toggleAuthTypePanel(event)">
+                    <div id="authTypeContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
+                    <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </div>
+                  <div class="ms-panel" id="authTypePanel"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-primary" onclick="renderList()">搜索</button>
+            <button class="btn btn-outline" onclick="resetSearch()">重置</button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table class="table" style="white-space:nowrap">
+            <thead>
+              <tr>
+                <th class="sticky-l" style="width:130px">短剧信息</th>
+                <th style="width:110px">版权授权时间</th>
+                <th style="width:140px">授权主体</th>
+                <th style="width:90px">授权方式</th>
+                <th style="width:160px">授权渠道</th>
+                <th style="width:150px">分成比例</th>
+                <th style="width:130px">广告消耗(美元)</th>
+                <th style="width:130px">分成总额(美元)</th>
+              </tr>
+            </thead>
+            <tbody id="earningList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>/* ============================================================
+   版权开放平台 · 公共脚本 common.js
+   提供：toast 提示、演示数据、状态映射、SVG 图标
+   ============================================================ */
+
+var __cpMem = {};
+function __safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return __cpMem[k] || null; } }
+function __safeSet(k, v) { __cpMem[k] = v; try { localStorage.setItem(k, v); } catch (e) {} }
+function isEnglish() { return false; }
+function t(key) { return key; }
+function applyI18n() {}
+
+// ---------- Toast ----------
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'show';
+  if (type === 'ok') t.style.color = 'var(--ok)';
+  else if (type === 'err') t.style.color = 'var(--danger)';
+  else t.style.color = 'var(--text)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function () { t.className = ''; }, 2200);
+}
+
+// ---------- 弹窗 ----------
+function openModal(id) { var m = document.getElementById(id); if (m) m.classList.add('show'); }
+function closeModal(id) { var m = document.getElementById(id); if (m) m.classList.remove('show'); }
+
+// 点击遮罩关闭
+document.addEventListener('click', function (e) {
+  if (e.target.classList && e.target.classList.contains('modal-mask')) {
+    e.target.classList.remove('show');
+  }
+});
+
+// ---------- 状态映射（短剧） ----------
+// C 端状态机（2026-09-12 重构）：待提交 → 审核中 → 驳回 / 审核通过 → 已上架；任意状态可被 B 端下架
+// 合同签署中、合同信息重填 两态已删除；「合作中」改名「已上架」，「停止合作」改名「已下架」
+var WORK_STATUS = {
+  draft:       { label: '待提交',   cls: 'tag-gray' },
+  reviewing:   { label: '审核中',   cls: 'tag-blue' },
+  rejected:    { label: '审核驳回', cls: 'tag-red' },
+  approved:    { label: '审核通过', cls: 'tag-green' },
+  cooperating: { label: '已上架',   cls: 'tag-green' },
+  stopped:     { label: '已下架',   cls: 'tag-dark' }
+};
+
+// B 端审核子状态（仅 reviewing 有意义）：unclaimed 待领取 | claimed 审核中（已领取）
+var REVIEW_STAGE = {
+  unclaimed: { label: '待领取', cls: 'tag-orange' },
+  claimed:   { label: '审核中', cls: 'tag-blue' }
+};
+
+function statusTag(key) {
+  var s = WORK_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + t(s.label) + '</span>';
+}
+
+// ---------- 演示数据 ----------
+var DEMO_USER = {
+  name: '光影工场',
+  avatar: '光',
+  phone: '138****6688',
+  company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
+  certStatus: 'done',     // none | done
+  contractStatus: 'done', // none | done
+  // ---- 入驻认证信息（用于合同乙方默认回填，企业·境内） ----
+  certType: 'company',        // personal | company
+  certSub: 'domestic',        // 个人 mainland/non-mainland；企业 domestic/overseas
+  contact: '张伟',           // 联系人
+  contactPhone: '13812346688',// 联系电话
+  email: 'guangying@163.com', // 电子邮箱
+  taxNo: '91330100MA2BBBBBB',
+  companyAddr: '杭州市西湖区文三路100号',
+  payWay: '银行转账',
+  payName: '杭州光影映画文化传媒有限公司',
+  payNo: '6222000088888888',
+  payBank: '中国工商银行杭州分行',
+  exclusiveRate: '30',       // 独家分成比例 %
+  nonExclusiveRate: '20'     // 非独家分成比例 %
+};
+
+// 剧集信息演示（每部剧前几集，演示用）
+function makeEpisodes(prefix, count) {
+  var arr = [];
+  for (var i = 1; i <= count; i++) {
+    var ep = (i < 10 ? '0' + i : '' + i);
+    arr.push({
+      no: i,
+      videoNoSub: prefix + '_EP' + ep + '.mp4',
+      videoSub: (i % 2 === 1) ? (prefix + '_EP' + ep + '_字幕.mp4') : '',
+      srt: prefix + '_EP' + ep + '.srt',
+      duration: (Math.floor(Math.random() * 60) + 90) + 's',
+      size: (Math.random() * 300 + 120).toFixed(1) + 'MB'
+    });
+  }
+  return arr;
+}
+
+var DEMO_WORKS = [
+  {
+    // 暂存演示数据：只填写了短剧名称，其余字段为空
+    id: '1000000011', name: '错爱成婚', alias: '', episodeCount: '', status: 'draft',
+    uploadTime: '2026-09-11 14:30:00', color: '#fbc2eb', cover: '', type: '',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '', srcLang: '', authStart: '', authEnd: '', onlineTime: '',
+    suggestedPay: '',
+    equity: [], channel: [], iaaLimitType: '', iaaOnlineTime: '',
+    authType: '',
+    socialMediaDesc: '',
+    friendInfo: '',
+    authRegion: '',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: []
+  },
+  {
+    id: '1000000001', name: '闪婚总裁夫人', alias: '闪婚总裁夫人（别名）', episodeCount: 32, status: 'draft',
+    uploadTime: '2026-09-06 14:20:35', color: '#ff9a9e', cover: 'https://picsum.photos/seed/netshort01/300/400', type: '都市 · 甜宠',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '一场闪婚，两个世界。灰姑娘意外嫁给神秘总裁，从此开启跌宕起伏的婚姻生活。',
+    srcLang: '简体中文', authStart: '2026-09-06', authEnd: '2027-09-05', onlineTime: '',
+    suggestedPay: 10,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '霸道总裁闪婚甜宠，先婚后爱甜度拉满',
+    friendInfo: '',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('shanshun', 32)
+  },
+  {
+    id: '1000000002', name: '重生九零', alias: '重生九零之逆袭', episodeCount: 24, status: 'reviewing',
+    reviewStage: 'unclaimed', // B 端待领取，C 端可撤回
+    uploadTime: '2026-09-05 10:02:18', color: '#a18cd1', cover: 'https://picsum.photos/seed/netshort02/300/400', type: '年代 · 逆袭',
+    uploadAccountName: '新锐工作室', uploadAccountId: '1002', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '重回九零年代，带着前世记忆，她誓要改写命运，活出不一样的人生。',
+    srcLang: '简体中文', authStart: '2026-09-05', authEnd: '2027-09-04', onlineTime: '2026-10-01',
+    suggestedPay: 8,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '重生改写命运，逆袭人生',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: 'https://pan.baidu.com/s/ab12cd', matPanCode: 'abcd', attachments: ['海报.png', '预告片.mp4'],
+    matDesc: '成片已全部完成，附宣传海报与预告片。审核时请重点查看前 3 集的画面质量与字幕对齐情况。',
+    episodes: makeEpisodes('chongsheng', 24)
+  },
+  {
+    id: '1000000003', name: '逆袭人生', alias: '逆袭人生之巅峰', episodeCount: 40, status: 'reviewing',
+    reviewStage: 'claimed', // B 端已领取，C 端隐藏撤回按钮
+    uploadTime: '2026-09-03 09:41:52', color: '#a6c1ee', cover: 'https://picsum.photos/seed/netshort03/300/400', type: '都市 · 励志',
+    uploadAccountName: '追光传媒', uploadAccountId: '1003', certType: 'company',
+    reviewer: '陈晨', reviewTime: '',
+    desc: '从草根到巅峰，一个普通人用坚持与智慧逆袭命运的故事。',
+    srcLang: '简体中文', authStart: '2026-09-03', authEnd: '2027-09-02', onlineTime: '',
+    suggestedPay: 12,
+    equity: ['IAA', 'IAP'], channel: ['小程序'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '草根逆袭，热血励志',
+    friendInfo: '杭州星耀文化传媒有限公司',
+    authRegion: '东南亚',
+    matPanLink: '', matPanCode: '', attachments: [],
+    matDesc: '',
+    episodes: makeEpisodes('nixi', 40)
+  },
+  {
+    id: '1000000004', name: '错嫁豪门', alias: '错嫁豪门之契约', episodeCount: 36, status: 'rejected',
+    uploadTime: '2026-09-02 16:30:08', color: '#f6d365', cover: 'https://picsum.photos/seed/netshort04/300/400', type: '豪门 · 情感',
+    uploadAccountName: '梦工厂传媒', uploadAccountId: '1004', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-09-07 10:00:00',
+    desc: '阴差阳错嫁入豪门，她与冷面总裁的契约婚姻，最终假戏真做。',
+    srcLang: '简体中文', authStart: '2026-09-02', authEnd: '2027-09-01', onlineTime: '2026-09-20',
+    suggestedPay: 10,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '按照约定时间上线', iaaOnlineTime: '2026-10-01',
+    authType: '独家',
+    socialMediaDesc: '豪门虐恋，反转不断',
+    friendInfo: '',
+    authRegion: '中国大陆',
+    matPanLink: 'https://pan.baidu.com/s/cd34ef', matPanCode: 'efgh', attachments: ['宣传物料.zip'],
+    rejectReason: '封面存在低俗暗示，请更换后重新提交',
+    episodes: makeEpisodes('cuojia', 36)
+  },
+  {
+    id: '1000000005', name: '甜妻驾到', alias: '甜妻驾到之宠爱', episodeCount: 30, status: 'approved',
+    uploadTime: '2026-08-10 11:05:47', color: '#fecfef', cover: 'https://picsum.photos/seed/netshort05/300/400', type: '甜宠 · 轻松',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '李悦', reviewTime: '2026-09-06 15:30:00',
+    desc: '元气少女甜妻驾到，与霸道总裁的甜蜜日常，甜度爆表。',
+    srcLang: '简体中文', authStart: '2026-08-10', authEnd: '2027-08-09', onlineTime: '2026-08-15',
+    suggestedPay: 6,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '甜宠先婚后爱，日久生情',
+    friendInfo: '杭州光影映画传媒有限公司',
+    authRegion: '港澳台',
+    matPanLink: '', matPanCode: '', attachments: ['剧照.zip', '主视觉.png'],
+    episodes: makeEpisodes('tianqi', 30)
+  },
+  {
+    id: '1000000006', name: '京都旧事', alias: '京都旧事之浮沉', episodeCount: 20, status: 'approved',
+    uploadTime: '2026-08-01 15:12:33', color: '#cfd9df', cover: 'https://picsum.photos/seed/netshort06/300/400', type: '民国 · 剧情',
+    uploadAccountName: '梦工厂传媒', uploadAccountId: '1004', certType: 'company',
+    reviewer: '王浩', reviewTime: '2026-08-01 16:00:00',
+    desc: '民国京都，一段被时代裹挟的爱恨情仇。',
+    srcLang: '英语', authStart: '2026-08-01', authEnd: '2027-07-31', onlineTime: '2026-08-05',
+    suggestedPay: 5,
+    equity: ['IAA'], channel: ['官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '民国谍战，家国情怀',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('jingdu', 20)
+  },
+  {
+    id: '1000000007', name: '重生之豪门千金', alias: '重生之豪门千金归来', episodeCount: 48, status: 'approved',
+    uploadTime: '2026-07-28 09:12:40', color: '#fbc2eb', cover: 'https://picsum.photos/seed/netshort07/300/400', type: '豪门 · 逆袭',
+    uploadAccountName: '新锐工作室', uploadAccountId: '1002', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-07-28 10:00:00',
+    desc: '重生归来，昔日千金誓要夺回属于自己的一切。',
+    srcLang: '简体中文', authStart: '2026-07-28', authEnd: '2027-07-27', onlineTime: '',
+    suggestedPay: 15,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '重生复仇，爽感拉满',
+    friendInfo: '杭州梦工厂传媒有限公司',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('chongsheng2', 48)
+  },
+  {
+    id: '1000000008', name: '逆天战神', alias: '逆天战神之王者归来', episodeCount: 60, status: 'cooperating',
+    uploadTime: '2026-07-15 20:44:11', color: '#96fbc4', cover: 'https://picsum.photos/seed/netshort08/300/400', type: '都市 · 逆袭',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '王浩', reviewTime: '2026-08-20 09:00:00',
+    desc: '一代战神隐姓埋名，为守护所爱之人再度出山。',
+    srcLang: '英语', authStart: '2026-07-15', authEnd: '2027-07-14', onlineTime: '2026-07-20',
+    suggestedPay: 20,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '战神归来，热血逆袭',
+    friendInfo: '',
+    authRegion: '东南亚',
+    matPanLink: 'https://pan.baidu.com/s/gh56ij', matPanCode: 'ijkl', attachments: [],
+    episodes: makeEpisodes('zhanshen', 60)
+  },
+  {
+    id: '1000000009', name: '闪婚老公是首富', alias: '闪婚老公是首富之宠爱', episodeCount: 26, status: 'reviewing',
+    reviewStage: 'unclaimed', withdrawConflict: true, // C 端状态未刷新，实际 B 端已领取 → 撤回失败
+    uploadTime: '2026-07-08 12:30:55', color: '#fbc2eb', cover: 'https://picsum.photos/seed/netshort09/300/400', type: '都市 · 甜宠',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '闪婚对象竟是隐藏首富，甜蜜爱情与豪门生活同步开启。',
+    srcLang: '简体中文', authStart: '2026-07-08', authEnd: '2027-07-07', onlineTime: '2026-07-12',
+    suggestedPay: 8,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '闪婚总裁，甜宠日常',
+    friendInfo: '杭州追光文化传媒有限公司',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: ['主视觉.png'],
+    matDesc: '主视觉已单独上传，其余物料待补充，请审核主视觉是否符合分发要求。',
+    episodes: makeEpisodes('shoufu', 26)
+  },
+  {
+    id: '1000000010', name: '都市之最强医仙', alias: '都市之最强医仙', episodeCount: 54, status: 'stopped',
+    uploadTime: '2026-06-30 18:20:09', color: '#a1c4fd', cover: 'https://picsum.photos/seed/netshort10/300/400', type: '都市 · 玄幻',
+    uploadAccountName: '星辰短剧', uploadAccountId: '1005', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-07-15 14:00:00',
+    desc: '医仙下山，悬壶济世，都市之中续写传奇。',
+    srcLang: '英语', authStart: '2026-06-30', authEnd: '2027-06-29', onlineTime: '2026-07-05',
+    suggestedPay: 18,
+    equity: ['IAA'], channel: ['小程序'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '都市职场，逆风翻盘',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: '', matPanCode: '', attachments: [],
+    stopReason: '内容存在版权争议，经核实后终止合作',
+    episodes: makeEpisodes('yixian', 54)
+  }
+];
+
+// 关联剧本（一对一）演示数据：剧本名称 / 剧本编号(B开头+纯数字) / 系统编号(19位纯数字)
+var DEMO_SCRIPTS = {
+  '1000000011': { name: '错爱成婚', no: 'B001', sysNo: '2026091100000000001' },
+  '1000000001': { name: '闪婚总裁夫人', no: 'B002', sysNo: '2026090600000000002' },
+  '1000000002': { name: '重生九零', no: 'B003', sysNo: '2026090500000000003' },
+  '1000000003': { name: '逆袭人生', no: 'B004', sysNo: '2026090300000000004' },
+  '1000000004': { name: '错嫁豪门', no: 'B005', sysNo: '2026090200000000005' },
+  '1000000005': { name: '甜妻驾到', no: 'B006', sysNo: '2026081000000000006' },
+  '1000000006': { name: '京都旧事', no: 'B007', sysNo: '2026080100000000007' },
+  '1000000007': { name: '重生之豪门千金', no: 'B008', sysNo: '2026072800000000008' },
+  '1000000008': { name: '逆天战神', no: 'B009', sysNo: '2026071500000000009' },
+  '1000000009': { name: '闪婚老公是首富', no: 'B010', sysNo: '2026070800000000010' },
+  '1000000010': { name: '都市之最强医仙', no: 'B011', sysNo: '2026063000000000011' }
+};
+
+// 上架时间（精确到秒，仅已上架/已下架有值）
+var DEMO_SHELF_TIME = {
+  '1000000008': '2026-08-25 10:00:00',
+  '1000000010': '2026-07-20 09:30:00'
+};
+
+// 后处理：为短剧注入关联剧本字段 + 上架时间
+DEMO_WORKS.forEach(function (w) {
+  var sc = DEMO_SCRIPTS[w.id];
+  w.scriptName = sc ? sc.name : '';
+  w.scriptNo = sc ? sc.no : '';
+  w.scriptSysNo = sc ? sc.sysNo : '';
+  w.shelfTime = DEMO_SHELF_TIME[w.id] || '';
+});
+
+// 收益演示（按短剧 × 月份）
+var DEMO_EARNINGS = [
+  { work: '甜妻驾到', month: '2026-08', cost: 120000, rate: '30%', amount: 36000, status: '已结算' },
+  { work: '甜妻驾到', month: '2026-09', cost: 65000,  rate: '30%', amount: 19500, status: '待结算' },
+  { work: '错嫁豪门', month: '2026-09', cost: 0,      rate: '30%', amount: 0,     status: '待结算' },
+];
+
+// 结算单演示
+var DEMO_SETTLEMENTS = [
+  { no: 'JS202608-001', month: '2026-08', works: 1, amount: 36000, status: '已通过', op: '下载' },
+  { no: 'JS202609-001', month: '2026-09', works: 1, amount: 19500, status: '可申请', op: '申请' },
+];
+
+// ---------- 合同演示数据（C 端 / B 端共享） ----------
+// status: fill 填写信息 | generating 合同生成 | refill 合同信息重填 | pending 待签署 | done 已签署
+// reviewStage（仅 generating 有意义）: unclaimed 待领取 | claimed 审核中
+var DEMO_CONTRACTS = [
+  {
+    no: 'HT202609-001', name: '杭州光影映画文化传媒有限公司 授权入驻合同', type: 'settle', status: 'fill',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '', signTime: '',
+    reviewer: '', reviewStage: '', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业全称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '公司地址', value: '杭州市西湖区文三路100号' },
+      { label: '对接人', value: '张伟' },
+      { label: '对接人手机号', value: '13812346688' },
+      { label: '对接人邮箱', value: 'zhangwei@163.com' },
+      { label: '收款名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '开户银行', value: '中国工商银行杭州分行' },
+      { label: '分行名称', value: '文三路支行' },
+      { label: '收款账号', value: '6222000088888888' }
+    ],
+    terms: [],
+    exclusiveRate: '30', nonExclusiveRate: '20', refillReason: ''
+  },
+  {
+    no: 'HT202609-002', name: '杭州新锐文化传播有限公司 授权入驻合同', type: 'settle', status: 'generating',
+    accountName: '新锐工作室', accountId: '1002',
+    generateTime: '2026-09-11 09:00:00', signTime: '',
+    reviewer: '', reviewStage: 'unclaimed', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业全称', value: '杭州新锐文化传播有限公司' },
+      { label: '公司地址', value: '杭州市余杭区文一西路969号' },
+      { label: '对接人', value: '李婷' },
+      { label: '对接人手机号', value: '15912342211' },
+      { label: '对接人邮箱', value: 'liting@qq.com' },
+      { label: '收款名称', value: '杭州新锐文化传播有限公司' },
+      { label: '开户银行', value: '招商银行杭州分行' },
+      { label: '分行名称', value: '文一西路支行' },
+      { label: '收款账号', value: '6214000022112211' }
+    ],
+    terms: [],
+    exclusiveRate: '25', nonExclusiveRate: '15', refillReason: ''
+  },
+  {
+    no: 'HT202609-003', name: '杭州梦工厂传媒有限公司 授权入驻合同', type: 'settle', status: 'refill',
+    accountName: '梦工厂传媒', accountId: '1004',
+    generateTime: '2026-09-05 11:30:00', signTime: '',
+    reviewer: '李悦', reviewStage: '', reviewTime: '2026-09-06 10:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业全称', value: '杭州梦工厂传媒有限公司' },
+      { label: '公司地址', value: '杭州市萧山区市心北路100号' },
+      { label: '对接人', value: '王芳' },
+      { label: '对接人手机号', value: '18612349988' },
+      { label: '对接人邮箱', value: 'wangfang@163.com' },
+      { label: '收款名称', value: '杭州梦工厂传媒有限公司' },
+      { label: '开户银行', value: '中国银行杭州支行' },
+      { label: '分行名称', value: '市心北路支行' },
+      { label: '收款账号', value: '6217000066666666' }
+    ],
+    terms: [],
+    exclusiveRate: '28', nonExclusiveRate: '18',
+    refillReason: '合同信息有误，请核对后重新提交'
+  },
+  {
+    no: 'HT202609-004', name: '杭州光影映画文化传媒有限公司 授权入驻合同', type: 'settle', status: 'pending',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-09-10 14:00:00', signTime: '',
+    reviewer: '王浩', reviewStage: '', reviewTime: '2026-09-10 16:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业全称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '公司地址', value: '杭州市西湖区文三路100号' },
+      { label: '对接人', value: '张伟' },
+      { label: '对接人手机号', value: '13812346688' },
+      { label: '对接人邮箱', value: 'zhangwei@163.com' },
+      { label: '收款名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '开户银行', value: '中国工商银行杭州分行' },
+      { label: '分行名称', value: '文三路支行' },
+      { label: '收款账号', value: '6222000088888888' }
+    ],
+    terms: [],
+    exclusiveRate: '30', nonExclusiveRate: '20', refillReason: ''
+  },
+  {
+    no: 'HT202609-005', name: '杭州追光文化传媒有限公司 授权入驻合同', type: 'settle', status: 'done',
+    accountName: '追光者', accountId: '1003',
+    generateTime: '2026-09-01 09:00:00', signTime: '2026-09-07 10:05:58',
+    reviewer: '陈晨', reviewStage: '', reviewTime: '2026-09-01 15:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业全称', value: '杭州追光文化传媒有限公司' },
+      { label: '对接人手机号', value: '13712343355' },
+      { label: '联系地址', value: '杭州市拱墅区莫干山路100号' },
+      { label: '收款名称', value: '杭州追光文化传媒有限公司' },
+      { label: '开户银行', value: '中国建设银行杭州分行' },
+      { label: '分行名称', value: '莫干山路支行' },
+      { label: '收款账号', value: '6217000000000000' }
+    ],
+    terms: [],
+    exclusiveRate: '30', nonExclusiveRate: '20', refillReason: ''
+  }
+];
+
+// 合同类型映射（已删「短剧授权合同」）
+var CONTRACT_TYPE = {
+  settle: { label: '授权入驻合同' }
+};
+function typeLabel(key) {
+  var c = CONTRACT_TYPE[key] || { label: key };
+  return t(c.label);
+}
+
+// 合同状态映射（5 态）
+// 注意：generating 对外展示为「审核中」，refill 对外展示为「审核驳回」
+var CONTRACT_STATUS = {
+  fill:       { label: '填写信息', cls: 'tag-gray' },
+  generating: { label: '合同生成',   cls: 'tag-blue' },
+  refill:     { label: '合同信息重填', cls: 'tag-pink' },
+  pending:    { label: '待签署',   cls: 'tag-orange' },
+  done:       { label: '已签署',   cls: 'tag-green' }
+};
+function contractStatusTag(key) {
+  var s = CONTRACT_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + t(s.label) + '</span>';
+}
+
+// ============================================================
+// 通用时间范围选择器（精确到秒 / 精确到日），C 端、B 端共用
+// 用法：var p = createRangePicker('wrapId', { dateOnly:false });
+//   p.get() 返回 {start,end}；p.reset() 清空
+// ============================================================
+function dateStr(d) {
+  function p(n) { return (n < 10 ? '0' : '') + n; }
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
+var RP_PRESETS = [
+  { label: '今日', get: function () { var d = new Date(); return [dateStr(d), dateStr(d)]; } },
+  { label: '昨日', get: function () { var d = new Date(); d.setDate(d.getDate() - 1); return [dateStr(d), dateStr(d)]; } },
+  { label: '本周', get: function () { var s = new Date(); s.setDate(s.getDate() - s.getDay()); var e = new Date(s); e.setDate(e.getDate() + 6); return [dateStr(s), dateStr(e)]; } },
+  { label: '本月', get: function () { var s = new Date(); s.setDate(1); var e = new Date(s.getFullYear(), s.getMonth() + 1, 0); return [dateStr(s), dateStr(e)]; } },
+  { label: '今年', get: function () { var s = new Date(); s.setMonth(0, 1); var e = new Date(s.getFullYear(), 11, 31); return [dateStr(s), dateStr(e)]; } }
+];
+
+var _rpRegistry = {};
+
+function createRangePicker(wrapId, opts) {
+  opts = opts || {};
+  var dateOnly = !!opts.dateOnly;
+  var self = {
+    wrapId: wrapId, dateOnly: dateOnly,
+    start: null, end: null, focusCal: 'start',
+    calStartDate: new Date(), calEndDate: new Date()
+  };
+  _rpRegistry[wrapId] = self;
+
+  self.render = function () {
+    var ph = dateOnly ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss';
+    document.getElementById(wrapId).innerHTML =
+      '<div class="rp-box" id="' + wrapId + 'Box" onclick="rpToggle(\'' + wrapId + '\',event)">' +
+        '<span class="rp-val ph" id="' + wrapId + 'StartVal">' + t('开始时间') + '</span>' +
+        '<span class="rp-sep">→</span>' +
+        '<span class="rp-val ph" id="' + wrapId + 'EndVal">' + t('结束时间') + '</span>' +
+      '</div>' +
+      '<div class="rp-panel" id="' + wrapId + 'Panel">' +
+        '<div class="rp-presets" id="' + wrapId + 'Presets"></div>' +
+        '<div class="rp-main">' +
+          '<div class="rp-inputs">' +
+            '<input type="text" id="' + wrapId + 'StartInput" placeholder="' + ph + '" readonly onclick="rpFocus(\'' + wrapId + '\',\'start\')">' +
+            '<input type="text" id="' + wrapId + 'EndInput" placeholder="' + ph + '" readonly onclick="rpFocus(\'' + wrapId + '\',\'end\')">' +
+          '</div>' +
+          '<div class="rp-cal-wrap">' +
+            '<div class="rp-cal" id="' + wrapId + 'CalStart"></div>' +
+            '<div class="rp-cal" id="' + wrapId + 'CalEnd"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    self.renderPresets();
+    self.renderCals();
+    self.sync();
+  };
+
+  self.renderPresets = function () {
+    var html = RP_PRESETS.map(function (p, i) {
+      return '<div class="rp-preset" onclick="rpApplyPreset(\'' + wrapId + '\',' + i + ')">' + t(p.label) + '</div>';
+    }).join('');
+    document.getElementById(wrapId + 'Presets').innerHTML = html;
+  };
+
+  self.applyPreset = function (i) {
+    var r = RP_PRESETS[i].get();
+    self.start = dateOnly ? r[0] : r[0] + ' 00:00:00';
+    self.end = dateOnly ? r[1] : r[1] + ' 23:59:59';
+    self.sync();
+  };
+
+  self.togglePanel = function (e) {
+    if (e) e.stopPropagation();
+    var panel = document.getElementById(wrapId + 'Panel');
+    var box = document.getElementById(wrapId + 'Box');
+    var open = panel.classList.contains('show');
+    panel.classList.toggle('show', !open);
+    box.classList.toggle('open', !open);
+    if (!open) self.renderCals();
+  };
+
+  self.sync = function () {
+    document.getElementById(wrapId + 'StartInput').value = self.start || '';
+    document.getElementById(wrapId + 'EndInput').value = self.end || '';
+    var sv = document.getElementById(wrapId + 'StartVal');
+    var ev = document.getElementById(wrapId + 'EndVal');
+    if (self.start) { sv.textContent = self.start; sv.classList.remove('ph'); } else { sv.textContent = t('开始时间'); sv.classList.add('ph'); }
+    if (self.end) { ev.textContent = self.end; ev.classList.remove('ph'); } else { ev.textContent = t('结束时间'); ev.classList.add('ph'); }
+    self.renderCals();
+  };
+
+  self.renderCal = function (containerId, viewDate) {
+    var y = viewDate.getFullYear(), m = viewDate.getMonth();
+    var first = new Date(y, m, 1);
+    var startDay = first.getDay();
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var daysInPrev = new Date(y, m, 0).getDate();
+    var cells = [];
+    for (var i = 0; i < 42; i++) {
+      var dnum, cls = 'rp-day', dayObj;
+      if (i < startDay) {
+        dnum = daysInPrev - startDay + 1 + i; cls += ' other';
+        dayObj = new Date(y, m - 1, dnum);
+      } else if (i >= startDay + daysInMonth) {
+        dnum = i - startDay - daysInMonth + 1; cls += ' other';
+        dayObj = new Date(y, m + 1, dnum);
+      } else {
+        dnum = i - startDay + 1;
+        dayObj = new Date(y, m, dnum);
+      }
+      var ds = dateStr(dayObj);
+      if (self.start && ds === self.start.slice(0, 10)) cls += ' start';
+      if (self.end && ds === self.end.slice(0, 10)) cls += ' end';
+      if (self.start && self.end) {
+        var sd = self.start.slice(0, 10), ed = self.end.slice(0, 10);
+        if (ds > sd && ds < ed) cls += ' in-range';
+      }
+      cells.push('<div class="' + cls + '" onclick="rpPickDay(\'' + wrapId + '\',\'' + ds + '\')">' + dnum + '</div>');
+    }
+    var weekArr = isEnglish() ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['日','一','二','三','四','五','六'];
+    var weekHtml = weekArr.map(function (w) { return '<div>' + w + '</div>'; }).join('');
+    var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var calTitle = isEnglish() ? (monthNames[m] + ' ' + y) : (y + ' 年 ' + (m + 1) + ' 月');
+    document.getElementById(containerId).innerHTML =
+      '<div class="rp-cal-head"><div class="rp-cal-title">' + calTitle + '</div>' +
+      '<div class="rp-nav"><button onclick="rpNavCal(\'' + wrapId + '\',\'' + containerId + '\',-1,event)">‹</button><button onclick="rpNavCal(\'' + wrapId + '\',\'' + containerId + '\',1,event)">›</button></div></div>' +
+      '<div class="rp-week">' + weekHtml + '</div>' +
+      '<div class="rp-grid">' + cells.join('') + '</div>';
+  };
+
+  self.renderCals = function () {
+    self.renderCal(wrapId + 'CalStart', self.calStartDate);
+    self.renderCal(wrapId + 'CalEnd', self.calEndDate);
+  };
+
+  self.navCal = function (cid, delta) {
+    if (cid === wrapId + 'CalStart') self.calStartDate.setMonth(self.calStartDate.getMonth() + delta);
+    else self.calEndDate.setMonth(self.calEndDate.getMonth() + delta);
+    self.renderCals();
+  };
+
+  self.pickDay = function (ds) {
+    if (self.focusCal === 'start') {
+      self.start = dateOnly ? ds : ds + ' 00:00:00';
+      self.focusCal = 'end';
+    } else {
+      self.end = dateOnly ? ds : ds + ' 23:59:59';
+      self.focusCal = 'start';
+    }
+    if (self.start && self.end && self.start > self.end) {
+      var t2 = self.start; self.start = self.end; self.end = t2;
+    }
+    self.sync();
+  };
+
+  self.reset = function () { self.start = null; self.end = null; self.sync(); };
+  self.get = function () { return { start: self.start, end: self.end }; };
+
+  self.render();
+  return self;
+}
+
+// 内联 onclick 全局分发
+function rpToggle(id, e) { _rpRegistry[id].togglePanel(e); }
+function rpFocus(id, which) { _rpRegistry[id].focusCal = which; }
+function rpApplyPreset(id, i) { _rpRegistry[id].applyPreset(i); }
+function rpNavCal(id, cid, delta, e) { e.stopPropagation(); _rpRegistry[id].navCal(cid, delta); }
+function rpPickDay(id, ds) { _rpRegistry[id].pickDay(ds); }
+
+// ---------- 图标（内联 SVG symbol） ----------
+var ICONS = {
+  workbench: '<svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  works: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 3 14.5v-9Z" stroke="currentColor" stroke-width="1.5"/><path d="m7 12 2.5-2.5L12 12l1.5-1.5L15 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  contract: '<svg viewBox="0 0 20 20" fill="none"><path d="M6 3h6l3 3v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v3h3M8 10h4M8 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  earnings: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 15V8a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 15V4a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v11" stroke="currentColor" stroke-width="1.5"/><path d="M13 15v-5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  settlement: '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  bell: '<svg viewBox="0 0 20 20" fill="none"><path d="M16 13.5V9a6 6 0 1 0-12 0v4.5L2.5 15h15L16 13.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 17a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  down: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cert: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5 11.8 4l2.3-.4 1 2.1 2.2.7-.5 2.2 1.2 2-1.8 1.5.1 2.4-2.4.4-1.2 2.1-2.2-.9L10 17.5l-1.8.6-1.2-2.1-2.4-.4.1-2.4L2.9 11l1.2-2-.5-2.2 2.2-.7 1-2.1L9.1 4 10 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m7.5 10 1.7 1.7 3.3-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  user: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  arrowRight: '<svg viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 10 3.5 3.5L15 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  info: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  warn: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  plus: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  upload: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 13V4m0 0L6 8m4-4 4 4M4 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  film: '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 3v14M13 3v14M3 7h4M3 13h4M13 7h4M13 13h4" stroke="currentColor" stroke-width="1.2"/></svg>'
+};
+
+function icon(name) { return ICONS[name] || ''; }
+
+// ---------- 通用侧边栏 + 顶栏渲染（供各页面复用） ----------
+function renderTopbar(opts) {
+  opts = opts || {};
+  var userName = opts.userName || '光影工场';
+  var avatar = opts.avatar || '光';
+  var unread = opts.unread || 0;
+  var dot = unread > 0 ? '<span class="dot"></span>' : '';
+  return '' +
+  '<div class="topbar">' +
+    '<div class="topbar-inner">' +
+      '<div class="topbar-left">' +
+        '<a href="workbench.html" class="row" style="gap:12px">' +
+          '<div class="topbar-logo">' + t('短') + '</div>' +
+          '<span class="topbar-title">' + t('版权开放平台') + '</span>' +
+        '</a>' +
+        '<div class="topbar-divider"></div>' +
+        '<span class="topbar-sub">' + t('内容合作方') + '</span>' +
+        '<a class="topbar-switch" href="B端/accounts.html">' + t('运营后台') + '</a>' +
+      '</div>' +
+      '<div class="topbar-right">' +
+        '<div class="topbar-icon">' + icon('bell') + dot + '</div>' +
+        '<div class="topbar-user" onclick="toggleUserMenu()">' +
+          '<div class="topbar-avatar">' + avatar + '</div>' +
+          '<span class="topbar-name">' + userName + '</span>' +
+          '<span class="topbar-caret">' + icon('down') + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div id="userMenu" class="user-menu" style="display:none">' +
+    '<a href="profile.html">' + t('个人中心') + '</a>' +
+    '<span class="logout-link" onclick="if(confirm(\'' + t('确认退出登录？') + '\')) location.href=\'login.html\'">' + t('退出登录') + '</span>' +
+  '</div>';
+}
+
+function renderSidebar(active) {
+  var items = [
+    { key: 'workbench', label: t('工作台'), href: 'workbench.html' },
+    { key: 'contract',  label: t('合同管理'), href: 'contracts.html' },
+    { key: 'works',     label: t('作品管理'), sub: [{ key: 'works', label: t('成品剧'), href: 'work.html' }] },
+    { key: 'earnings',  label: t('收益管理'), sub: [
+        { key: 'earnings',   label: t('收益明细'), href: 'earnings.html' },
+        { key: 'settlement', label: t('结算单'),   href: 'settlement.html' }
+      ] }
+  ];
+  var html = '<div class="sidebar">';
+  items.forEach(function (it) {
+    // 判断该目录是否包含当前 active 的子项
+    var childActiveKey = null;
+    if (it.sub) {
+      it.sub.forEach(function (s) { if (s.key === active) childActiveKey = s.key; });
+    }
+    var isGroup = !!it.sub && it.sub.length;
+    var isGroupOpen = childActiveKey !== null;
+
+    if (isGroup) {
+      // 目录：点击展开/收起，不跳转
+      html += '<div class="sidebar-group' + (isGroupOpen ? ' open' : '') + '">' +
+        '<div class="sidebar-item' + (childActiveKey !== null ? ' active' : '') + '" onclick="toggleSidebarGroup(this)">' +
+          icon(it.key) + '<span>' + it.label + '</span>' +
+          '<span class="arrow">' + icon('down') + '</span>' +
+        '</div>' +
+        '<div class="sidebar-sub">' + it.sub.map(function (s) {
+          return '<a class="sidebar-item' + (s.key === active ? ' active' : '') + '" href="' + s.href + '">' + s.label + '</a>';
+        }).join('') + '</div>' +
+      '</div>';
+    } else {
+      html += '<a class="sidebar-item' + (it.key === active ? ' active' : '') + '" href="' + it.href + '">' +
+        icon(it.key) + '<span>' + it.label + '</span>' +
+      '</a>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+// 点击目录展开/收起子菜单
+function toggleSidebarGroup(el) {
+  var group = el.parentElement;
+  group.classList.toggle('open');
+}
+
+function toggleUserMenu() {
+  var m = document.getElementById('userMenu');
+  if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function (e) {
+  var m = document.getElementById('userMenu');
+  if (m && !e.target.closest('.topbar-user') && !e.target.closest('.user-menu')) {
+    m.style.display = 'none';
+  }
+});
+</script>
+<script>
+  document.getElementById('topbar-root').innerHTML = renderTopbar({ unread: 2 });
+  document.getElementById('sidebar-root').innerHTML = renderSidebar('earnings');
+
+  // ========== 收益明细数据（按短剧汇总，金额单位：美元） ==========
+  // 实际收益金额 = (充值金额 - 退款金额) * 0.7
+  // 分成总额 = (实际收益金额 - 广告消耗) * 分成比例（独家 IAP 5% / 非独家 IAP 2%）
+  var RATIO = { '独家': 0.05, '非独家': 0.02 };
+  var AUTH_TYPE_OPTIONS = [
+    { key: '独家', label: '独家' },
+    { key: '非独家', label: '非独家' }
+  ];
+  var SUBJECTS = [
+    '杭州光影映画文化传媒有限公司',
+    '杭州新锐文化传播有限公司',
+    '杭州追光文化传媒有限公司'
+  ];
+
+  var EARNING_WORKS = [
+    {
+      workId: '1000000008', workName: '逆天战神',
+      authStart: '2026-07-15', authEnd: '2027-07-14',
+      subjectName: '杭州光影映画文化传媒有限公司',
+      authType: '独家', channel: ['小程序', '官网'],
+      recharge: 129400, refund: 3140, adCost: 15700,
+      months: [
+        { month: '2026-07', recharge: 18500, refund: 420, adCost: 2200 },
+        { month: '2026-08', recharge: 52300, refund: 1180, adCost: 6400 },
+        { month: '2026-09', recharge: 58600, refund: 1540, adCost: 7100 }
+      ]
+    },
+    {
+      workId: '1000000005', workName: '甜妻驾到',
+      authStart: '2026-08-10', authEnd: '2027-08-09',
+      subjectName: '杭州光影映画文化传媒有限公司',
+      authType: '非独家', channel: ['官网', '小程序付费'],
+      recharge: 74300, refund: 1540, adCost: 8600,
+      months: [
+        { month: '2026-08', recharge: 32800, refund: 660, adCost: 3900 },
+        { month: '2026-09', recharge: 41500, refund: 880, adCost: 4700 }
+      ]
+    },
+    {
+      workId: '1000000007', workName: '重生之豪门千金',
+      authStart: '2026-07-28', authEnd: '2027-07-27',
+      subjectName: '杭州新锐文化传播有限公司',
+      authType: '非独家', channel: ['小程序', '官网'],
+      recharge: 111300, refund: 2310, adCost: 13000,
+      months: [
+        { month: '2026-07', recharge: 26800, refund: 520, adCost: 3100 },
+        { month: '2026-08', recharge: 44700, refund: 960, adCost: 5300 },
+        { month: '2026-09', recharge: 39800, refund: 830, adCost: 4600 }
+      ]
+    },
+    {
+      workId: '1000000006', workName: '京都旧事',
+      authStart: '2026-08-01', authEnd: '2027-07-31',
+      subjectName: '杭州新锐文化传播有限公司',
+      authType: '独家', channel: ['官网'],
+      recharge: 28000, refund: 570, adCost: 3300,
+      months: [
+        { month: '2026-08', recharge: 15400, refund: 310, adCost: 1800 },
+        { month: '2026-09', recharge: 12600, refund: 260, adCost: 1500 }
+      ]
+    },
+    {
+      workId: '1000000003', workName: '逆袭人生',
+      authStart: '2026-09-03', authEnd: '2027-09-02',
+      subjectName: '杭州追光文化传媒有限公司',
+      authType: '非独家', channel: ['小程序'],
+      recharge: 22400, refund: 450, adCost: 2700,
+      months: [
+        { month: '2026-09', recharge: 22400, refund: 450, adCost: 2700 }
+      ]
+    },
+    {
+      workId: '1000000004', workName: '错嫁豪门',
+      authStart: '2026-09-02', authEnd: '2027-09-01',
+      subjectName: '杭州光影映画文化传媒有限公司',
+      authType: '独家', channel: ['小程序', '官网'],
+      recharge: 31500, refund: 620, adCost: 3800,
+      months: [
+        { month: '2026-09', recharge: 31500, refund: 620, adCost: 3800 }
+      ]
+    }
+  ];
+
+  var selectedAuthType = [];
+  var selectedSubject = [];
+  var subjectFilter = '';
+  var MS_MAX_TAGS = 2;
+
+  // ========== 金额 ==========
+  function fmtMoney(n) {
+    var neg = n < 0 ? '-' : '';
+    var abs = Math.abs(n);
+    var s = abs.toFixed(2);
+    var parts = s.split('.');
+    var int = parts[0];
+    var withSep = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return '$' + neg + withSep + '.' + parts[1];
+  }
+  function calcActual(w) { return Math.round((w.recharge - w.refund) * 0.7 * 100) / 100; }
+  function calcShare(w) { var a = calcActual(w); return Math.round((a - w.adCost) * RATIO[w.authType] * 100) / 100; }
+  function ratioText(t) { return t === '独家' ? 'IAP消耗5%，IAA利润50%' : 'IAP消耗2%，IAA利润50%'; }
+  function moneyTip(val, tip) {
+    return '<span class="tip" data-tip="' + tip + '">' + fmtMoney(val) + '</span>';
+  }
+
+  // ========== 通用多选 ==========
+  function labelOf(options, k) { var o = options.find(function (x) { return x.key === k; }); return o ? o.label : k; }
+  function renderMs(options, selected, contentId, panelId, toggleFn, removeFn) {
+    var c = document.getElementById(contentId);
+    if (selected.length === 0) {
+      c.innerHTML = '<span class="ms-placeholder">全部</span>';
+    } else {
+      var html = '';
+      var shown = selected.slice(0, MS_MAX_TAGS);
+      shown.forEach(function (k) {
+        html += '<span class="ms-tag">' + labelOf(options, k) + '<span class="ms-x" onclick="' + removeFn + '(\'' + k + '\', event)">×</span></span>';
+      });
+      if (selected.length > MS_MAX_TAGS) html += '<span class="ms-tag more">+ ' + (selected.length - MS_MAX_TAGS) + '</span>';
+      c.innerHTML = html;
+    }
+    var panel = document.getElementById(panelId);
+    panel.innerHTML = options.map(function (s) {
+      var checked = selected.indexOf(s.key) !== -1;
+      return '<div class="ms-opt' + (checked ? ' checked' : '') + '" onclick="' + toggleFn + '(\'' + s.key + '\', event)">' +
+        '<span class="opt-check">✓</span>' + s.label + '</div>';
+    }).join('');
+  }
+  function togglePanel(panelId, boxId, e) {
+    e.stopPropagation();
+    var panel = document.getElementById(panelId);
+    var box = document.getElementById(boxId);
+    var open = panel.classList.contains('show');
+    panel.classList.toggle('show', !open);
+    box.classList.toggle('open', !open);
+  }
+  function toggleIn(arr, k) { var i = arr.indexOf(k); if (i === -1) arr.push(k); else arr.splice(i, 1); }
+
+  // 授权方式多选
+  function toggleAuthTypePanel(e) { togglePanel('authTypePanel', 'authTypeBox', e); }
+  function toggleAuthType(k, e) { e.stopPropagation(); toggleIn(selectedAuthType, k); renderAuthType(); }
+  function removeAuthType(k, e) { e.stopPropagation(); var i = selectedAuthType.indexOf(k); if (i !== -1) selectedAuthType.splice(i, 1); renderAuthType(); }
+  function renderAuthType() { renderMs(AUTH_TYPE_OPTIONS, selectedAuthType, 'authTypeContent', 'authTypePanel', 'toggleAuthType', 'removeAuthType'); }
+
+  // 授权主体可搜索多选
+  function toggleSubjectPanel(e) { togglePanel('subjectPanel', 'subjectBox', e); }
+  function toggleSubject(k, e) { e.stopPropagation(); toggleIn(selectedSubject, k); renderSubject(); }
+  function removeSubject(k, e) { e.stopPropagation(); var i = selectedSubject.indexOf(k); if (i !== -1) selectedSubject.splice(i, 1); renderSubject(); }
+  function filterSubjectOptions() { subjectFilter = document.getElementById('subjectSearch').value.trim(); renderSubjectOptions(); }
+  function renderSubject() {
+    var c = document.getElementById('subjectContent');
+    if (selectedSubject.length === 0) c.innerHTML = '<span class="ms-placeholder">全部</span>';
+    else c.innerHTML = selectedSubject.map(function (k) { return '<span class="ms-tag">' + k + '<span class="ms-x" onclick="removeSubject(\'' + k + '\', event)">×</span></span>'; }).join('');
+    renderSubjectOptions();
+  }
+  function renderSubjectOptions() {
+    var kw = subjectFilter;
+    var opts = SUBJECTS.filter(function (s) { return !kw || s.indexOf(kw) !== -1; });
+    document.getElementById('subjectOptions').innerHTML = opts.map(function (s) {
+      var checked = selectedSubject.indexOf(s) !== -1;
+      return '<div class="ms-opt' + (checked ? ' checked' : '') + '" onclick="toggleSubject(\'' + s + '\', event)"><span class="opt-check">✓</span>' + s + '</div>';
+    }).join('') || '<div class="ac-empty">无匹配主体</div>';
+  }
+
+  // 点击外部关闭
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#subjectBox') && !e.target.closest('#subjectPanel')) { document.getElementById('subjectPanel').classList.remove('show'); document.getElementById('subjectBox').classList.remove('open'); }
+    if (!e.target.closest('#authTypeBox') && !e.target.closest('#authTypePanel')) { document.getElementById('authTypePanel').classList.remove('show'); document.getElementById('authTypeBox').classList.remove('open'); }
+  });
+
+  // ========== 过滤 ==========
+  function filteredEarnings() {
+    var name = document.getElementById('searchName').value.trim();
+    var id = document.getElementById('searchId').value.trim();
+    return EARNING_WORKS.filter(function (w) {
+      if (name && w.workName.indexOf(name) === -1) return false;
+      if (id && w.workId.indexOf(id) === -1) return false;
+      if (selectedSubject.length > 0 && selectedSubject.indexOf(w.subjectName) === -1) return false;
+      if (selectedAuthType.length > 0 && selectedAuthType.indexOf(w.authType) === -1) return false;
+      return true;
+    });
+  }
+  function resetSearch() {
+    document.getElementById('searchName').value = '';
+    document.getElementById('searchId').value = '';
+    selectedAuthType = []; selectedSubject = [];
+    document.getElementById('subjectSearch').value = ''; subjectFilter = '';
+    renderAuthType(); renderSubject();
+    renderList();
+  }
+
+  // ========== 列表 ==========
+  function ratioCell(w) {
+    var parts = ratioText(w.authType).split('，');
+    return '<div class="ratio-cell"><div>' + parts[0] + '</div><div>' + parts[1] + '</div></div>';
+  }
+  function renderList() {
+    var list = filteredEarnings();
+    var tbody = document.getElementById('earningList');
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(function (w) {
+      return '<tr>' +
+        '<td class="sticky-l" style="text-align:left"><div class="cell-title">' + w.workName + '</div>' +
+          '<div class="contract-no">' + w.workId + '</div></td>' +
+        '<td class="mono text-2"><div>' + w.authStart + '</div><div>' + w.authEnd + '</div></td>' +
+        '<td style="text-align:left;white-space:normal">' + w.subjectName + '</td>' +
+        '<td><span class="tag ' + (w.authType === '独家' ? 'tag-pink' : 'tag-blue') + '">' + w.authType + '</span></td>' +
+        '<td class="text-2">' + w.channel.join('、') + '</td>' +
+        '<td>' + ratioCell(w) + '</td>' +
+        '<td class="mono">' + fmtMoney(w.adCost) + '</td>' +
+        '<td class="mono">' + fmtMoney(calcShare(w)) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // 初始化
+  renderAuthType();
+  renderSubject();
+  renderList();
+  applyI18n();
+</script>
+</body>
+</html>

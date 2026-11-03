@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作台 · 版权开放平台</title>
+<style>/* ============================================================
+   版权开放平台 · 公共样式 common.css
+   品牌主色：粉红 #ff2e63，浅色背景，卡片式布局
+   C 端与 B 端共享
+   ============================================================ */
+
+:root {
+  --brand: #ff2e63;
+  --brand-dark: #e0244f;
+  --brand-light: #fff0f4;
+  --brand-weak: rgba(255, 46, 99, 0.06);
+  --brand-grad: linear-gradient(135deg, #ff5c8a 0%, #ff2e63 100%);
+
+  --bg: #f7f8fa;
+  --fill-1: #f7f8fa;
+  --fill-2: #eef0f3;
+  --card: #ffffff;
+  --border: #eef0f3;
+  --border-strong: #e2e5ea;
+
+  --text: #1f2329;
+  --text-2: #51565d;
+  --text-3: #8a9199;
+  --text-invert: #ffffff;
+
+  --ok: #16b364;
+  --warn: #f0a020;
+  --danger: #e5484d;
+  --info: #3b82f6;
+
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --radius-input: 8px;
+  --shadow-card: 0 2px 12px rgba(20, 24, 30, 0.06);
+  --shadow-pop: 0 8px 30px rgba(20, 24, 30, 0.14);
+
+  --sidebar-w: 220px;
+  --topbar-h: 64px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; font-size: 14px; }
+
+/* ---------- 通用布局 ---------- */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- 顶部栏 ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  max-width: 1440px; margin: 0 auto; padding: 0 24px;
+  height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-logo {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--brand-grad);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 16px;
+}
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-divider { width: 1px; height: 16px; background: var(--border-strong); }
+.topbar-sub { font-size: 13px; color: var(--text-3); }
+.topbar-switch { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; font-size: 13px; color: var(--brand); border: 1px solid var(--brand); border-radius: 4px; cursor: pointer; text-decoration: none; margin-left: 2px; }
+.topbar-switch:hover { background: var(--brand); color: #fff; }
+
+.topbar-right { display: flex; align-items: center; gap: 20px; }
+.topbar-icon {
+  width: 20px; height: 20px; color: var(--text-2);
+  position: relative; display: flex; align-items: center;
+}
+.topbar-icon .dot {
+  position: absolute; top: -2px; right: -2px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--brand);
+  border: 1.5px solid #fff;
+}
+.topbar-user { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.topbar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--brand-grad); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.topbar-name { font-size: 14px; color: var(--text); }
+.topbar-caret { width: 14px; height: 14px; color: var(--text-3); }
+
+/* ---------- 主体框架：侧边菜单 + 内容 ---------- */
+.layout {
+  display: flex; min-height: calc(100vh - var(--topbar-h));
+  max-width: 1440px; margin: 0 auto;
+}
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  padding: 20px 12px;
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; margin-bottom: 4px;
+  border-radius: 8px; color: var(--text-2);
+  font-size: 14px; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.sidebar-item:hover { background: var(--fill-2); color: var(--text); }
+.sidebar-item.active {
+  background: var(--brand-weak); color: var(--brand); font-weight: 600;
+}
+.sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-item .arrow { margin-left: auto; width: 14px; height: 14px; transition: transform .2s; }
+
+/* 目录分组：子菜单默认收起，展开后箭头旋转 */
+.sidebar-group .sidebar-sub { display: none; padding-left: 28px; }
+.sidebar-group.open .sidebar-sub { display: block; }
+.sidebar-group.open .arrow { transform: rotate(180deg); }
+.sidebar-sub .sidebar-item { padding: 9px 14px; font-size: 13px; }
+
+.content {
+  flex: 1; min-width: 0;
+  padding: 24px 32px 48px;
+}
+
+/* ---------- 页面标题 ---------- */
+.page-head { margin-bottom: 20px; }
+.page-title { font-size: 20px; font-weight: 700; }
+.page-desc { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--card); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.card + .card { margin-top: 0; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 20px; border-radius: var(--radius-btn);
+  font-size: 14px; font-weight: 500; line-height: 1;
+  transition: all .15s; white-space: nowrap;
+}
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-dark); }
+.btn-outline { border: 1px solid var(--border-strong); color: var(--text-2); background: #fff; }
+.btn-outline:hover { border-color: var(--brand); color: var(--brand); }
+.btn-text { color: var(--brand); padding: 9px 12px; }
+.btn-text:hover { background: var(--brand-weak); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: .9; }
+.btn-plain { background: var(--fill-2); color: var(--text-2); }
+.btn-plain:hover { background: var(--border-strong); }
+.btn-ghost { color: var(--brand); }
+.btn-block { width: 100%; }
+.btn-lg { padding: 12px 28px; font-size: 15px; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---------- 表单 ---------- */
+.form-item { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+.form-label .req { color: var(--danger); margin-left: 2px; }
+.form-input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  background: #fff; color: var(--text); outline: none;
+  transition: border .15s, box-shadow .15s;
+}
+.form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-weak); }
+.form-input::placeholder { color: var(--text-3); }
+textarea.form-input { resize: vertical; min-height: 90px; }
+.form-row { display: flex; gap: 12px; }
+.form-row > * { flex: 1; }
+.form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+.radio-group { display: flex; gap: 24px; }
+.radio-item { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text); cursor: pointer; }
+.radio-item input[type="radio"] { accent-color: var(--brand); width: 16px; height: 16px; margin: 0; cursor: pointer; }
+.input-suffix-wrap { display: flex; align-items: center; }
+.input-suffix-wrap .form-input { flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.input-suffix { flex-shrink: 0; padding: 0 12px; height: 40px; line-height: 40px; border: 1px solid var(--border-strong); border-left: none; border-radius: 0 var(--radius-input) var(--radius-input) 0; background: var(--fill-2); color: var(--text-3); font-size: 14px; }
+/* 验证码输入 */
+.code-wrap { display: flex; gap: 10px; }
+.code-wrap .form-input { flex: 1; }
+.code-btn {
+  flex-shrink: 0; min-width: 110px; padding: 0 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  color: var(--brand); font-size: 13px; background: #fff;
+}
+.code-btn:disabled { color: var(--text-3); cursor: not-allowed; }
+
+/* ---------- 状态徽标 ---------- */
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; line-height: 1.5;
+}
+.tag-gray { background: #f0f1f3; color: #6b7280; }
+.tag-blue { background: #e8f1ff; color: #2f6bdc; }
+.tag-red { background: #fdeaea; color: #d13a3f; }
+.tag-orange { background: #fff3e0; color: #e8840a; }
+.tag-green { background: #e6f7ef; color: #149a5a; }
+.tag-pink { background: var(--brand-light); color: var(--brand); }
+.tag-dark { background: #3a3f45; color: #fff; }
+
+/* ---------- 表格 ---------- */
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td {
+  text-align: center; padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.table th { color: var(--text-3); font-weight: 500; background: #fafbfc; white-space: nowrap; }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: #fafbfc; }
+.table .cell-title { color: var(--text); font-weight: 500; }
+
+/* 表格固定列（水平滚动时锁定） */
+.table th.sticky-l, .table td.sticky-l { position: sticky; left: 0; z-index: 2; background: #fff; }
+.table th.sticky-l2, .table td.sticky-l2 { position: sticky; left: 40px; z-index: 2; background: #fff; }
+.table th.sticky-r, .table td.sticky-r { position: sticky; right: 0; z-index: 2; background: #fff; }
+.table th.sticky-l, .table th.sticky-l2, .table th.sticky-r { background: #fafbfc; z-index: 3; }
+.table tbody tr:hover td.sticky-l,
+.table tbody tr:hover td.sticky-l2,
+.table tbody tr:hover td.sticky-r { background: #fafbfc; }
+.table td.sticky-l2 { box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+.table td.sticky-r, .table th.sticky-r { box-shadow: -2px 0 4px rgba(0,0,0,.06); }
+
+/* ---------- 弹窗 ---------- */
+.modal-mask {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20, 24, 30, 0.45);
+  display: none; align-items: center; justify-content: center;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; width: 460px; max-width: 92vw;
+  max-height: 88vh; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-pop);
+  animation: pop .18s ease;
+}
+.modal-head {
+  padding: 24px 24px 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.modal-body {
+  padding: 0 24px; overflow-y: auto; flex: 1;
+}
+.modal-foot {
+  padding: 16px 24px 24px; flex-shrink: 0;
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;
+}
+.modal-lg { width: 620px; }
+@keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { width: 20px; height: 20px; color: var(--text-3); cursor: pointer; }
+
+/* ---------- 空状态 / 提示 ---------- */
+.empty {
+  text-align: center; padding: 48px 20px; color: var(--text-3);
+}
+.empty .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+.empty .empty-text { font-size: 14px; }
+
+/* ---------- 提示条 ---------- */
+.notice {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 16px; border-radius: 10px; font-size: 13px;
+  margin-bottom: 16px;
+}
+.notice-info { background: #e8f1ff; color: #2f6bdc; }
+.notice-warn { background: #fff3e0; color: #e8840a; }
+.notice-success { background: #e6f7ef; color: #149a5a; }
+.notice svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ---------- 步骤条 ---------- */
+.steps { display: flex; align-items: center; margin-bottom: 24px; }
+.step { display: flex; align-items: center; gap: 8px; }
+.step-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  background: var(--fill-2); color: var(--text-3);
+}
+.step.active .step-dot { background: var(--brand); color: #fff; }
+.step.done .step-dot { background: var(--ok); color: #fff; }
+.step-label { font-size: 13px; color: var(--text-3); }
+.step.active .step-label { color: var(--text); font-weight: 600; }
+.step.done .step-label { color: var(--text-2); }
+.step-line { flex: 1; height: 2px; background: var(--border-strong); margin: 0 12px; }
+.step-line.done { background: var(--ok); }
+
+/* ---------- 辅助 ---------- */
+.row { display: flex; align-items: center; gap: 12px; }
+.between { display: flex; align-items: center; justify-content: space-between; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; } .mb-24 { margin-bottom: 24px; }
+.text-3 { color: var(--text-3); } .text-2 { color: var(--text-2); }
+.text-brand { color: var(--brand); } .text-ok { color: var(--ok); } .text-danger { color: var(--danger); }
+.fs-12 { font-size: 12px; } .fs-13 { font-size: 13px; }
+.mono { font-variant-numeric: tabular-nums; }
+
+/* 统计卡 */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 20px 22px; }
+.stat-label { font-size: 13px; color: var(--text-3); }
+.stat-value { font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.stat-value .unit { font-size: 14px; font-weight: 400; color: var(--text-3); margin-left: 2px; }
+.stat-trend { font-size: 12px; margin-top: 4px; }
+
+/* 用户下拉菜单 */
+.user-menu {
+  position: absolute; top: var(--topbar-h); right: 24px; z-index: 150;
+  background: #fff; border-radius: 10px; box-shadow: var(--shadow-pop);
+  min-width: 140px; padding: 6px; overflow: hidden;
+}
+.user-menu a, .user-menu .logout-link {
+  display: block; padding: 9px 14px; border-radius: 6px;
+  font-size: 13px; color: var(--text-2);
+}
+.user-menu a:hover, .user-menu .logout-link:hover { background: var(--brand-weak); color: var(--brand); }
+
+/* toast */
+#toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 300; background: #fff; color: var(--text);
+  padding: 10px 20px; border-radius: 8px; box-shadow: var(--shadow-pop);
+  font-size: 14px; display: none;
+}
+#toast.show { display: block; animation: pop .2s ease; }
+
+/* ===== 时间范围（高仿 antd RangePicker，公共组件） ===== */
+.rp-wrap { position: relative; }
+.rp-box {
+  height: 32px; width: 320px; padding: 4px 11px; border: 1px solid #d9d9d9;
+  border-radius: 6px; background: #fff; display: flex; align-items: center; cursor: pointer; transition: all .2s;
+}
+.rp-box:hover { border-color: var(--brand); }
+.rp-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-val { flex: 1; font-size: 14px; color: var(--text); text-align: center; font-variant-numeric: tabular-nums; }
+.rp-val.ph { color: #bfbfbf; }
+.rp-sep { margin: 0 6px; color: var(--text-3); font-size: 14px; }
+.rp-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  display: none; overflow: hidden; width: 560px;
+}
+.rp-panel.show { display: flex; }
+.rp-presets { width: 130px; border-right: 1px solid var(--border); padding: 8px 0; flex-shrink: 0; }
+.rp-preset { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.rp-preset:hover { background: var(--brand-weak); color: var(--brand); }
+.rp-main { flex: 1; padding: 12px; display: flex; flex-direction: column; }
+.rp-inputs { display: flex; gap: 8px; margin-bottom: 12px; }
+.rp-inputs input { flex: 1; height: 30px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; }
+.rp-inputs input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-cal-wrap { display: flex; gap: 16px; }
+.rp-cal { flex: 1; }
+.rp-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.rp-cal-title { font-size: 13px; font-weight: 600; }
+.rp-nav { display: flex; gap: 4px; }
+.rp-nav button { width: 22px; height: 22px; border: none; background: none; cursor: pointer; color: var(--text-3); border-radius: 4px; font-size: 12px; }
+.rp-nav button:hover { background: #f5f5f5; color: var(--text); }
+.rp-week { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+.rp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.rp-day {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--text); cursor: pointer; border-radius: 4px;
+}
+.rp-day:hover { background: var(--brand-weak); }
+.rp-day.other { color: #bfbfbf; }
+.rp-day.in-range { background: rgba(255,46,99,.1); }
+.rp-day.start, .rp-day.end { background: var(--brand); color: #fff; }
+.rp-day.disabled { color: #d9d9d9; cursor: not-allowed; }
+
+/* ===== 筛选区折叠项 ===== */
+.filter-extra { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ===== 联想输入 ===== */
+.autocomplete { position: relative; }
+.autocomplete .ac-panel {
+  position: fixed; z-index: 400;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  border: 1px solid var(--border); max-height: 220px; overflow-y: auto; display: none;
+}
+.autocomplete .ac-panel.show { display: block; }
+.ac-opt { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.ac-opt:hover { background: var(--brand-weak); color: var(--brand); }
+.ac-opt .hl { color: var(--brand); font-weight: 600; }
+.ac-empty { padding: 12px 14px; font-size: 13px; color: var(--text-3); }
+
+/* ===== 列表多选框 ===== */
+.cb-col { width: 40px; text-align: center; }
+.cb-col input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--brand); }
+
+/* ===== 下拉多选（高仿 antd Select multiple） ===== */
+.ms-wrap { position: relative; }
+.ms-box {
+  min-height: 32px; width: 180px; padding: 2px 28px 2px 6px;
+  border: 1px solid #d9d9d9; border-radius: 6px; background: #fff; cursor: pointer;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 3px; transition: all .2s;
+  position: relative;
+}
+.ms-box:hover { border-color: var(--brand); }
+.ms-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.ms-placeholder { color: #bfbfbf; font-size: 14px; padding: 0 5px; }
+.ms-tag {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 6px;
+  background: #fafafa; border: 1px solid #d9d9d9; border-radius: 4px;
+  font-size: 12px; color: var(--text-2); margin: 1px 0;
+}
+.ms-tag .ms-x { margin-left: 4px; color: #999; cursor: pointer; font-size: 12px; line-height: 1; }
+.ms-tag .ms-x:hover { color: var(--brand); }
+.ms-tag.more { background: #fff; border-style: dashed; color: var(--text-3); }
+.ms-arrow { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: #bfbfbf; pointer-events: none; transition: transform .2s; display: flex; }
+.ms-box.open .ms-arrow { transform: translateY(-50%) rotate(180deg); }
+.ms-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; width: 100%;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  padding: 4px; display: none; max-height: 260px; overflow-y: auto;
+}
+.ms-panel.show { display: block; }
+.ms-opt {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border-radius: 4px; font-size: 14px; cursor: pointer; color: var(--text-2); transition: background .15s;
+}
+.ms-opt:hover { background: #f5f5f5; }
+.ms-opt .opt-check { width: 16px; text-align: center; color: var(--brand); font-weight: 700; visibility: hidden; }
+.ms-opt.checked .opt-check { visibility: visible; }
+.ms-opt.checked { color: var(--brand); font-weight: 600; }
+
+/* 操作列表头居中 */
+.th-op { text-align: center; }
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+<style>
+  .cert-hero {
+    background: var(--brand-grad);
+    border-radius: var(--radius-card);
+    color: #fff; padding: 40px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .cert-hero h2 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+  .cert-hero p { font-size: 14px; opacity: .92; max-width: 560px; }
+  .cert-hero .btn { background: #fff; color: var(--brand); font-weight: 600; }
+  .cert-hero .btn:hover { background: #ffeef2; }
+
+  .flow-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .flow-card {
+    background: #fff; border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+    padding: 24px; position: relative;
+  }
+  .flow-card .step-no {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--brand-weak); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; margin-bottom: 14px;
+  }
+  .flow-card.locked { opacity: .55; }
+  .flow-card.locked .step-no { background: var(--fill-2); color: var(--text-3); }
+  .flow-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .flow-card p { font-size: 13px; color: var(--text-3); margin-bottom: 16px; }
+  .flow-card .status-line { font-size: 12px; margin-top: 12px; display: flex; align-items: center; gap: 6px; }
+  .flow-card .status-line svg { width: 14px; height: 14px; }
+  .lock-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--text-3); margin-bottom: 14px;
+  }
+  .refresh-link { font-size: 13px; color: var(--brand); cursor: pointer; margin-top: 14px; display: inline-flex; align-items: center; gap: 5px; }
+  .refresh-link:hover { text-decoration: underline; }
+
+  /* 认证类型单选卡 */
+  .cert-type { display: flex; gap: 12px; margin-bottom: 18px; }
+  .cert-type .ct {
+    flex: 1; border: 1px solid var(--border-strong); border-radius: 10px;
+    padding: 16px; cursor: pointer; text-align: center; transition: all .15s;
+  }
+  .cert-type .ct.active { border-color: var(--brand); background: var(--brand-weak); }
+  .cert-type .ct .ct-title { font-size: 15px; font-weight: 600; }
+  .cert-type .ct .ct-desc { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .cert-type .ct.active .ct-title { color: var(--brand); }
+  .cert-type .ct.locked { opacity: .45; cursor: not-allowed; }
+  .cert-type .ct.locked:hover { border-color: var(--border-strong); }
+
+  /* 二级细分单选 */
+  .sub-type { display: flex; gap: 10px; margin-bottom: 16px; }
+  .sub-type .st {
+    flex: 1; border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 10px 14px; cursor: pointer; text-align: center; font-size: 13px;
+    color: var(--text-2); transition: all .15s;
+  }
+  .sub-type .st.active { border-color: var(--brand); background: var(--brand-weak); color: var(--brand); font-weight: 600; }
+  .sub-type .st.locked { opacity: .5; cursor: not-allowed; }
+
+  .section-divider {
+    display: flex; align-items: center; gap: 10px; margin: 22px 0 16px;
+    font-size: 14px; font-weight: 600; color: var(--text);
+  }
+  .section-divider::before { content: ''; width: 3px; height: 16px; background: var(--brand); border-radius: 2px; }
+
+  .form-hint { font-size: 12px; color: var(--text-3); margin-top: 5px; }
+
+  /* 图片上传组件 */
+  .img-uploader { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .img-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+  .img-cell { width: 88px; position: relative; }
+  .img-thumb {
+    width: 88px; height: 66px; border-radius: 6px;
+    background: linear-gradient(135deg, #fdeef2, #ffe0e8);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand); font-weight: 600; font-size: 20px;
+  }
+  .img-name { font-size: 11px; color: var(--text-3); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .img-del {
+    position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--danger); color: #fff; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 12px; line-height: 1;
+  }
+  .img-add {
+    width: 88px; height: 66px; border: 1px dashed var(--border-strong); border-radius: 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    color: var(--text-3); cursor: pointer; font-size: 12px;
+  }
+  .img-add:hover { border-color: var(--brand); color: var(--brand); }
+  .img-add-icon { font-size: 20px; line-height: 1; }
+
+  @media (max-width: 900px) { .flow-cards { grid-template-columns: 1fr; } .cert-hero { flex-direction: column; align-items: flex-start; gap: 20px; } }
+</style>
+</head>
+<body>
+<div id="topbar-root"></div>
+<div class="layout">
+  <div id="sidebar-root"></div>
+  <div class="content">
+    <div class="page-head">
+      <div class="page-title">工作台</div>
+      <div class="page-desc">完成认证与授权合同签署后，即可上传短剧开启分发合作</div>
+    </div>
+
+    <!-- 认证引导 -->
+    <div class="cert-hero">
+      <div>
+        <h2>欢迎，光影工场</h2>
+        <p>当前账号尚未完成认证与授权合同签署。请先完成以下两步，即可上传短剧并参与分发分成。</p>
+      </div>
+      <button class="btn btn-lg" id="heroCertBtn" onclick="openCert()">立即认证</button>
+    </div>
+
+    <!-- 流程步骤 -->
+    <div class="flow-cards">
+      <div class="flow-card" id="certCard">
+        <div class="step-no">1</div>
+        <h3 id="certTitle">完成认证</h3>
+        <p id="certDesc">提交企业资质信息，完成实名认证。认证审核通过后进入下一步。</p>
+        <button class="btn btn-primary" id="certBtn" onclick="openCert()">去认证</button>
+        <div id="certRefresh" style="display:none"></div>
+      </div>
+      <div class="flow-card locked" id="signCard">
+        <div class="lock-badge"><svg viewBox="0 0 20 20" fill="none"><rect x="5" y="8" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.5"/></svg><span id="signLockText">需先完成认证</span></div>
+        <div class="step-no">2</div>
+        <h3>签署授权合同</h3>
+        <p>认证通过后，签署平台授权合作协议，即可上传短剧。</p>
+        <button class="btn btn-plain" id="signBtn" disabled>去签署</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 认证弹窗 -->
+<div class="modal-mask" id="certModal">
+  <div class="modal modal-lg" style="width:640px">
+    <div class="modal-head">
+      <div class="modal-title">资质认证</div>
+      <span class="modal-close" onclick="closeModal('certModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+
+    <div class="modal-body">
+    <!-- 国内主体信息 -->
+    <div class="section-divider">国内主体信息</div>
+    <div class="form-hint" style="margin:0 0 14px">主要用于资质认证审核，不会用于后续签约</div>
+    <div class="form-item">
+      <label class="form-label"><span>国内公司名称</span><span class="req">*</span></label>
+      <input class="form-input" id="certDomesticCompany" placeholder="请输入国内公司名称">
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>营业执照</span><span class="req">*</span></label>
+      <div class="img-uploader">
+        <div class="img-grid" id="grid_bizLicense"></div>
+        <div class="img-add" id="add_bizLicense" onclick="addBizLicense()">
+          <span class="img-add-icon">+</span>
+          <span>上传营业执照</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>商务</span><span class="req">*</span></label>
+      <select class="form-input" id="certBusiness">
+        <option value="">请选择商务</option>
+        <option>枥文</option>
+        <option>冰雨</option>
+        <option>禾呈</option>
+        <option>芋头</option>
+        <option>泰瑞</option>
+        <option>大料</option>
+      </select>
+    </div>
+
+    <!-- 海外主体信息 -->
+    <div class="section-divider">海外主体信息</div>
+    <div class="form-hint" style="margin:0 0 14px">主要用于后续合同签署、收款</div>
+    <div class="form-item">
+      <label class="form-label"><span>海外公司全称</span><span class="req">*</span></label>
+      <input class="form-input" id="certCompany" placeholder="请输入海外公司全称">
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>联系地址</span><span class="req">*</span></label>
+      <input class="form-input" id="certContactAddr" placeholder="请输入联系地址">
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>联系人</span><span class="req">*</span></label>
+      <input class="form-input" id="certContact" placeholder="请输入联系人">
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>联系电话</span><span class="req">*</span></label>
+      <input class="form-input" id="certContactPhone" placeholder="请输入联系电话">
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>联系邮箱</span><span class="req">*</span></label>
+      <input class="form-input" id="certContactEmail" placeholder="请输入联系邮箱">
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>开户名称</span><span class="req">*</span></label>
+      <input class="form-input" id="certBankName" placeholder="请输入开户名称">
+      <div class="form-hint">请使用标准英文填写，并与银行开户资料一致；勿用拼音或自行翻译。</div>
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>开户账号</span><span class="req">*</span></label>
+      <input class="form-input" id="certBankAccount" placeholder="请输入开户账号">
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>开户银行</span><span class="req">*</span></label>
+      <input class="form-input" id="certBank" placeholder="请输入开户银行">
+      <div class="form-hint">请使用标准英文填写银行名称（含分行信息，如适用），并与开户资料一致。</div>
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>公司地址</span><span class="req">*</span></label>
+      <input class="form-input" id="certCompanyAddrEn" placeholder="请输入公司地址">
+      <div class="form-hint">请使用标准英文填写，并与注册/开户资料一致；勿用拼音或自行翻译。</div>
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>银行地址</span><span class="req">*</span></label>
+      <input class="form-input" id="certBankAddrEn" placeholder="请输入银行地址">
+      <div class="form-hint">请使用标准英文填写，并与银行开户资料一致；勿用拼音或自行翻译。</div>
+    </div>
+    <div class="form-item">
+      <label class="form-label"><span>银行Swift代码</span><span class="req">*</span></label>
+      <input class="form-input" id="certSwift" placeholder="请输入银行Swift代码">
+    </div>
+
+    <div class="notice notice-warn" style="margin-top:16px">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div>请确保所填信息真实有效，认证信息提交后将进入审核流程。</div>
+    </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('certModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitCert()">提交认证</button>
+    </div>
+  </div>
+</div>
+
+<script>/* ============================================================
+   版权开放平台 · 公共脚本 common.js
+   提供：toast 提示、演示数据、状态映射、SVG 图标
+   ============================================================ */
+
+var __cpMem = {};
+function __safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return __cpMem[k] || null; } }
+function __safeSet(k, v) { __cpMem[k] = v; try { localStorage.setItem(k, v); } catch (e) {} }
+function isEnglish() { return false; }
+function t(key) { return key; }
+function applyI18n() {}
+
+// ---------- Toast ----------
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'show';
+  if (type === 'ok') t.style.color = 'var(--ok)';
+  else if (type === 'err') t.style.color = 'var(--danger)';
+  else t.style.color = 'var(--text)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function () { t.className = ''; }, 2200);
+}
+
+// ---------- 弹窗 ----------
+function openModal(id) { var m = document.getElementById(id); if (m) m.classList.add('show'); }
+function closeModal(id) { var m = document.getElementById(id); if (m) m.classList.remove('show'); }
+
+// 点击遮罩关闭
+document.addEventListener('click', function (e) {
+  if (e.target.classList && e.target.classList.contains('modal-mask')) {
+    e.target.classList.remove('show');
+  }
+});
+
+// ---------- 状态映射（短剧） ----------
+// C 端状态机（2026-09-12 重构）：待提交 → 审核中 → 驳回 / 审核通过 → 已上架；任意状态可被 B 端下架
+// 合同签署中、合同信息重填 两态已删除；「合作中」改名「已上架」，「停止合作」改名「已下架」
+var WORK_STATUS = {
+  draft:       { label: '待提交',   cls: 'tag-gray' },
+  reviewing:   { label: '审核中',   cls: 'tag-blue' },
+  rejected:    { label: '审核驳回', cls: 'tag-red' },
+  approved:    { label: '审核通过', cls: 'tag-green' },
+  cooperating: { label: '已上架',   cls: 'tag-green' },
+  stopped:     { label: '已下架',   cls: 'tag-dark' }
+};
+
+// B 端审核子状态（仅 reviewing 有意义）：unclaimed 待领取 | claimed 审核中（已领取）
+var REVIEW_STAGE = {
+  unclaimed: { label: '待领取', cls: 'tag-orange' },
+  claimed:   { label: '审核中', cls: 'tag-blue' }
+};
+
+function statusTag(key) {
+  var s = WORK_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + t(s.label) + '</span>';
+}
+
+// ---------- 演示数据 ----------
+var DEMO_USER = {
+  name: '光影工场',
+  avatar: '光',
+  phone: '138****6688',
+  company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
+  certStatus: 'done',     // none | done
+  contractStatus: 'done', // none | done
+  // ---- 入驻认证信息（用于合同乙方默认回填，企业·境内） ----
+  certType: 'company',        // personal | company
+  certSub: 'domestic',        // 个人 mainland/non-mainland；企业 domestic/overseas
+  contact: '张伟',           // 联系人
+  contactPhone: '13812346688',// 联系电话
+  email: 'guangying@163.com', // 电子邮箱
+  taxNo: '91330100MA2BBBBBB',
+  companyAddr: '杭州市西湖区文三路100号',
+  payWay: '银行转账',
+  payName: '杭州光影映画文化传媒有限公司',
+  payNo: '6222000088888888',
+  payBank: '中国工商银行杭州分行',
+  exclusiveRate: '30',       // 独家分成比例 %
+  nonExclusiveRate: '20'     // 非独家分成比例 %
+};
+
+// 剧集信息演示（每部剧前几集，演示用）
+function makeEpisodes(prefix, count) {
+  var arr = [];
+  for (var i = 1; i <= count; i++) {
+    var ep = (i < 10 ? '0' + i : '' + i);
+    arr.push({
+      no: i,
+      videoNoSub: prefix + '_EP' + ep + '.mp4',
+      videoSub: (i % 2 === 1) ? (prefix + '_EP' + ep + '_字幕.mp4') : '',
+      srt: prefix + '_EP' + ep + '.srt',
+      duration: (Math.floor(Math.random() * 60) + 90) + 's',
+      size: (Math.random() * 300 + 120).toFixed(1) + 'MB'
+    });
+  }
+  return arr;
+}
+
+var DEMO_WORKS = [
+  {
+    // 暂存演示数据：只填写了短剧名称，其余字段为空
+    id: '1000000011', name: '错爱成婚', alias: '', episodeCount: '', status: 'draft',
+    uploadTime: '2026-09-11 14:30:00', color: '#fbc2eb', cover: '', type: '',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '', srcLang: '', authStart: '', authEnd: '', onlineTime: '',
+    suggestedPay: '',
+    equity: [], channel: [], iaaLimitType: '', iaaOnlineTime: '',
+    authType: '',
+    socialMediaDesc: '',
+    friendInfo: '',
+    authRegion: '',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: []
+  },
+  {
+    id: '1000000001', name: '闪婚总裁夫人', alias: '闪婚总裁夫人（别名）', episodeCount: 32, status: 'draft',
+    uploadTime: '2026-09-06 14:20:35', color: '#ff9a9e', cover: 'https://picsum.photos/seed/netshort01/300/400', type: '都市 · 甜宠',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '一场闪婚，两个世界。灰姑娘意外嫁给神秘总裁，从此开启跌宕起伏的婚姻生活。',
+    srcLang: '简体中文', authStart: '2026-09-06', authEnd: '2027-09-05', onlineTime: '',
+    suggestedPay: 10,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '霸道总裁闪婚甜宠，先婚后爱甜度拉满',
+    friendInfo: '',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('shanshun', 32)
+  },
+  {
+    id: '1000000002', name: '重生九零', alias: '重生九零之逆袭', episodeCount: 24, status: 'reviewing',
+    reviewStage: 'unclaimed', // B 端待领取，C 端可撤回
+    uploadTime: '2026-09-05 10:02:18', color: '#a18cd1', cover: 'https://picsum.photos/seed/netshort02/300/400', type: '年代 · 逆袭',
+    uploadAccountName: '新锐工作室', uploadAccountId: '1002', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '重回九零年代，带着前世记忆，她誓要改写命运，活出不一样的人生。',
+    srcLang: '简体中文', authStart: '2026-09-05', authEnd: '2027-09-04', onlineTime: '2026-10-01',
+    suggestedPay: 8,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '重生改写命运，逆袭人生',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: 'https://pan.baidu.com/s/ab12cd', matPanCode: 'abcd', attachments: ['海报.png', '预告片.mp4'],
+    matDesc: '成片已全部完成，附宣传海报与预告片。审核时请重点查看前 3 集的画面质量与字幕对齐情况。',
+    episodes: makeEpisodes('chongsheng', 24)
+  },
+  {
+    id: '1000000003', name: '逆袭人生', alias: '逆袭人生之巅峰', episodeCount: 40, status: 'reviewing',
+    reviewStage: 'claimed', // B 端已领取，C 端隐藏撤回按钮
+    uploadTime: '2026-09-03 09:41:52', color: '#a6c1ee', cover: 'https://picsum.photos/seed/netshort03/300/400', type: '都市 · 励志',
+    uploadAccountName: '追光传媒', uploadAccountId: '1003', certType: 'company',
+    reviewer: '陈晨', reviewTime: '',
+    desc: '从草根到巅峰，一个普通人用坚持与智慧逆袭命运的故事。',
+    srcLang: '简体中文', authStart: '2026-09-03', authEnd: '2027-09-02', onlineTime: '',
+    suggestedPay: 12,
+    equity: ['IAA', 'IAP'], channel: ['小程序'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '草根逆袭，热血励志',
+    friendInfo: '杭州星耀文化传媒有限公司',
+    authRegion: '东南亚',
+    matPanLink: '', matPanCode: '', attachments: [],
+    matDesc: '',
+    episodes: makeEpisodes('nixi', 40)
+  },
+  {
+    id: '1000000004', name: '错嫁豪门', alias: '错嫁豪门之契约', episodeCount: 36, status: 'rejected',
+    uploadTime: '2026-09-02 16:30:08', color: '#f6d365', cover: 'https://picsum.photos/seed/netshort04/300/400', type: '豪门 · 情感',
+    uploadAccountName: '梦工厂传媒', uploadAccountId: '1004', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-09-07 10:00:00',
+    desc: '阴差阳错嫁入豪门，她与冷面总裁的契约婚姻，最终假戏真做。',
+    srcLang: '简体中文', authStart: '2026-09-02', authEnd: '2027-09-01', onlineTime: '2026-09-20',
+    suggestedPay: 10,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '按照约定时间上线', iaaOnlineTime: '2026-10-01',
+    authType: '独家',
+    socialMediaDesc: '豪门虐恋，反转不断',
+    friendInfo: '',
+    authRegion: '中国大陆',
+    matPanLink: 'https://pan.baidu.com/s/cd34ef', matPanCode: 'efgh', attachments: ['宣传物料.zip'],
+    rejectReason: '封面存在低俗暗示，请更换后重新提交',
+    episodes: makeEpisodes('cuojia', 36)
+  },
+  {
+    id: '1000000005', name: '甜妻驾到', alias: '甜妻驾到之宠爱', episodeCount: 30, status: 'approved',
+    uploadTime: '2026-08-10 11:05:47', color: '#fecfef', cover: 'https://picsum.photos/seed/netshort05/300/400', type: '甜宠 · 轻松',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '李悦', reviewTime: '2026-09-06 15:30:00',
+    desc: '元气少女甜妻驾到，与霸道总裁的甜蜜日常，甜度爆表。',
+    srcLang: '简体中文', authStart: '2026-08-10', authEnd: '2027-08-09', onlineTime: '2026-08-15',
+    suggestedPay: 6,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '甜宠先婚后爱，日久生情',
+    friendInfo: '杭州光影映画传媒有限公司',
+    authRegion: '港澳台',
+    matPanLink: '', matPanCode: '', attachments: ['剧照.zip', '主视觉.png'],
+    episodes: makeEpisodes('tianqi', 30)
+  },
+  {
+    id: '1000000006', name: '京都旧事', alias: '京都旧事之浮沉', episodeCount: 20, status: 'approved',
+    uploadTime: '2026-08-01 15:12:33', color: '#cfd9df', cover: 'https://picsum.photos/seed/netshort06/300/400', type: '民国 · 剧情',
+    uploadAccountName: '梦工厂传媒', uploadAccountId: '1004', certType: 'company',
+    reviewer: '王浩', reviewTime: '2026-08-01 16:00:00',
+    desc: '民国京都，一段被时代裹挟的爱恨情仇。',
+    srcLang: '英语', authStart: '2026-08-01', authEnd: '2027-07-31', onlineTime: '2026-08-05',
+    suggestedPay: 5,
+    equity: ['IAA'], channel: ['官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '民国谍战，家国情怀',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('jingdu', 20)
+  },
+  {
+    id: '1000000007', name: '重生之豪门千金', alias: '重生之豪门千金归来', episodeCount: 48, status: 'approved',
+    uploadTime: '2026-07-28 09:12:40', color: '#fbc2eb', cover: 'https://picsum.photos/seed/netshort07/300/400', type: '豪门 · 逆袭',
+    uploadAccountName: '新锐工作室', uploadAccountId: '1002', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-07-28 10:00:00',
+    desc: '重生归来，昔日千金誓要夺回属于自己的一切。',
+    srcLang: '简体中文', authStart: '2026-07-28', authEnd: '2027-07-27', onlineTime: '',
+    suggestedPay: 15,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '重生复仇，爽感拉满',
+    friendInfo: '杭州梦工厂传媒有限公司',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('chongsheng2', 48)
+  },
+  {
+    id: '1000000008', name: '逆天战神', alias: '逆天战神之王者归来', episodeCount: 60, status: 'cooperating',
+    uploadTime: '2026-07-15 20:44:11', color: '#96fbc4', cover: 'https://picsum.photos/seed/netshort08/300/400', type: '都市 · 逆袭',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '王浩', reviewTime: '2026-08-20 09:00:00',
+    desc: '一代战神隐姓埋名，为守护所爱之人再度出山。',
+    srcLang: '英语', authStart: '2026-07-15', authEnd: '2027-07-14', onlineTime: '2026-07-20',
+    suggestedPay: 20,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '战神归来，热血逆袭',
+    friendInfo: '',
+    authRegion: '东南亚',
+    matPanLink: 'https://pan.baidu.com/s/gh56ij', matPanCode: 'ijkl', attachments: [],
+    episodes: makeEpisodes('zhanshen', 60)
+  },
+  {
+    id: '1000000009', name: '闪婚老公是首富', alias: '闪婚老公是首富之宠爱', episodeCount: 26, status: 'reviewing',
+    reviewStage: 'unclaimed', withdrawConflict: true, // C 端状态未刷新，实际 B 端已领取 → 撤回失败
+    uploadTime: '2026-07-08 12:30:55', color: '#fbc2eb', cover: 'https://picsum.photos/seed/netshort09/300/400', type: '都市 · 甜宠',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '闪婚对象竟是隐藏首富，甜蜜爱情与豪门生活同步开启。',
+    srcLang: '简体中文', authStart: '2026-07-08', authEnd: '2027-07-07', onlineTime: '2026-07-12',
+    suggestedPay: 8,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '闪婚总裁，甜宠日常',
+    friendInfo: '杭州追光文化传媒有限公司',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: ['主视觉.png'],
+    matDesc: '主视觉已单独上传，其余物料待补充，请审核主视觉是否符合分发要求。',
+    episodes: makeEpisodes('shoufu', 26)
+  },
+  {
+    id: '1000000010', name: '都市之最强医仙', alias: '都市之最强医仙', episodeCount: 54, status: 'stopped',
+    uploadTime: '2026-06-30 18:20:09', color: '#a1c4fd', cover: 'https://picsum.photos/seed/netshort10/300/400', type: '都市 · 玄幻',
+    uploadAccountName: '星辰短剧', uploadAccountId: '1005', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-07-15 14:00:00',
+    desc: '医仙下山，悬壶济世，都市之中续写传奇。',
+    srcLang: '英语', authStart: '2026-06-30', authEnd: '2027-06-29', onlineTime: '2026-07-05',
+    suggestedPay: 18,
+    equity: ['IAA'], channel: ['小程序'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '都市职场，逆风翻盘',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: '', matPanCode: '', attachments: [],
+    stopReason: '内容存在版权争议，经核实后终止合作',
+    episodes: makeEpisodes('yixian', 54)
+  }
+];
+
+// 关联剧本（一对一）演示数据：剧本名称 / 剧本编号(B开头+纯数字) / 系统编号(19位纯数字)
+var DEMO_SCRIPTS = {
+  '1000000011': { name: '错爱成婚', no: 'B001', sysNo: '2026091100000000001' },
+  '1000000001': { name: '闪婚总裁夫人', no: 'B002', sysNo: '2026090600000000002' },
+  '1000000002': { name: '重生九零', no: 'B003', sysNo: '2026090500000000003' },
+  '1000000003': { name: '逆袭人生', no: 'B004', sysNo: '2026090300000000004' },
+  '1000000004': { name: '错嫁豪门', no: 'B005', sysNo: '2026090200000000005' },
+  '1000000005': { name: '甜妻驾到', no: 'B006', sysNo: '2026081000000000006' },
+  '1000000006': { name: '京都旧事', no: 'B007', sysNo: '2026080100000000007' },
+  '1000000007': { name: '重生之豪门千金', no: 'B008', sysNo: '2026072800000000008' },
+  '1000000008': { name: '逆天战神', no: 'B009', sysNo: '2026071500000000009' },
+  '1000000009': { name: '闪婚老公是首富', no: 'B010', sysNo: '2026070800000000010' },
+  '1000000010': { name: '都市之最强医仙', no: 'B011', sysNo: '2026063000000000011' }
+};
+
+// 上架时间（精确到秒，仅已上架/已下架有值）
+var DEMO_SHELF_TIME = {
+  '1000000008': '2026-08-25 10:00:00',
+  '1000000010': '2026-07-20 09:30:00'
+};
+
+// 后处理：为短剧注入关联剧本字段 + 上架时间
+DEMO_WORKS.forEach(function (w) {
+  var sc = DEMO_SCRIPTS[w.id];
+  w.scriptName = sc ? sc.name : '';
+  w.scriptNo = sc ? sc.no : '';
+  w.scriptSysNo = sc ? sc.sysNo : '';
+  w.shelfTime = DEMO_SHELF_TIME[w.id] || '';
+});
+
+// 收益演示（按短剧 × 月份）
+var DEMO_EARNINGS = [
+  { work: '甜妻驾到', month: '2026-08', cost: 120000, rate: '30%', amount: 36000, status: '已结算' },
+  { work: '甜妻驾到', month: '2026-09', cost: 65000,  rate: '30%', amount: 19500, status: '待结算' },
+  { work: '错嫁豪门', month: '2026-09', cost: 0,      rate: '30%', amount: 0,     status: '待结算' },
+];
+
+// 结算单演示
+var DEMO_SETTLEMENTS = [
+  { no: 'JS202608-001', month: '2026-08', works: 1, amount: 36000, status: '已通过', op: '下载' },
+  { no: 'JS202609-001', month: '2026-09', works: 1, amount: 19500, status: '可申请', op: '申请' },
+];
+
+// ---------- 合同演示数据（C 端 / B 端共享） ----------
+// status: fill 填写信息 | generating 合同生成 | refill 合同信息重填 | pending 待签署 | done 已签署
+// reviewStage（仅 generating 有意义）: unclaimed 待领取 | claimed 审核中
+var DEMO_CONTRACTS = [
+  {
+    no: 'HT202609-001', name: '版权开放平台授权入驻合同', type: 'settle', status: 'done',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-08-30 10:15:00', signTime: '2026-09-01 10:22:18',
+    reviewer: '陈晨', reviewStage: '', reviewTime: '2026-08-30 14:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '公司名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '公司地址', value: '杭州市西湖区文三路100号' },
+      { label: '联系电话', value: '13812346688' },
+      { label: '联系人', value: '王小明' },
+      { label: '电子邮箱', value: 'guangying@163.com' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '收款方式', value: '银行转账' },
+      { label: '账户名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '账户号码', value: '6222000088888888' },
+      { label: '收款银行', value: '中国工商银行杭州分行' }
+    ],
+    terms: [
+      { label: '合作期限', value: '1 年' },
+      { label: '授权范围', value: '短剧内容信息网络传播权' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '30%' }
+    ],
+    exclusiveRate: '30', nonExclusiveRate: '20',
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-002', name: '分成比例确认合同', type: 'split', status: 'generating',
+    accountName: '新锐工作室', accountId: '1002',
+    generateTime: '2026-09-11 09:00:00', signTime: '',
+    reviewer: '', reviewStage: 'unclaimed', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '公司名称', value: '杭州新锐文化传播有限公司' },
+      { label: '公司地址', value: '杭州市余杭区文一西路969号' },
+      { label: '联系电话', value: '15912342211' },
+      { label: '联系人', value: '李华' },
+      { label: '电子邮箱', value: 'xinrui@qq.com' },
+      { label: '统一社会信用代码', value: '91330100MA8YYYYYY' },
+      { label: '收款方式', value: '支付宝' },
+      { label: '账户名称', value: '杭州新锐文化传播有限公司' },
+      { label: '账户号码', value: 'zhifu***@qq.com' },
+      { label: '收款银行', value: '—' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '重生九零' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '30%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    exclusiveRate: '25', nonExclusiveRate: '15',
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-003', name: '补充协议-授权范围变更', type: 'supp', status: 'generating',
+    accountName: '追光者', accountId: '1003',
+    generateTime: '2026-09-11 16:20:00', signTime: '',
+    reviewer: '陈晨', reviewStage: 'claimed', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业全称', value: '杭州追光文化传媒有限公司' },
+      { label: '联系地址', value: '杭州市拱墅区莫干山路100号' },
+      { label: '联系电话', value: '13712343355' },
+      { label: '联系人', value: '王小明' },
+      { label: '电子邮箱', value: 'zhuiguang@126.com' },
+      { label: '收款方式', value: '银行转账' },
+      { label: '账户名称', value: '杭州追光文化传媒有限公司' },
+      { label: '账户号码', value: 'wxid_****' },
+      { label: '收款银行', value: '—' }
+    ],
+    terms: [
+      { label: '原合同编号', value: 'HT202608-002' },
+      { label: '补充事项', value: '授权渠道由官网扩展至小程序免费、小程序付费' },
+      { label: '生效日期', value: '2026-10-01' }
+    ],
+    exclusiveRate: '30', nonExclusiveRate: '20',
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-004', name: '分成比例确认合同', type: 'split', status: 'fill',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '', signTime: '',
+    reviewer: '', reviewStage: '', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '公司名称', value: '' },
+      { label: '公司地址', value: '' },
+      { label: '联系电话', value: '' },
+      { label: '联系人', value: '' },
+      { label: '电子邮箱', value: '' },
+      { label: '统一社会信用代码', value: '' },
+      { label: '收款方式', value: '' },
+      { label: '账户名称', value: '' },
+      { label: '账户号码', value: '' },
+      { label: '收款银行', value: '' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '甜妻驾到' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '5%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    exclusiveRate: '30', nonExclusiveRate: '20',
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-005', name: '分成比例确认合同', type: 'split', status: 'refill',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-09-05 11:30:00', signTime: '',
+    reviewer: '李悦', reviewStage: '', reviewTime: '2026-09-06 10:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '公司名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '公司地址', value: '杭州市西湖区文三路100号' },
+      { label: '联系电话', value: '13812346688' },
+      { label: '联系人', value: '王小明' },
+      { label: '电子邮箱', value: 'guangying@163.com' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '收款方式', value: '银行转账' },
+      { label: '账户名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '账户号码', value: '6222000088888888' },
+      { label: '收款银行', value: '中国工商银行杭州分行' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '甜妻驾到' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '5%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    exclusiveRate: '30', nonExclusiveRate: '20',
+    refillReason: '乙方统一社会信用代码与营业执照主体不一致，请核对后重新提交'
+  },
+  {
+    no: 'HT202609-006', name: '补充协议-分成比例调整', type: 'supp', status: 'done',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-09-01 09:00:00', signTime: '2026-09-07 10:05:58',
+    reviewer: '陈晨', reviewStage: '', reviewTime: '2026-09-01 15:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '公司名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '公司地址', value: '杭州市西湖区文三路100号' },
+      { label: '联系电话', value: '13812346688' },
+      { label: '联系人', value: '王小明' },
+      { label: '电子邮箱', value: 'guangying@163.com' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '收款方式', value: '银行转账' },
+      { label: '账户名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '账户号码', value: '6222000088888888' },
+      { label: '收款银行', value: '中国工商银行杭州分行' }
+    ],
+    terms: [
+      { label: '原合同编号', value: 'HT202606-004' },
+      { label: '补充事项', value: '分成比例由 30% 调整为 35%' },
+      { label: '生效日期', value: '2026-09-15' }
+    ],
+    exclusiveRate: '30', nonExclusiveRate: '20',
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-007', name: '分成比例确认合同', type: 'split', status: 'pending',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-09-10 14:00:00', signTime: '',
+    reviewer: '王浩', reviewStage: '', reviewTime: '2026-09-10 16:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '公司名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '公司地址', value: '杭州市西湖区文三路100号' },
+      { label: '联系电话', value: '13812346688' },
+      { label: '联系人', value: '王小明' },
+      { label: '电子邮箱', value: 'guangying@163.com' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '收款方式', value: '银行转账' },
+      { label: '账户名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '账户号码', value: '6222000088888888' },
+      { label: '收款银行', value: '中国工商银行杭州分行' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '逆天战神' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '3%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    exclusiveRate: '30', nonExclusiveRate: '20',
+    refillReason: ''
+  }
+];
+
+// 合同类型映射（已删「短剧授权合同」）
+var CONTRACT_TYPE = {
+  settle: { label: '授权入驻合同' },
+  split:  { label: '分成合同' },
+  supp:   { label: '补充协议' }
+};
+function typeLabel(key) {
+  var c = CONTRACT_TYPE[key] || { label: key };
+  return t(c.label);
+}
+
+// 合同状态映射（5 态）
+// 注意：generating 对外展示为「审核中」，refill 对外展示为「审核驳回」
+var CONTRACT_STATUS = {
+  fill:       { label: '填写信息', cls: 'tag-gray' },
+  generating: { label: '审核中',   cls: 'tag-blue' },
+  refill:     { label: '审核驳回', cls: 'tag-pink' },
+  pending:    { label: '待签署',   cls: 'tag-orange' },
+  done:       { label: '已签署',   cls: 'tag-green' }
+};
+function contractStatusTag(key) {
+  var s = CONTRACT_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + t(s.label) + '</span>';
+}
+
+// ============================================================
+// 通用时间范围选择器（精确到秒 / 精确到日），C 端、B 端共用
+// 用法：var p = createRangePicker('wrapId', { dateOnly:false });
+//   p.get() 返回 {start,end}；p.reset() 清空
+// ============================================================
+function dateStr(d) {
+  function p(n) { return (n < 10 ? '0' : '') + n; }
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
+var RP_PRESETS = [
+  { label: '今日', get: function () { var d = new Date(); return [dateStr(d), dateStr(d)]; } },
+  { label: '昨日', get: function () { var d = new Date(); d.setDate(d.getDate() - 1); return [dateStr(d), dateStr(d)]; } },
+  { label: '本周', get: function () { var s = new Date(); s.setDate(s.getDate() - s.getDay()); var e = new Date(s); e.setDate(e.getDate() + 6); return [dateStr(s), dateStr(e)]; } },
+  { label: '本月', get: function () { var s = new Date(); s.setDate(1); var e = new Date(s.getFullYear(), s.getMonth() + 1, 0); return [dateStr(s), dateStr(e)]; } },
+  { label: '今年', get: function () { var s = new Date(); s.setMonth(0, 1); var e = new Date(s.getFullYear(), 11, 31); return [dateStr(s), dateStr(e)]; } }
+];
+
+var _rpRegistry = {};
+
+function createRangePicker(wrapId, opts) {
+  opts = opts || {};
+  var dateOnly = !!opts.dateOnly;
+  var self = {
+    wrapId: wrapId, dateOnly: dateOnly,
+    start: null, end: null, focusCal: 'start',
+    calStartDate: new Date(), calEndDate: new Date()
+  };
+  _rpRegistry[wrapId] = self;
+
+  self.render = function () {
+    var ph = dateOnly ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss';
+    document.getElementById(wrapId).innerHTML =
+      '<div class="rp-box" id="' + wrapId + 'Box" onclick="rpToggle(\'' + wrapId + '\',event)">' +
+        '<span class="rp-val ph" id="' + wrapId + 'StartVal">' + t('开始时间') + '</span>' +
+        '<span class="rp-sep">→</span>' +
+        '<span class="rp-val ph" id="' + wrapId + 'EndVal">' + t('结束时间') + '</span>' +
+      '</div>' +
+      '<div class="rp-panel" id="' + wrapId + 'Panel">' +
+        '<div class="rp-presets" id="' + wrapId + 'Presets"></div>' +
+        '<div class="rp-main">' +
+          '<div class="rp-inputs">' +
+            '<input type="text" id="' + wrapId + 'StartInput" placeholder="' + ph + '" readonly onclick="rpFocus(\'' + wrapId + '\',\'start\')">' +
+            '<input type="text" id="' + wrapId + 'EndInput" placeholder="' + ph + '" readonly onclick="rpFocus(\'' + wrapId + '\',\'end\')">' +
+          '</div>' +
+          '<div class="rp-cal-wrap">' +
+            '<div class="rp-cal" id="' + wrapId + 'CalStart"></div>' +
+            '<div class="rp-cal" id="' + wrapId + 'CalEnd"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    self.renderPresets();
+    self.renderCals();
+    self.sync();
+  };
+
+  self.renderPresets = function () {
+    var html = RP_PRESETS.map(function (p, i) {
+      return '<div class="rp-preset" onclick="rpApplyPreset(\'' + wrapId + '\',' + i + ')">' + t(p.label) + '</div>';
+    }).join('');
+    document.getElementById(wrapId + 'Presets').innerHTML = html;
+  };
+
+  self.applyPreset = function (i) {
+    var r = RP_PRESETS[i].get();
+    self.start = dateOnly ? r[0] : r[0] + ' 00:00:00';
+    self.end = dateOnly ? r[1] : r[1] + ' 23:59:59';
+    self.sync();
+  };
+
+  self.togglePanel = function (e) {
+    if (e) e.stopPropagation();
+    var panel = document.getElementById(wrapId + 'Panel');
+    var box = document.getElementById(wrapId + 'Box');
+    var open = panel.classList.contains('show');
+    panel.classList.toggle('show', !open);
+    box.classList.toggle('open', !open);
+    if (!open) self.renderCals();
+  };
+
+  self.sync = function () {
+    document.getElementById(wrapId + 'StartInput').value = self.start || '';
+    document.getElementById(wrapId + 'EndInput').value = self.end || '';
+    var sv = document.getElementById(wrapId + 'StartVal');
+    var ev = document.getElementById(wrapId + 'EndVal');
+    if (self.start) { sv.textContent = self.start; sv.classList.remove('ph'); } else { sv.textContent = t('开始时间'); sv.classList.add('ph'); }
+    if (self.end) { ev.textContent = self.end; ev.classList.remove('ph'); } else { ev.textContent = t('结束时间'); ev.classList.add('ph'); }
+    self.renderCals();
+  };
+
+  self.renderCal = function (containerId, viewDate) {
+    var y = viewDate.getFullYear(), m = viewDate.getMonth();
+    var first = new Date(y, m, 1);
+    var startDay = first.getDay();
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var daysInPrev = new Date(y, m, 0).getDate();
+    var cells = [];
+    for (var i = 0; i < 42; i++) {
+      var dnum, cls = 'rp-day', dayObj;
+      if (i < startDay) {
+        dnum = daysInPrev - startDay + 1 + i; cls += ' other';
+        dayObj = new Date(y, m - 1, dnum);
+      } else if (i >= startDay + daysInMonth) {
+        dnum = i - startDay - daysInMonth + 1; cls += ' other';
+        dayObj = new Date(y, m + 1, dnum);
+      } else {
+        dnum = i - startDay + 1;
+        dayObj = new Date(y, m, dnum);
+      }
+      var ds = dateStr(dayObj);
+      if (self.start && ds === self.start.slice(0, 10)) cls += ' start';
+      if (self.end && ds === self.end.slice(0, 10)) cls += ' end';
+      if (self.start && self.end) {
+        var sd = self.start.slice(0, 10), ed = self.end.slice(0, 10);
+        if (ds > sd && ds < ed) cls += ' in-range';
+      }
+      cells.push('<div class="' + cls + '" onclick="rpPickDay(\'' + wrapId + '\',\'' + ds + '\')">' + dnum + '</div>');
+    }
+    var weekArr = isEnglish() ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['日','一','二','三','四','五','六'];
+    var weekHtml = weekArr.map(function (w) { return '<div>' + w + '</div>'; }).join('');
+    var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var calTitle = isEnglish() ? (monthNames[m] + ' ' + y) : (y + ' 年 ' + (m + 1) + ' 月');
+    document.getElementById(containerId).innerHTML =
+      '<div class="rp-cal-head"><div class="rp-cal-title">' + calTitle + '</div>' +
+      '<div class="rp-nav"><button onclick="rpNavCal(\'' + wrapId + '\',\'' + containerId + '\',-1,event)">‹</button><button onclick="rpNavCal(\'' + wrapId + '\',\'' + containerId + '\',1,event)">›</button></div></div>' +
+      '<div class="rp-week">' + weekHtml + '</div>' +
+      '<div class="rp-grid">' + cells.join('') + '</div>';
+  };
+
+  self.renderCals = function () {
+    self.renderCal(wrapId + 'CalStart', self.calStartDate);
+    self.renderCal(wrapId + 'CalEnd', self.calEndDate);
+  };
+
+  self.navCal = function (cid, delta) {
+    if (cid === wrapId + 'CalStart') self.calStartDate.setMonth(self.calStartDate.getMonth() + delta);
+    else self.calEndDate.setMonth(self.calEndDate.getMonth() + delta);
+    self.renderCals();
+  };
+
+  self.pickDay = function (ds) {
+    if (self.focusCal === 'start') {
+      self.start = dateOnly ? ds : ds + ' 00:00:00';
+      self.focusCal = 'end';
+    } else {
+      self.end = dateOnly ? ds : ds + ' 23:59:59';
+      self.focusCal = 'start';
+    }
+    if (self.start && self.end && self.start > self.end) {
+      var t2 = self.start; self.start = self.end; self.end = t2;
+    }
+    self.sync();
+  };
+
+  self.reset = function () { self.start = null; self.end = null; self.sync(); };
+  self.get = function () { return { start: self.start, end: self.end }; };
+
+  self.render();
+  return self;
+}
+
+// 内联 onclick 全局分发
+function rpToggle(id, e) { _rpRegistry[id].togglePanel(e); }
+function rpFocus(id, which) { _rpRegistry[id].focusCal = which; }
+function rpApplyPreset(id, i) { _rpRegistry[id].applyPreset(i); }
+function rpNavCal(id, cid, delta, e) { e.stopPropagation(); _rpRegistry[id].navCal(cid, delta); }
+function rpPickDay(id, ds) { _rpRegistry[id].pickDay(ds); }
+
+// ---------- 图标（内联 SVG symbol） ----------
+var ICONS = {
+  workbench: '<svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  works: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 3 14.5v-9Z" stroke="currentColor" stroke-width="1.5"/><path d="m7 12 2.5-2.5L12 12l1.5-1.5L15 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  contract: '<svg viewBox="0 0 20 20" fill="none"><path d="M6 3h6l3 3v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v3h3M8 10h4M8 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  earnings: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 15V8a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 15V4a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v11" stroke="currentColor" stroke-width="1.5"/><path d="M13 15v-5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  settlement: '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  bell: '<svg viewBox="0 0 20 20" fill="none"><path d="M16 13.5V9a6 6 0 1 0-12 0v4.5L2.5 15h15L16 13.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 17a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  down: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cert: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5 11.8 4l2.3-.4 1 2.1 2.2.7-.5 2.2 1.2 2-1.8 1.5.1 2.4-2.4.4-1.2 2.1-2.2-.9L10 17.5l-1.8.6-1.2-2.1-2.4-.4.1-2.4L2.9 11l1.2-2-.5-2.2 2.2-.7 1-2.1L9.1 4 10 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m7.5 10 1.7 1.7 3.3-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  user: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  arrowRight: '<svg viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 10 3.5 3.5L15 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  info: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  warn: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  plus: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  upload: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 13V4m0 0L6 8m4-4 4 4M4 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  film: '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 3v14M13 3v14M3 7h4M3 13h4M13 7h4M13 13h4" stroke="currentColor" stroke-width="1.2"/></svg>'
+};
+
+function icon(name) { return ICONS[name] || ''; }
+
+// ---------- 通用侧边栏 + 顶栏渲染（供各页面复用） ----------
+function renderTopbar(opts) {
+  opts = opts || {};
+  var userName = opts.userName || '光影工场';
+  var avatar = opts.avatar || '光';
+  var unread = opts.unread || 0;
+  var dot = unread > 0 ? '<span class="dot"></span>' : '';
+  return '' +
+  '<div class="topbar">' +
+    '<div class="topbar-inner">' +
+      '<div class="topbar-left">' +
+        '<a href="workbench.html" class="row" style="gap:12px">' +
+          '<div class="topbar-logo">' + t('短') + '</div>' +
+          '<span class="topbar-title">' + t('版权开放平台') + '</span>' +
+        '</a>' +
+        '<div class="topbar-divider"></div>' +
+        '<span class="topbar-sub">' + t('内容合作方') + '</span>' +
+        '<a class="topbar-switch" href="B端/accounts.html">' + t('运营后台') + '</a>' +
+      '</div>' +
+      '<div class="topbar-right">' +
+        '<div class="topbar-icon">' + icon('bell') + dot + '</div>' +
+        '<div class="topbar-user" onclick="toggleUserMenu()">' +
+          '<div class="topbar-avatar">' + avatar + '</div>' +
+          '<span class="topbar-name">' + userName + '</span>' +
+          '<span class="topbar-caret">' + icon('down') + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div id="userMenu" class="user-menu" style="display:none">' +
+    '<a href="profile.html">' + t('个人中心') + '</a>' +
+    '<span class="logout-link" onclick="if(confirm(\'' + t('确认退出登录？') + '\')) location.href=\'login.html\'">' + t('退出登录') + '</span>' +
+  '</div>';
+}
+
+function renderSidebar(active) {
+  var items = [
+    { key: 'workbench', label: t('工作台'), href: 'workbench.html' },
+    { key: 'contract',  label: t('合同管理'), href: 'contracts.html' },
+    { key: 'works',     label: t('作品管理'), sub: [{ key: 'works', label: t('成品剧'), href: 'work.html' }] },
+    { key: 'earnings',  label: t('收益管理'), sub: [
+        { key: 'earnings',   label: t('收益明细'), href: 'earnings.html' },
+        { key: 'settlement', label: t('结算单'),   href: 'settlement.html' }
+      ] }
+  ];
+  var html = '<div class="sidebar">';
+  items.forEach(function (it) {
+    // 判断该目录是否包含当前 active 的子项
+    var childActiveKey = null;
+    if (it.sub) {
+      it.sub.forEach(function (s) { if (s.key === active) childActiveKey = s.key; });
+    }
+    var isGroup = !!it.sub && it.sub.length;
+    var isGroupOpen = childActiveKey !== null;
+
+    if (isGroup) {
+      // 目录：点击展开/收起，不跳转
+      html += '<div class="sidebar-group' + (isGroupOpen ? ' open' : '') + '">' +
+        '<div class="sidebar-item' + (childActiveKey !== null ? ' active' : '') + '" onclick="toggleSidebarGroup(this)">' +
+          icon(it.key) + '<span>' + it.label + '</span>' +
+          '<span class="arrow">' + icon('down') + '</span>' +
+        '</div>' +
+        '<div class="sidebar-sub">' + it.sub.map(function (s) {
+          return '<a class="sidebar-item' + (s.key === active ? ' active' : '') + '" href="' + s.href + '">' + s.label + '</a>';
+        }).join('') + '</div>' +
+      '</div>';
+    } else {
+      html += '<a class="sidebar-item' + (it.key === active ? ' active' : '') + '" href="' + it.href + '">' +
+        icon(it.key) + '<span>' + it.label + '</span>' +
+      '</a>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+// 点击目录展开/收起子菜单
+function toggleSidebarGroup(el) {
+  var group = el.parentElement;
+  group.classList.toggle('open');
+}
+
+function toggleUserMenu() {
+  var m = document.getElementById('userMenu');
+  if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function (e) {
+  var m = document.getElementById('userMenu');
+  if (m && !e.target.closest('.topbar-user') && !e.target.closest('.user-menu')) {
+    m.style.display = 'none';
+  }
+});
+</script>
+<script>
+  document.getElementById('topbar-root').innerHTML = renderTopbar({ unread: 2 });
+  document.getElementById('sidebar-root').innerHTML = renderSidebar('workbench');
+
+  var certRetried = false; // 是否已重新提交（第一次审核不通过后）
+
+  // 图片上传组件（demo 模拟，最多 9 张）
+  var IMG_STORE = {};
+  function addImg(key) {
+    var arr = IMG_STORE[key] || (IMG_STORE[key] = []);
+    if (arr.length >= 9) { showToast(t('最多上传 9 张图片'), 'err'); return; }
+    arr.push({ name: '图片_' + (arr.length + 1) + '.jpg' });
+    renderImg(key);
+  }
+  function delImg(key, idx) {
+    if (IMG_STORE[key]) { IMG_STORE[key].splice(idx, 1); renderImg(key); }
+  }
+  function renderImg(key) {
+    var arr = IMG_STORE[key] || [];
+    document.getElementById('grid_' + key).innerHTML = arr.map(function (img, i) {
+      return '<div class="img-cell"><div class="img-thumb">' + img.name.charAt(0) + '</div>' +
+        '<div class="img-name">' + img.name + '</div>' +
+        '<span class="img-del" onclick="delImg(\'' + key + '\',' + i + ')">×</span></div>';
+    }).join('');
+    document.getElementById('add_' + key).style.display = arr.length >= 9 ? 'none' : 'flex';
+  }
+
+  // 营业执照单张上传（demo 模拟）
+  var BIZ_LICENSE = null;
+  function addBizLicense() {
+    if (BIZ_LICENSE) { showToast('营业执照仅需上传一张', 'err'); return; }
+    BIZ_LICENSE = { name: '营业执照.jpg' };
+    renderBizLicense();
+  }
+  function delBizLicense() {
+    BIZ_LICENSE = null;
+    renderBizLicense();
+  }
+  function renderBizLicense() {
+    var grid = document.getElementById('grid_bizLicense');
+    if (!grid) return;
+    if (BIZ_LICENSE) {
+      grid.innerHTML = '<div class="img-cell"><div class="img-thumb">营</div>' +
+        '<div class="img-name">' + BIZ_LICENSE.name + '</div>' +
+        '<span class="img-del" onclick="delBizLicense()">×</span></div>';
+      document.getElementById('add_bizLicense').style.display = 'none';
+    } else {
+      grid.innerHTML = '';
+      document.getElementById('add_bizLicense').style.display = 'flex';
+    }
+  }
+
+  function openCert() {
+    openModal('certModal');
+  }
+
+  function submitCert() {
+    closeModal('certModal');
+    // 状态切换为「认证信息审核中」
+    __safeSet('cp_cert', 'reviewing');
+    document.getElementById('heroCertBtn').style.display = 'none';
+    document.getElementById('certTitle').textContent = t('完成认证');
+    document.getElementById('certDesc').textContent = t('您的认证信息已提交，正在审核中。');
+    document.getElementById('certBtn').style.display = 'none';
+    document.getElementById('certRefresh').style.display = 'block';
+    renderCertReviewing();
+    showToast(t('认证信息已提交'), 'ok');
+  }
+
+  function renderCertReviewing() {
+    document.getElementById('certRefresh').innerHTML =
+      '<div class="status-line text-brand"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' + t('认证信息审核中') + '</div>' +
+      '<div class="refresh-link" onclick="refreshCert()"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="M16 6V3m0 0h-3M15.5 6A6.5 6.5 0 1 0 16 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' + t('刷新') + '</div>';
+  }
+
+  function renderCertRejected() {
+    document.getElementById('certRefresh').innerHTML =
+      '<div class="status-line text-danger"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' + t('认证审核不通过') + '</div>' +
+      '<div class="status-line text-danger" style="margin-top:6px">' + t('资质证明文件不清晰，请重新上传后提交') + '</div>' +
+      '<button class="btn btn-primary" style="margin-top:14px" onclick="resubmitCert()">' + t('重新提交') + '</button>';
+  }
+
+  function resubmitCert() {
+    // 重新提交：打开认证弹窗修改信息
+    openCert();
+  }
+
+  function refreshCert() {
+    if (!certRetried) {
+      // 第一次刷新：优先展示「审核不通过」
+      certRetried = true;
+      __safeSet('cp_cert', 'rejected');
+      renderCertRejected();
+      showToast(t('认证审核不通过'), 'err');
+    } else {
+      // 重新提交后刷新：审核通过，跳转合同签署页
+      __safeSet('cp_cert', 'done');
+      showToast(t('认证审核通过'), 'ok');
+      setTimeout(function () { location.href = 'workbench-contract.html'; }, 400);
+    }
+  }
+
+  applyI18n();
+</script>
+</body>
+</html>

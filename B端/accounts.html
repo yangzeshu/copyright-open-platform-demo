@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>认证管理 · 版权开放平台</title>
+<style>/* ============================================================
+   版权开放平台 · 公共样式 common.css
+   品牌主色：粉红 #ff2e63，浅色背景，卡片式布局
+   C 端与 B 端共享
+   ============================================================ */
+
+:root {
+  --brand: #ff2e63;
+  --brand-dark: #e0244f;
+  --brand-light: #fff0f4;
+  --brand-weak: rgba(255, 46, 99, 0.06);
+  --brand-grad: linear-gradient(135deg, #ff5c8a 0%, #ff2e63 100%);
+
+  --bg: #f7f8fa;
+  --fill-1: #f7f8fa;
+  --fill-2: #eef0f3;
+  --card: #ffffff;
+  --border: #eef0f3;
+  --border-strong: #e2e5ea;
+
+  --text: #1f2329;
+  --text-2: #51565d;
+  --text-3: #8a9199;
+  --text-invert: #ffffff;
+
+  --ok: #16b364;
+  --warn: #f0a020;
+  --danger: #e5484d;
+  --info: #3b82f6;
+
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --radius-input: 8px;
+  --shadow-card: 0 2px 12px rgba(20, 24, 30, 0.06);
+  --shadow-pop: 0 8px 30px rgba(20, 24, 30, 0.14);
+
+  --sidebar-w: 220px;
+  --topbar-h: 64px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; font-size: 14px; }
+
+/* ---------- 通用布局 ---------- */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- 顶部栏 ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  max-width: 1440px; margin: 0 auto; padding: 0 24px;
+  height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-logo {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--brand-grad);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 16px;
+}
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-divider { width: 1px; height: 16px; background: var(--border-strong); }
+.topbar-sub { font-size: 13px; color: var(--text-3); }
+.topbar-switch { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; font-size: 13px; color: var(--brand); border: 1px solid var(--brand); border-radius: 4px; cursor: pointer; text-decoration: none; margin-left: 2px; }
+.topbar-switch:hover { background: var(--brand); color: #fff; }
+
+.topbar-right { display: flex; align-items: center; gap: 20px; }
+.topbar-icon {
+  width: 20px; height: 20px; color: var(--text-2);
+  position: relative; display: flex; align-items: center;
+}
+.topbar-icon .dot {
+  position: absolute; top: -2px; right: -2px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--brand);
+  border: 1.5px solid #fff;
+}
+.topbar-user { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.topbar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--brand-grad); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.topbar-name { font-size: 14px; color: var(--text); }
+.topbar-caret { width: 14px; height: 14px; color: var(--text-3); }
+
+/* ---------- 主体框架：侧边菜单 + 内容 ---------- */
+.layout {
+  display: flex; min-height: calc(100vh - var(--topbar-h));
+  max-width: 1440px; margin: 0 auto;
+}
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  padding: 20px 12px;
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; margin-bottom: 4px;
+  border-radius: 8px; color: var(--text-2);
+  font-size: 14px; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.sidebar-item:hover { background: var(--fill-2); color: var(--text); }
+.sidebar-item.active {
+  background: var(--brand-weak); color: var(--brand); font-weight: 600;
+}
+.sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-item .arrow { margin-left: auto; width: 14px; height: 14px; transition: transform .2s; }
+
+/* 目录分组：子菜单默认收起，展开后箭头旋转 */
+.sidebar-group .sidebar-sub { display: none; padding-left: 28px; }
+.sidebar-group.open .sidebar-sub { display: block; }
+.sidebar-group.open .arrow { transform: rotate(180deg); }
+.sidebar-sub .sidebar-item { padding: 9px 14px; font-size: 13px; }
+
+.content {
+  flex: 1; min-width: 0;
+  padding: 24px 32px 48px;
+}
+
+/* ---------- 页面标题 ---------- */
+.page-head { margin-bottom: 20px; }
+.page-title { font-size: 20px; font-weight: 700; }
+.page-desc { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--card); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.card + .card { margin-top: 0; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 20px; border-radius: var(--radius-btn);
+  font-size: 14px; font-weight: 500; line-height: 1;
+  transition: all .15s; white-space: nowrap;
+}
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-dark); }
+.btn-outline { border: 1px solid var(--border-strong); color: var(--text-2); background: #fff; }
+.btn-outline:hover { border-color: var(--brand); color: var(--brand); }
+.btn-text { color: var(--brand); padding: 9px 12px; }
+.btn-text:hover { background: var(--brand-weak); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: .9; }
+.btn-plain { background: var(--fill-2); color: var(--text-2); }
+.btn-plain:hover { background: var(--border-strong); }
+.btn-ghost { color: var(--brand); }
+.btn-block { width: 100%; }
+.btn-lg { padding: 12px 28px; font-size: 15px; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---------- 表单 ---------- */
+.form-item { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+.form-label .req { color: var(--danger); margin-left: 2px; }
+.form-input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  background: #fff; color: var(--text); outline: none;
+  transition: border .15s, box-shadow .15s;
+}
+.form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-weak); }
+.form-input::placeholder { color: var(--text-3); }
+textarea.form-input { resize: vertical; min-height: 90px; }
+.form-row { display: flex; gap: 12px; }
+.form-row > * { flex: 1; }
+.form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+
+/* 验证码输入 */
+.code-wrap { display: flex; gap: 10px; }
+.code-wrap .form-input { flex: 1; }
+.code-btn {
+  flex-shrink: 0; min-width: 110px; padding: 0 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  color: var(--brand); font-size: 13px; background: #fff;
+}
+.code-btn:disabled { color: var(--text-3); cursor: not-allowed; }
+
+/* ---------- 状态徽标 ---------- */
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; line-height: 1.5;
+}
+.tag-gray { background: #f0f1f3; color: #6b7280; }
+.tag-blue { background: #e8f1ff; color: #2f6bdc; }
+.tag-red { background: #fdeaea; color: #d13a3f; }
+.tag-orange { background: #fff3e0; color: #e8840a; }
+.tag-green { background: #e6f7ef; color: #149a5a; }
+.tag-pink { background: var(--brand-light); color: var(--brand); }
+.tag-dark { background: #3a3f45; color: #fff; }
+
+/* ---------- 表格 ---------- */
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td {
+  text-align: center; padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.table th { color: var(--text-3); font-weight: 500; background: #fafbfc; white-space: nowrap; }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: #fafbfc; }
+.table .cell-title { color: var(--text); font-weight: 500; }
+
+/* 表格固定列（水平滚动时锁定） */
+.table th.sticky-l, .table td.sticky-l { position: sticky; left: 0; z-index: 2; background: #fff; }
+.table th.sticky-l2, .table td.sticky-l2 { position: sticky; left: 40px; z-index: 2; background: #fff; }
+.table th.sticky-r, .table td.sticky-r { position: sticky; right: 0; z-index: 2; background: #fff; }
+.table th.sticky-l, .table th.sticky-l2, .table th.sticky-r { background: #fafbfc; z-index: 3; }
+.table tbody tr:hover td.sticky-l,
+.table tbody tr:hover td.sticky-l2,
+.table tbody tr:hover td.sticky-r { background: #fafbfc; }
+.table td.sticky-l2 { box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+.table td.sticky-r, .table th.sticky-r { box-shadow: -2px 0 4px rgba(0,0,0,.06); }
+
+/* ---------- 弹窗 ---------- */
+.modal-mask {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20, 24, 30, 0.45);
+  display: none; align-items: center; justify-content: center;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; width: 460px; max-width: 92vw;
+  max-height: 88vh; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-pop);
+  animation: pop .18s ease;
+}
+.modal-head {
+  padding: 24px 24px 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.modal-body {
+  padding: 0 24px; overflow-y: auto; flex: 1;
+}
+.modal-foot {
+  padding: 16px 24px 24px; flex-shrink: 0;
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;
+}
+.modal-lg { width: 620px; }
+@keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { width: 20px; height: 20px; color: var(--text-3); cursor: pointer; }
+
+/* ---------- 空状态 / 提示 ---------- */
+.empty {
+  text-align: center; padding: 48px 20px; color: var(--text-3);
+}
+.empty .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+.empty .empty-text { font-size: 14px; }
+
+/* ---------- 提示条 ---------- */
+.notice {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 16px; border-radius: 10px; font-size: 13px;
+  margin-bottom: 16px;
+}
+.notice-info { background: #e8f1ff; color: #2f6bdc; }
+.notice-warn { background: #fff3e0; color: #e8840a; }
+.notice-success { background: #e6f7ef; color: #149a5a; }
+.notice svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ---------- 步骤条 ---------- */
+.steps { display: flex; align-items: center; margin-bottom: 24px; }
+.step { display: flex; align-items: center; gap: 8px; }
+.step-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  background: var(--fill-2); color: var(--text-3);
+}
+.step.active .step-dot { background: var(--brand); color: #fff; }
+.step.done .step-dot { background: var(--ok); color: #fff; }
+.step-label { font-size: 13px; color: var(--text-3); }
+.step.active .step-label { color: var(--text); font-weight: 600; }
+.step.done .step-label { color: var(--text-2); }
+.step-line { flex: 1; height: 2px; background: var(--border-strong); margin: 0 12px; }
+.step-line.done { background: var(--ok); }
+
+/* ---------- 辅助 ---------- */
+.row { display: flex; align-items: center; gap: 12px; }
+.between { display: flex; align-items: center; justify-content: space-between; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; } .mb-24 { margin-bottom: 24px; }
+.text-3 { color: var(--text-3); } .text-2 { color: var(--text-2); }
+.text-brand { color: var(--brand); } .text-ok { color: var(--ok); } .text-danger { color: var(--danger); }
+.fs-12 { font-size: 12px; } .fs-13 { font-size: 13px; }
+.mono { font-variant-numeric: tabular-nums; }
+
+/* 统计卡 */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 20px 22px; }
+.stat-label { font-size: 13px; color: var(--text-3); }
+.stat-value { font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.stat-value .unit { font-size: 14px; font-weight: 400; color: var(--text-3); margin-left: 2px; }
+.stat-trend { font-size: 12px; margin-top: 4px; }
+
+/* 用户下拉菜单 */
+.user-menu {
+  position: absolute; top: var(--topbar-h); right: 24px; z-index: 150;
+  background: #fff; border-radius: 10px; box-shadow: var(--shadow-pop);
+  min-width: 140px; padding: 6px; overflow: hidden;
+}
+.user-menu a, .user-menu .logout-link {
+  display: block; padding: 9px 14px; border-radius: 6px;
+  font-size: 13px; color: var(--text-2);
+}
+.user-menu a:hover, .user-menu .logout-link:hover { background: var(--brand-weak); color: var(--brand); }
+
+/* toast */
+#toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 300; background: #fff; color: var(--text);
+  padding: 10px 20px; border-radius: 8px; box-shadow: var(--shadow-pop);
+  font-size: 14px; display: none;
+}
+#toast.show { display: block; animation: pop .2s ease; }
+
+/* ===== 时间范围（高仿 antd RangePicker，公共组件） ===== */
+.rp-wrap { position: relative; }
+.rp-box {
+  height: 32px; width: 320px; padding: 4px 11px; border: 1px solid #d9d9d9;
+  border-radius: 6px; background: #fff; display: flex; align-items: center; cursor: pointer; transition: all .2s;
+}
+.rp-box:hover { border-color: var(--brand); }
+.rp-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-val { flex: 1; font-size: 14px; color: var(--text); text-align: center; font-variant-numeric: tabular-nums; }
+.rp-val.ph { color: #bfbfbf; }
+.rp-sep { margin: 0 6px; color: var(--text-3); font-size: 14px; }
+.rp-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  display: none; overflow: hidden; width: 560px;
+}
+.rp-panel.show { display: flex; }
+.rp-presets { width: 130px; border-right: 1px solid var(--border); padding: 8px 0; flex-shrink: 0; }
+.rp-preset { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.rp-preset:hover { background: var(--brand-weak); color: var(--brand); }
+.rp-main { flex: 1; padding: 12px; display: flex; flex-direction: column; }
+.rp-inputs { display: flex; gap: 8px; margin-bottom: 12px; }
+.rp-inputs input { flex: 1; height: 30px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; }
+.rp-inputs input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-cal-wrap { display: flex; gap: 16px; }
+.rp-cal { flex: 1; }
+.rp-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.rp-cal-title { font-size: 13px; font-weight: 600; }
+.rp-nav { display: flex; gap: 4px; }
+.rp-nav button { width: 22px; height: 22px; border: none; background: none; cursor: pointer; color: var(--text-3); border-radius: 4px; font-size: 12px; }
+.rp-nav button:hover { background: #f5f5f5; color: var(--text); }
+.rp-week { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+.rp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.rp-day {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--text); cursor: pointer; border-radius: 4px;
+}
+.rp-day:hover { background: var(--brand-weak); }
+.rp-day.other { color: #bfbfbf; }
+.rp-day.in-range { background: rgba(255,46,99,.1); }
+.rp-day.start, .rp-day.end { background: var(--brand); color: #fff; }
+.rp-day.disabled { color: #d9d9d9; cursor: not-allowed; }
+
+/* ===== 筛选区折叠项 ===== */
+.filter-extra { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ===== 联想输入 ===== */
+.autocomplete { position: relative; }
+.autocomplete .ac-panel {
+  position: fixed; z-index: 400;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  border: 1px solid var(--border); max-height: 220px; overflow-y: auto; display: none;
+}
+.autocomplete .ac-panel.show { display: block; }
+.ac-opt { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.ac-opt:hover { background: var(--brand-weak); color: var(--brand); }
+.ac-opt .hl { color: var(--brand); font-weight: 600; }
+.ac-empty { padding: 12px 14px; font-size: 13px; color: var(--text-3); }
+
+/* ===== 列表多选框 ===== */
+.cb-col { width: 40px; text-align: center; }
+.cb-col input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--brand); }
+
+/* ===== 下拉多选（高仿 antd Select multiple） ===== */
+.ms-wrap { position: relative; }
+.ms-box {
+  min-height: 32px; width: 180px; padding: 2px 28px 2px 6px;
+  border: 1px solid #d9d9d9; border-radius: 6px; background: #fff; cursor: pointer;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 3px; transition: all .2s;
+  position: relative;
+}
+.ms-box:hover { border-color: var(--brand); }
+.ms-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.ms-placeholder { color: #bfbfbf; font-size: 14px; padding: 0 5px; }
+.ms-tag {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 6px;
+  background: #fafafa; border: 1px solid #d9d9d9; border-radius: 4px;
+  font-size: 12px; color: var(--text-2); margin: 1px 0;
+}
+.ms-tag .ms-x { margin-left: 4px; color: #999; cursor: pointer; font-size: 12px; line-height: 1; }
+.ms-tag .ms-x:hover { color: var(--brand); }
+.ms-tag.more { background: #fff; border-style: dashed; color: var(--text-3); }
+.ms-arrow { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: #bfbfbf; pointer-events: none; transition: transform .2s; display: flex; }
+.ms-box.open .ms-arrow { transform: translateY(-50%) rotate(180deg); }
+.ms-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; width: 100%;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  padding: 4px; display: none; max-height: 260px; overflow-y: auto;
+}
+.ms-panel.show { display: block; }
+.ms-opt {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border-radius: 4px; font-size: 14px; cursor: pointer; color: var(--text-2); transition: background .15s;
+}
+.ms-opt:hover { background: #f5f5f5; }
+.ms-opt .opt-check { width: 16px; text-align: center; color: var(--brand); font-weight: 700; visibility: hidden; }
+.ms-opt.checked .opt-check { visibility: visible; }
+.ms-opt.checked { color: var(--brand); font-weight: 600; }
+
+/* 操作列表头居中 */
+.th-op { text-align: center; }
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+<style>
+  .page-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .page-tab { padding: 10px 20px; font-size: 14px; color: var(--text-3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
+  .page-tab.active { color: var(--brand); font-weight: 600; border-bottom-color: var(--brand); }
+  .page-tab:hover { color: var(--brand); }
+  .page-tab .tab-count { display: inline-block; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; background: var(--fill-2); border-radius: 9px; font-size: 12px; line-height: 18px; text-align: center; color: var(--text-3); }
+  .page-tab.active .tab-count { background: var(--brand-weak); color: var(--brand); }
+
+  .filter-box { background: #fafbfc; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 6px; margin-bottom: 18px; }
+  .filter-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .search-panel { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .search-item { display: flex; flex-direction: column; gap: 6px; }
+  .search-item label { font-size: 12px; color: var(--text-3); }
+  .ant-input { height: 32px; padding: 4px 11px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; color: var(--text); outline: none; background: #fff; transition: all .2s; }
+  .ant-input:hover { border-color: var(--brand); }
+  .ant-input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+  .ant-input::placeholder { color: #bfbfbf; }
+  textarea.ant-input { height: auto; padding: 8px 11px; resize: vertical; min-height: 80px; width: 100%; }
+  .filter-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-shrink: 0; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); padding-bottom: 18px; }
+
+  .op-link { font-size: 13px; color: var(--brand); cursor: pointer; margin-right: 12px; }
+  .op-link:hover { text-decoration: underline; }
+  .op-link.danger { color: var(--danger); }
+  .op-link.ok { color: var(--ok); }
+  .op-link.gray { color: var(--text-3); }
+  .op-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .op-col .op-link { margin-right: 0; white-space: nowrap; }
+
+  .cell-main { font-size: 14px; font-weight: 500; color: var(--text); }
+  .cell-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .account-cell { cursor: pointer; }
+  .account-cell .cell-main { color: var(--brand); }
+  .account-cell:hover .cell-main { text-decoration: underline; }
+
+  .table-wrap { overflow-x: auto; }
+  .table { min-width: 1180px; }
+
+  .cert-block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .cert-block-body { padding: 14px 16px; }
+  .cert-field { display: flex; padding: 7px 0; font-size: 13px; }
+  .cert-field .f-label { width: 120px; color: var(--text-3); flex-shrink: 0; }
+  .cert-field .f-value { flex: 1; color: var(--text); word-break: break-all; }
+  .cert-empty { padding: 20px; text-align: center; color: var(--text-3); font-size: 13px; }
+  .acct-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; padding: 14px 16px; background: var(--fill-1); border-radius: 10px; margin-bottom: 16px; }
+  .acct-info .ai-item { display: flex; font-size: 13px; }
+  .acct-info .ai-label { width: 80px; color: var(--text-3); flex-shrink: 0; }
+  .acct-info .ai-value { color: var(--text); font-weight: 500; }
+
+  .form-item { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+  .form-label .req { color: var(--danger); margin-left: 2px; }
+  .char-count { text-align: right; font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+  .batch-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .batch-bar .sel-info { font-size: 13px; color: var(--text-2); }
+  .batch-bar .sel-info b { color: var(--brand); }
+</style>
+</head>
+<body>
+<div id="topbar-root"></div>
+<div class="layout">
+  <div id="sidebar-root"></div>
+  <div class="content">
+    <div class="page-head">
+      <div class="page-title" id="pageTitle">认证审核</div>
+      <div class="page-desc" id="pageDesc">审核生产方各主体的认证信息</div>
+    </div>
+
+    <div class="card">
+      <div class="filter-box">
+        <div class="filter-row">
+          <div class="search-panel">
+            <!-- 账号（下拉单选 + 输入匹配） -->
+            <div class="search-item">
+              <label>账号</label>
+              <div class="autocomplete">
+                <input type="text" class="ant-input" id="searchAccount" placeholder="输入账号昵称/ID" style="width:160px" autocomplete="off" oninput="acInput('searchAccount','searchAccountPanel','searchAccountHidden', accountOptions(), '无匹配的账号')" onfocus="acInput('searchAccount','searchAccountPanel','searchAccountHidden', accountOptions(), '无匹配的账号')">
+                <input type="hidden" id="searchAccountHidden" value="">
+                <div class="ac-panel" id="searchAccountPanel"></div>
+              </div>
+            </div>
+            <!-- 主体名称（单行输入，模糊匹配） -->
+            <div class="search-item">
+              <label>主体名称</label>
+              <input type="text" class="ant-input" id="searchSubjectName" placeholder="请输入主体名称" style="width:160px">
+            </div>
+            <!-- 审核状态（仅全部子页） -->
+            <div class="search-item" id="statusWrap" style="display:none">
+              <label>审核状态</label>
+              <div class="ms-wrap">
+                <div class="ms-box" id="statusBox" onclick="toggleMsPanel('statusPanel','statusBox',event)">
+                  <div id="statusContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
+                  <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </div>
+                <div class="ms-panel" id="statusPanel"></div>
+              </div>
+            </div>
+          </div>
+          <span class="op-link" id="expandToggle" onclick="toggleExpand()">展开筛选 ▾</span>
+        </div>
+
+        <!-- 折叠筛选项 -->
+        <div class="search-panel filter-extra" id="expandPanel" style="display:none">
+          <div class="search-item">
+            <label>邮箱</label>
+            <input type="text" class="ant-input" id="searchEmail" placeholder="请输入邮箱" style="width:170px">
+          </div>
+          <div class="search-item">
+            <label>手机号</label>
+            <input type="text" class="ant-input" id="searchPhone" placeholder="请输入手机号" style="width:150px">
+          </div>
+          <div class="search-item">
+            <label>商务</label>
+            <select class="ant-input" id="searchBusiness" style="width:120px">
+              <option value="">全部</option>
+              <option>枥文</option>
+              <option>冰雨</option>
+              <option>禾呈</option>
+              <option>芋头</option>
+              <option>泰瑞</option>
+              <option>大料</option>
+            </select>
+          </div>
+          <!-- 审核人（仅全部子页） -->
+          <div class="search-item" id="reviewerWrap" style="display:none">
+            <label>审核人</label>
+            <div class="autocomplete">
+              <input type="text" class="ant-input" id="searchReviewer" placeholder="输入审核人" style="width:140px" autocomplete="off" oninput="acInput('searchReviewer','searchReviewerPanel','searchReviewerHidden', REVIEWERS, '无匹配的审核人')" onfocus="acInput('searchReviewer','searchReviewerPanel','searchReviewerHidden', REVIEWERS, '无匹配的审核人')">
+              <input type="hidden" id="searchReviewerHidden" value="">
+              <div class="ac-panel" id="searchReviewerPanel"></div>
+            </div>
+          </div>
+          <!-- 注册时间 -->
+          <div class="search-item">
+            <label>注册时间</label>
+            <div class="rp-wrap" id="rpRegisterWrap"></div>
+          </div>
+          <!-- 提交认证时间 -->
+          <div class="search-item">
+            <label>提交认证时间</label>
+            <div class="rp-wrap" id="rpSubmitWrap"></div>
+          </div>
+          <!-- 审核时间（仅全部子页，放提交认证时间后） -->
+          <div class="search-item" id="reviewTimeWrap" style="display:none">
+            <label>审核时间</label>
+            <div class="rp-wrap" id="rpReviewWrap"></div>
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn btn-primary" onclick="renderList()">搜索</button>
+          <button class="btn btn-outline" onclick="resetSearch()">重置</button>
+        </div>
+      </div>
+
+      <!-- 批量操作栏 -->
+      <div class="batch-bar">
+        <span class="sel-info">已选 <b id="selCount">0</b> 项</span>
+        <button class="btn btn-primary btn-sm" onclick="batchPass()">批量通过</button>
+        <button class="btn btn-danger btn-sm" onclick="batchReject()">批量驳回</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead id="tableHead"></thead>
+          <tbody id="accountList"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 认证信息弹窗（详情，含通过/驳回操作） -->
+<div class="modal-mask" id="certModal">
+  <div class="modal modal-lg" style="width:720px">
+    <div class="modal-head">
+      <div class="modal-title" id="certModalTitle">认证信息</div>
+      <span class="modal-close" onclick="closeModal('certModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body" id="certModalBody"></div>
+    <div class="modal-foot" id="certModalFoot"></div>
+  </div>
+</div>
+
+<!-- 补充信息弹窗（通过时：展示补充信息单选，占位，后续业务方填充） -->
+<div class="modal-mask" id="bizModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">补充信息</div>
+      <span class="modal-close" onclick="closeModal('bizModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item" style="margin-bottom:0">
+        <label class="form-label">补充信息<span class="req" style="color:var(--danger);margin-left:2px">*</span></label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="suppInfo" value="选项 A">选项 A</label>
+          <label class="radio-item"><input type="radio" name="suppInfo" value="选项 B">选项 B</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('bizModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmBiz()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑商务弹窗（仅商务：可输入匹配的单选下拉） -->
+<div class="modal-mask" id="bizEditModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-head">
+      <div class="modal-title">编辑商务</div>
+      <span class="modal-close" onclick="closeModal('bizEditModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item" style="margin-bottom:0">
+        <label class="form-label">商务<span class="req" style="color:var(--danger);margin-left:2px">*</span></label>
+        <div class="autocomplete">
+          <input type="text" class="ant-input" id="bizEditInput" placeholder="请选择或输入商务" autocomplete="off" style="width:100%"
+            oninput="acInput('bizEditInput','bizEditPanel','bizEditValue', BUSINESS_LIST, '无匹配的商务')"
+            onfocus="acInput('bizEditInput','bizEditPanel','bizEditValue', BUSINESS_LIST, '无匹配的商务')">
+          <input type="hidden" id="bizEditValue" value="">
+          <div class="ac-panel" id="bizEditPanel"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('bizEditModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmBizEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 驳回原因弹窗 -->
+<div class="modal-mask" id="rejectModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">驳回</div>
+      <span class="modal-close" onclick="closeModal('rejectModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body">
+      <div class="desc-row" style="display:flex;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <div class="desc-label" style="width:80px;color:var(--text-3)">主体</div>
+        <div class="desc-value" id="rejectAccountName" style="flex:1;color:var(--text);word-break:break-all"></div>
+      </div>
+      <div class="form-item" style="margin-top:14px;margin-bottom:0">
+        <label class="form-label">驳回原因<span class="req" style="color:var(--danger);margin-left:2px">*</span></label>
+        <textarea class="ant-input" id="rejectReasonInput" placeholder="请输入驳回原因" maxlength="500" oninput="updateRejectCount()"></textarea>
+        <div class="char-count" id="rejectCount">0 / 500</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('rejectModal')">取消</button>
+      <button class="btn btn-danger" onclick="confirmReject()">驳回</button>
+    </div>
+  </div>
+</div>
+
+<script>/* ============================================================
+   版权开放平台 · 公共脚本 common.js
+   提供：toast 提示、演示数据、状态映射、SVG 图标
+   ============================================================ */
+
+var __cpMem = {};
+function __safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return __cpMem[k] || null; } }
+function __safeSet(k, v) { __cpMem[k] = v; try { localStorage.setItem(k, v); } catch (e) {} }
+function isEnglish() { return false; }
+function t(key) { return key; }
+function applyI18n() {}
+
+// ---------- Toast ----------
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'show';
+  if (type === 'ok') t.style.color = 'var(--ok)';
+  else if (type === 'err') t.style.color = 'var(--danger)';
+  else t.style.color = 'var(--text)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function () { t.className = ''; }, 2200);
+}
+
+// ---------- 弹窗 ----------
+function openModal(id) { var m = document.getElementById(id); if (m) m.classList.add('show'); }
+function closeModal(id) { var m = document.getElementById(id); if (m) m.classList.remove('show'); }
+
+// 点击遮罩关闭
+document.addEventListener('click', function (e) {
+  if (e.target.classList && e.target.classList.contains('modal-mask')) {
+    e.target.classList.remove('show');
+  }
+});
+
+// ---------- 状态映射（短剧） ----------
+// C 端状态机（2026-09-12 重构）：待提交 → 审核中 → 驳回 / 审核通过 → 已上架；任意状态可被 B 端下架
+// 合同签署中、合同信息重填 两态已删除；「合作中」改名「已上架」，「停止合作」改名「已下架」
+var WORK_STATUS = {
+  draft:       { label: '待提交',   cls: 'tag-gray' },
+  reviewing:   { label: '审核中',   cls: 'tag-blue' },
+  rejected:    { label: '审核驳回', cls: 'tag-red' },
+  approved:    { label: '审核通过', cls: 'tag-green' },
+  cooperating: { label: '已上架',   cls: 'tag-green' },
+  stopped:     { label: '已下架',   cls: 'tag-dark' }
+};
+
+// B 端审核子状态（仅 reviewing 有意义）：unclaimed 待领取 | claimed 审核中（已领取）
+var REVIEW_STAGE = {
+  unclaimed: { label: '待领取', cls: 'tag-orange' },
+  claimed:   { label: '审核中', cls: 'tag-blue' }
+};
+
+function statusTag(key) {
+  var s = WORK_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + t(s.label) + '</span>';
+}
+
+// ---------- 演示数据 ----------
+var DEMO_USER = {
+  name: '光影工场',
+  avatar: '光',
+  phone: '138****6688',
+  company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
+  certStatus: 'done',     // none | done
+  contractStatus: 'done', // none | done
+};
+
+// 剧集信息演示（每部剧前几集，演示用）
+function makeEpisodes(prefix, count) {
+  var arr = [];
+  for (var i = 1; i <= count; i++) {
+    var ep = (i < 10 ? '0' + i : '' + i);
+    arr.push({
+      no: i,
+      videoNoSub: prefix + '_EP' + ep + '.mp4',
+      videoSub: (i % 2 === 1) ? (prefix + '_EP' + ep + '_字幕.mp4') : '',
+      srt: prefix + '_EP' + ep + '.srt',
+      duration: (Math.floor(Math.random() * 60) + 90) + 's',
+      size: (Math.random() * 300 + 120).toFixed(1) + 'MB'
+    });
+  }
+  return arr;
+}
+
+var DEMO_WORKS = [
+  {
+    // 暂存演示数据：只填写了短剧名称，其余字段为空
+    id: '1000000011', name: '错爱成婚', alias: '', episodeCount: '', status: 'draft',
+    uploadTime: '2026-09-11 14:30:00', color: '#fbc2eb', cover: '', type: '',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '', srcLang: '', authStart: '', authEnd: '', onlineTime: '',
+    suggestedPay: '',
+    equity: [], channel: [], iaaLimitType: '', iaaOnlineTime: '',
+    authType: '',
+    socialMediaDesc: '',
+    friendInfo: '',
+    authRegion: '',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: []
+  },
+  {
+    id: '1000000001', name: '闪婚总裁夫人', alias: '闪婚总裁夫人（别名）', episodeCount: 32, status: 'draft',
+    uploadTime: '2026-09-06 14:20:35', color: '#ff9a9e', cover: 'https://picsum.photos/seed/netshort01/300/400', type: '都市 · 甜宠',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '一场闪婚，两个世界。灰姑娘意外嫁给神秘总裁，从此开启跌宕起伏的婚姻生活。',
+    srcLang: '简体中文', authStart: '2026-09-06', authEnd: '2027-09-05', onlineTime: '',
+    suggestedPay: 10,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '霸道总裁闪婚甜宠，先婚后爱甜度拉满',
+    friendInfo: '',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('shanshun', 32)
+  },
+  {
+    id: '1000000002', name: '重生九零', alias: '重生九零之逆袭', episodeCount: 24, status: 'reviewing',
+    reviewStage: 'unclaimed', // B 端待领取，C 端可撤回
+    uploadTime: '2026-09-05 10:02:18', color: '#a18cd1', cover: 'https://picsum.photos/seed/netshort02/300/400', type: '年代 · 逆袭',
+    uploadAccountName: '新锐工作室', uploadAccountId: '1002', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '重回九零年代，带着前世记忆，她誓要改写命运，活出不一样的人生。',
+    srcLang: '简体中文', authStart: '2026-09-05', authEnd: '2027-09-04', onlineTime: '2026-10-01',
+    suggestedPay: 8,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '重生改写命运，逆袭人生',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: 'https://pan.baidu.com/s/ab12cd', matPanCode: 'abcd', attachments: ['海报.png', '预告片.mp4'],
+    matDesc: '成片已全部完成，附宣传海报与预告片。审核时请重点查看前 3 集的画面质量与字幕对齐情况。',
+    episodes: makeEpisodes('chongsheng', 24)
+  },
+  {
+    id: '1000000003', name: '逆袭人生', alias: '逆袭人生之巅峰', episodeCount: 40, status: 'reviewing',
+    reviewStage: 'claimed', // B 端已领取，C 端隐藏撤回按钮
+    uploadTime: '2026-09-03 09:41:52', color: '#a6c1ee', cover: 'https://picsum.photos/seed/netshort03/300/400', type: '都市 · 励志',
+    uploadAccountName: '追光传媒', uploadAccountId: '1003', certType: 'company',
+    reviewer: '陈晨', reviewTime: '',
+    desc: '从草根到巅峰，一个普通人用坚持与智慧逆袭命运的故事。',
+    srcLang: '简体中文', authStart: '2026-09-03', authEnd: '2027-09-02', onlineTime: '',
+    suggestedPay: 12,
+    equity: ['IAA', 'IAP'], channel: ['小程序'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '草根逆袭，热血励志',
+    friendInfo: '杭州星耀文化传媒有限公司',
+    authRegion: '东南亚',
+    matPanLink: '', matPanCode: '', attachments: [],
+    matDesc: '',
+    episodes: makeEpisodes('nixi', 40)
+  },
+  {
+    id: '1000000004', name: '错嫁豪门', alias: '错嫁豪门之契约', episodeCount: 36, status: 'rejected',
+    uploadTime: '2026-09-02 16:30:08', color: '#f6d365', cover: 'https://picsum.photos/seed/netshort04/300/400', type: '豪门 · 情感',
+    uploadAccountName: '梦工厂传媒', uploadAccountId: '1004', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-09-07 10:00:00',
+    desc: '阴差阳错嫁入豪门，她与冷面总裁的契约婚姻，最终假戏真做。',
+    srcLang: '简体中文', authStart: '2026-09-02', authEnd: '2027-09-01', onlineTime: '2026-09-20',
+    suggestedPay: 10,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '按照约定时间上线', iaaOnlineTime: '2026-10-01',
+    authType: '独家',
+    socialMediaDesc: '豪门虐恋，反转不断',
+    friendInfo: '',
+    authRegion: '中国大陆',
+    matPanLink: 'https://pan.baidu.com/s/cd34ef', matPanCode: 'efgh', attachments: ['宣传物料.zip'],
+    rejectReason: '封面存在低俗暗示，请更换后重新提交',
+    episodes: makeEpisodes('cuojia', 36)
+  },
+  {
+    id: '1000000005', name: '甜妻驾到', alias: '甜妻驾到之宠爱', episodeCount: 30, status: 'approved',
+    uploadTime: '2026-08-10 11:05:47', color: '#fecfef', cover: 'https://picsum.photos/seed/netshort05/300/400', type: '甜宠 · 轻松',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '李悦', reviewTime: '2026-09-06 15:30:00',
+    desc: '元气少女甜妻驾到，与霸道总裁的甜蜜日常，甜度爆表。',
+    srcLang: '简体中文', authStart: '2026-08-10', authEnd: '2027-08-09', onlineTime: '2026-08-15',
+    suggestedPay: 6,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '甜宠先婚后爱，日久生情',
+    friendInfo: '杭州光影映画传媒有限公司',
+    authRegion: '港澳台',
+    matPanLink: '', matPanCode: '', attachments: ['剧照.zip', '主视觉.png'],
+    episodes: makeEpisodes('tianqi', 30)
+  },
+  {
+    id: '1000000006', name: '京都旧事', alias: '京都旧事之浮沉', episodeCount: 20, status: 'approved',
+    uploadTime: '2026-08-01 15:12:33', color: '#cfd9df', cover: 'https://picsum.photos/seed/netshort06/300/400', type: '民国 · 剧情',
+    uploadAccountName: '梦工厂传媒', uploadAccountId: '1004', certType: 'company',
+    reviewer: '王浩', reviewTime: '2026-08-01 16:00:00',
+    desc: '民国京都，一段被时代裹挟的爱恨情仇。',
+    srcLang: '英语', authStart: '2026-08-01', authEnd: '2027-07-31', onlineTime: '2026-08-05',
+    suggestedPay: 5,
+    equity: ['IAA'], channel: ['官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '民国谍战，家国情怀',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('jingdu', 20)
+  },
+  {
+    id: '1000000007', name: '重生之豪门千金', alias: '重生之豪门千金归来', episodeCount: 48, status: 'approved',
+    uploadTime: '2026-07-28 09:12:40', color: '#fbc2eb', cover: 'https://picsum.photos/seed/netshort07/300/400', type: '豪门 · 逆袭',
+    uploadAccountName: '新锐工作室', uploadAccountId: '1002', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-07-28 10:00:00',
+    desc: '重生归来，昔日千金誓要夺回属于自己的一切。',
+    srcLang: '简体中文', authStart: '2026-07-28', authEnd: '2027-07-27', onlineTime: '',
+    suggestedPay: 15,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '重生复仇，爽感拉满',
+    friendInfo: '杭州梦工厂传媒有限公司',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: [],
+    episodes: makeEpisodes('chongsheng2', 48)
+  },
+  {
+    id: '1000000008', name: '逆天战神', alias: '逆天战神之王者归来', episodeCount: 60, status: 'cooperating',
+    uploadTime: '2026-07-15 20:44:11', color: '#96fbc4', cover: 'https://picsum.photos/seed/netshort08/300/400', type: '都市 · 逆袭',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '王浩', reviewTime: '2026-08-20 09:00:00',
+    desc: '一代战神隐姓埋名，为守护所爱之人再度出山。',
+    srcLang: '英语', authStart: '2026-07-15', authEnd: '2027-07-14', onlineTime: '2026-07-20',
+    suggestedPay: 20,
+    equity: ['IAA', 'IAP'], channel: ['小程序', '官网'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '战神归来，热血逆袭',
+    friendInfo: '',
+    authRegion: '东南亚',
+    matPanLink: 'https://pan.baidu.com/s/gh56ij', matPanCode: 'ijkl', attachments: [],
+    episodes: makeEpisodes('zhanshen', 60)
+  },
+  {
+    id: '1000000009', name: '闪婚老公是首富', alias: '闪婚老公是首富之宠爱', episodeCount: 26, status: 'reviewing',
+    reviewStage: 'unclaimed', withdrawConflict: true, // C 端状态未刷新，实际 B 端已领取 → 撤回失败
+    uploadTime: '2026-07-08 12:30:55', color: '#fbc2eb', cover: 'https://picsum.photos/seed/netshort09/300/400', type: '都市 · 甜宠',
+    uploadAccountName: '光影工场', uploadAccountId: '1001', certType: 'company',
+    reviewer: '', reviewTime: '',
+    desc: '闪婚对象竟是隐藏首富，甜蜜爱情与豪门生活同步开启。',
+    srcLang: '简体中文', authStart: '2026-07-08', authEnd: '2027-07-07', onlineTime: '2026-07-12',
+    suggestedPay: 8,
+    equity: ['IAP'], channel: ['官网', '小程序付费'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '非独家',
+    socialMediaDesc: '闪婚总裁，甜宠日常',
+    friendInfo: '杭州追光文化传媒有限公司',
+    authRegion: '中国大陆',
+    matPanLink: '', matPanCode: '', attachments: ['主视觉.png'],
+    matDesc: '主视觉已单独上传，其余物料待补充，请审核主视觉是否符合分发要求。',
+    episodes: makeEpisodes('shoufu', 26)
+  },
+  {
+    id: '1000000010', name: '都市之最强医仙', alias: '都市之最强医仙', episodeCount: 54, status: 'stopped',
+    uploadTime: '2026-06-30 18:20:09', color: '#a1c4fd', cover: 'https://picsum.photos/seed/netshort10/300/400', type: '都市 · 玄幻',
+    uploadAccountName: '星辰短剧', uploadAccountId: '1005', certType: 'company',
+    reviewer: '陈晨', reviewTime: '2026-07-15 14:00:00',
+    desc: '医仙下山，悬壶济世，都市之中续写传奇。',
+    srcLang: '英语', authStart: '2026-06-30', authEnd: '2027-06-29', onlineTime: '2026-07-05',
+    suggestedPay: 18,
+    equity: ['IAA'], channel: ['小程序'],
+    iaaLimitType: '不限制', iaaOnlineTime: '',
+    authType: '独家',
+    socialMediaDesc: '都市职场，逆风翻盘',
+    friendInfo: '',
+    authRegion: '全球',
+    matPanLink: '', matPanCode: '', attachments: [],
+    stopReason: '内容存在版权争议，经核实后终止合作',
+    episodes: makeEpisodes('yixian', 54)
+  }
+];
+
+// 关联剧本（一对一）演示数据：剧本名称 / 剧本编号(B开头+纯数字) / 系统编号(19位纯数字)
+var DEMO_SCRIPTS = {
+  '1000000011': { name: '错爱成婚', no: 'B001', sysNo: '2026091100000000001' },
+  '1000000001': { name: '闪婚总裁夫人', no: 'B002', sysNo: '2026090600000000002' },
+  '1000000002': { name: '重生九零', no: 'B003', sysNo: '2026090500000000003' },
+  '1000000003': { name: '逆袭人生', no: 'B004', sysNo: '2026090300000000004' },
+  '1000000004': { name: '错嫁豪门', no: 'B005', sysNo: '2026090200000000005' },
+  '1000000005': { name: '甜妻驾到', no: 'B006', sysNo: '2026081000000000006' },
+  '1000000006': { name: '京都旧事', no: 'B007', sysNo: '2026080100000000007' },
+  '1000000007': { name: '重生之豪门千金', no: 'B008', sysNo: '2026072800000000008' },
+  '1000000008': { name: '逆天战神', no: 'B009', sysNo: '2026071500000000009' },
+  '1000000009': { name: '闪婚老公是首富', no: 'B010', sysNo: '2026070800000000010' },
+  '1000000010': { name: '都市之最强医仙', no: 'B011', sysNo: '2026063000000000011' }
+};
+
+// 上架时间（精确到秒，仅已上架/已下架有值）
+var DEMO_SHELF_TIME = {
+  '1000000008': '2026-08-25 10:00:00',
+  '1000000010': '2026-07-20 09:30:00'
+};
+
+// 后处理：为短剧注入关联剧本字段 + 上架时间
+DEMO_WORKS.forEach(function (w) {
+  var sc = DEMO_SCRIPTS[w.id];
+  w.scriptName = sc ? sc.name : '';
+  w.scriptNo = sc ? sc.no : '';
+  w.scriptSysNo = sc ? sc.sysNo : '';
+  w.shelfTime = DEMO_SHELF_TIME[w.id] || '';
+});
+
+// 收益演示（按短剧 × 月份）
+var DEMO_EARNINGS = [
+  { work: '甜妻驾到', month: '2026-08', cost: 120000, rate: '30%', amount: 36000, status: '已结算' },
+  { work: '甜妻驾到', month: '2026-09', cost: 65000,  rate: '30%', amount: 19500, status: '待结算' },
+  { work: '错嫁豪门', month: '2026-09', cost: 0,      rate: '30%', amount: 0,     status: '待结算' },
+];
+
+// 结算单演示
+var DEMO_SETTLEMENTS = [
+  { no: 'JS202608-001', month: '2026-08', works: 1, amount: 36000, status: '已通过', op: '下载' },
+  { no: 'JS202609-001', month: '2026-09', works: 1, amount: 19500, status: '可申请', op: '申请' },
+];
+
+// ---------- 合同演示数据（C 端 / B 端共享） ----------
+// status: fill 填写信息 | generating 合同生成 | refill 合同信息重填 | pending 待签署 | done 已签署
+// reviewStage（仅 generating 有意义）: unclaimed 待领取 | claimed 审核中
+var DEMO_CONTRACTS = [
+  {
+    no: 'HT202609-001', name: '版权开放平台授权入驻合同', type: 'settle', status: 'done',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-08-30 10:15:00', signTime: '2026-09-01 10:22:18',
+    reviewer: '陈晨', reviewStage: '', reviewTime: '2026-08-30 14:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '企业地址', value: '杭州市西湖区文三路100号' },
+      { label: '签约人姓名', value: '王小明' },
+      { label: '手机号', value: '13812346688' },
+      { label: '邮箱', value: 'guangying@163.com' }
+    ],
+    terms: [
+      { label: '合作期限', value: '1 年' },
+      { label: '授权范围', value: '短剧内容信息网络传播权' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '30%' }
+    ],
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-002', name: '分成比例确认合同', type: 'split', status: 'generating',
+    accountName: '新锐工作室', accountId: '1002',
+    generateTime: '2026-09-11 09:00:00', signTime: '',
+    reviewer: '', reviewStage: 'unclaimed', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业名称', value: '杭州新锐文化传播有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA8YYYYYY' },
+      { label: '企业地址', value: '杭州市余杭区文一西路969号' },
+      { label: '签约人姓名', value: '李华' },
+      { label: '手机号', value: '15912342211' },
+      { label: '邮箱', value: 'xinrui@qq.com' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '重生九零' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '30%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-003', name: '补充协议-授权范围变更', type: 'supp', status: 'generating',
+    accountName: '追光者', accountId: '1003',
+    generateTime: '2026-09-11 16:20:00', signTime: '',
+    reviewer: '陈晨', reviewStage: 'claimed', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业名称', value: '杭州追光文化传媒有限公司' },
+      { label: '统一社会信用代码', value: '—' },
+      { label: '企业地址', value: '杭州市拱墅区莫干山路100号' },
+      { label: '签约人姓名', value: '王小明' },
+      { label: '对接人手机号', value: '13712343355' },
+      { label: '邮箱', value: 'zhuiguang@126.com' }
+    ],
+    terms: [
+      { label: '原合同编号', value: 'HT202608-002' },
+      { label: '补充事项', value: '授权渠道由官网扩展至小程序免费、小程序付费' },
+      { label: '生效日期', value: '2026-10-01' }
+    ],
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-004', name: '分成比例确认合同', type: 'split', status: 'fill',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '', signTime: '',
+    reviewer: '', reviewStage: '', reviewTime: '',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业名称', value: '' },
+      { label: '统一社会信用代码', value: '' },
+      { label: '企业地址', value: '' },
+      { label: '签约人姓名', value: '' },
+      { label: '手机号', value: '' },
+      { label: '邮箱', value: '' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '甜妻驾到' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '5%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-005', name: '分成比例确认合同', type: 'split', status: 'refill',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-09-05 11:30:00', signTime: '',
+    reviewer: '李悦', reviewStage: '', reviewTime: '2026-09-06 10:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '企业地址', value: '杭州市西湖区文三路100号' },
+      { label: '签约人姓名', value: '王小明' },
+      { label: '手机号', value: '13812346688' },
+      { label: '邮箱', value: 'guangying@163.com' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '甜妻驾到' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '5%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    refillReason: '乙方统一社会信用代码与营业执照主体不一致，请核对后重新提交'
+  },
+  {
+    no: 'HT202609-006', name: '补充协议-分成比例调整', type: 'supp', status: 'done',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-09-01 09:00:00', signTime: '2026-09-07 10:05:58',
+    reviewer: '陈晨', reviewStage: '', reviewTime: '2026-09-01 15:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '企业地址', value: '杭州市西湖区文三路100号' },
+      { label: '签约人姓名', value: '王小明' },
+      { label: '手机号', value: '13812346688' },
+      { label: '邮箱', value: 'guangying@163.com' }
+    ],
+    terms: [
+      { label: '原合同编号', value: 'HT202606-004' },
+      { label: '补充事项', value: '分成比例由 30% 调整为 35%' },
+      { label: '生效日期', value: '2026-09-15' }
+    ],
+    refillReason: ''
+  },
+  {
+    no: 'HT202609-007', name: '分成比例确认合同', type: 'split', status: 'pending',
+    accountName: '光影工场', accountId: '1001',
+    generateTime: '2026-09-10 14:00:00', signTime: '',
+    reviewer: '王浩', reviewStage: '', reviewTime: '2026-09-10 16:00:00',
+    partyA: [
+      { label: '平台名称', value: '杭州织光映画科技有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2AAAAAA' },
+      { label: '平台地址', value: '杭州市滨江区网商路599号' }
+    ],
+    partyB: [
+      { label: '企业名称', value: '杭州光影映画文化传媒有限公司' },
+      { label: '统一社会信用代码', value: '91330100MA2BBBBBB' },
+      { label: '企业地址', value: '杭州市西湖区文三路100号' },
+      { label: '签约人姓名', value: '王小明' },
+      { label: '手机号', value: '13812346688' },
+      { label: '邮箱', value: 'guangying@163.com' }
+    ],
+    terms: [
+      { label: '关联短剧', value: '逆天战神' },
+      { label: '分成方式', value: '按消耗分成' },
+      { label: '分成比例', value: '3%' },
+      { label: '结算周期', value: '按月结算' }
+    ],
+    refillReason: ''
+  }
+];
+
+// 合同类型映射（已删「短剧授权合同」）
+var CONTRACT_TYPE = {
+  settle: { label: '授权入驻合同' },
+  split:  { label: '分成合同' },
+  supp:   { label: '补充协议' }
+};
+function typeLabel(key) {
+  var c = CONTRACT_TYPE[key] || { label: key };
+  return t(c.label);
+}
+
+// 合同状态映射（5 态）
+// 注意：generating 对外展示为「审核中」，refill 对外展示为「审核驳回」
+var CONTRACT_STATUS = {
+  fill:       { label: '填写信息', cls: 'tag-gray' },
+  generating: { label: '审核中',   cls: 'tag-blue' },
+  refill:     { label: '审核驳回', cls: 'tag-pink' },
+  pending:    { label: '待签署',   cls: 'tag-orange' },
+  done:       { label: '已签署',   cls: 'tag-green' }
+};
+function contractStatusTag(key) {
+  var s = CONTRACT_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + t(s.label) + '</span>';
+}
+
+// ============================================================
+// 通用时间范围选择器（精确到秒 / 精确到日），C 端、B 端共用
+// 用法：var p = createRangePicker('wrapId', { dateOnly:false });
+//   p.get() 返回 {start,end}；p.reset() 清空
+// ============================================================
+function dateStr(d) {
+  function p(n) { return (n < 10 ? '0' : '') + n; }
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
+var RP_PRESETS = [
+  { label: '今日', get: function () { var d = new Date(); return [dateStr(d), dateStr(d)]; } },
+  { label: '昨日', get: function () { var d = new Date(); d.setDate(d.getDate() - 1); return [dateStr(d), dateStr(d)]; } },
+  { label: '本周', get: function () { var s = new Date(); s.setDate(s.getDate() - s.getDay()); var e = new Date(s); e.setDate(e.getDate() + 6); return [dateStr(s), dateStr(e)]; } },
+  { label: '本月', get: function () { var s = new Date(); s.setDate(1); var e = new Date(s.getFullYear(), s.getMonth() + 1, 0); return [dateStr(s), dateStr(e)]; } },
+  { label: '今年', get: function () { var s = new Date(); s.setMonth(0, 1); var e = new Date(s.getFullYear(), 11, 31); return [dateStr(s), dateStr(e)]; } }
+];
+
+var _rpRegistry = {};
+
+function createRangePicker(wrapId, opts) {
+  opts = opts || {};
+  var dateOnly = !!opts.dateOnly;
+  var self = {
+    wrapId: wrapId, dateOnly: dateOnly,
+    start: null, end: null, focusCal: 'start',
+    calStartDate: new Date(), calEndDate: new Date()
+  };
+  _rpRegistry[wrapId] = self;
+
+  self.render = function () {
+    var ph = dateOnly ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss';
+    document.getElementById(wrapId).innerHTML =
+      '<div class="rp-box" id="' + wrapId + 'Box" onclick="rpToggle(\'' + wrapId + '\',event)">' +
+        '<span class="rp-val ph" id="' + wrapId + 'StartVal">' + t('开始时间') + '</span>' +
+        '<span class="rp-sep">→</span>' +
+        '<span class="rp-val ph" id="' + wrapId + 'EndVal">' + t('结束时间') + '</span>' +
+      '</div>' +
+      '<div class="rp-panel" id="' + wrapId + 'Panel">' +
+        '<div class="rp-presets" id="' + wrapId + 'Presets"></div>' +
+        '<div class="rp-main">' +
+          '<div class="rp-inputs">' +
+            '<input type="text" id="' + wrapId + 'StartInput" placeholder="' + ph + '" readonly onclick="rpFocus(\'' + wrapId + '\',\'start\')">' +
+            '<input type="text" id="' + wrapId + 'EndInput" placeholder="' + ph + '" readonly onclick="rpFocus(\'' + wrapId + '\',\'end\')">' +
+          '</div>' +
+          '<div class="rp-cal-wrap">' +
+            '<div class="rp-cal" id="' + wrapId + 'CalStart"></div>' +
+            '<div class="rp-cal" id="' + wrapId + 'CalEnd"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    self.renderPresets();
+    self.renderCals();
+    self.sync();
+  };
+
+  self.renderPresets = function () {
+    var html = RP_PRESETS.map(function (p, i) {
+      return '<div class="rp-preset" onclick="rpApplyPreset(\'' + wrapId + '\',' + i + ')">' + t(p.label) + '</div>';
+    }).join('');
+    document.getElementById(wrapId + 'Presets').innerHTML = html;
+  };
+
+  self.applyPreset = function (i) {
+    var r = RP_PRESETS[i].get();
+    self.start = dateOnly ? r[0] : r[0] + ' 00:00:00';
+    self.end = dateOnly ? r[1] : r[1] + ' 23:59:59';
+    self.sync();
+  };
+
+  self.togglePanel = function (e) {
+    if (e) e.stopPropagation();
+    var panel = document.getElementById(wrapId + 'Panel');
+    var box = document.getElementById(wrapId + 'Box');
+    var open = panel.classList.contains('show');
+    panel.classList.toggle('show', !open);
+    box.classList.toggle('open', !open);
+    if (!open) self.renderCals();
+  };
+
+  self.sync = function () {
+    document.getElementById(wrapId + 'StartInput').value = self.start || '';
+    document.getElementById(wrapId + 'EndInput').value = self.end || '';
+    var sv = document.getElementById(wrapId + 'StartVal');
+    var ev = document.getElementById(wrapId + 'EndVal');
+    if (self.start) { sv.textContent = self.start; sv.classList.remove('ph'); } else { sv.textContent = t('开始时间'); sv.classList.add('ph'); }
+    if (self.end) { ev.textContent = self.end; ev.classList.remove('ph'); } else { ev.textContent = t('结束时间'); ev.classList.add('ph'); }
+    self.renderCals();
+  };
+
+  self.renderCal = function (containerId, viewDate) {
+    var y = viewDate.getFullYear(), m = viewDate.getMonth();
+    var first = new Date(y, m, 1);
+    var startDay = first.getDay();
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var daysInPrev = new Date(y, m, 0).getDate();
+    var cells = [];
+    for (var i = 0; i < 42; i++) {
+      var dnum, cls = 'rp-day', dayObj;
+      if (i < startDay) {
+        dnum = daysInPrev - startDay + 1 + i; cls += ' other';
+        dayObj = new Date(y, m - 1, dnum);
+      } else if (i >= startDay + daysInMonth) {
+        dnum = i - startDay - daysInMonth + 1; cls += ' other';
+        dayObj = new Date(y, m + 1, dnum);
+      } else {
+        dnum = i - startDay + 1;
+        dayObj = new Date(y, m, dnum);
+      }
+      var ds = dateStr(dayObj);
+      if (self.start && ds === self.start.slice(0, 10)) cls += ' start';
+      if (self.end && ds === self.end.slice(0, 10)) cls += ' end';
+      if (self.start && self.end) {
+        var sd = self.start.slice(0, 10), ed = self.end.slice(0, 10);
+        if (ds > sd && ds < ed) cls += ' in-range';
+      }
+      cells.push('<div class="' + cls + '" onclick="rpPickDay(\'' + wrapId + '\',\'' + ds + '\')">' + dnum + '</div>');
+    }
+    var weekArr = isEnglish() ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['日','一','二','三','四','五','六'];
+    var weekHtml = weekArr.map(function (w) { return '<div>' + w + '</div>'; }).join('');
+    var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var calTitle = isEnglish() ? (monthNames[m] + ' ' + y) : (y + ' 年 ' + (m + 1) + ' 月');
+    document.getElementById(containerId).innerHTML =
+      '<div class="rp-cal-head"><div class="rp-cal-title">' + calTitle + '</div>' +
+      '<div class="rp-nav"><button onclick="rpNavCal(\'' + wrapId + '\',\'' + containerId + '\',-1,event)">‹</button><button onclick="rpNavCal(\'' + wrapId + '\',\'' + containerId + '\',1,event)">›</button></div></div>' +
+      '<div class="rp-week">' + weekHtml + '</div>' +
+      '<div class="rp-grid">' + cells.join('') + '</div>';
+  };
+
+  self.renderCals = function () {
+    self.renderCal(wrapId + 'CalStart', self.calStartDate);
+    self.renderCal(wrapId + 'CalEnd', self.calEndDate);
+  };
+
+  self.navCal = function (cid, delta) {
+    if (cid === wrapId + 'CalStart') self.calStartDate.setMonth(self.calStartDate.getMonth() + delta);
+    else self.calEndDate.setMonth(self.calEndDate.getMonth() + delta);
+    self.renderCals();
+  };
+
+  self.pickDay = function (ds) {
+    if (self.focusCal === 'start') {
+      self.start = dateOnly ? ds : ds + ' 00:00:00';
+      self.focusCal = 'end';
+    } else {
+      self.end = dateOnly ? ds : ds + ' 23:59:59';
+      self.focusCal = 'start';
+    }
+    if (self.start && self.end && self.start > self.end) {
+      var t2 = self.start; self.start = self.end; self.end = t2;
+    }
+    self.sync();
+  };
+
+  self.reset = function () { self.start = null; self.end = null; self.sync(); };
+  self.get = function () { return { start: self.start, end: self.end }; };
+
+  self.render();
+  return self;
+}
+
+// 内联 onclick 全局分发
+function rpToggle(id, e) { _rpRegistry[id].togglePanel(e); }
+function rpFocus(id, which) { _rpRegistry[id].focusCal = which; }
+function rpApplyPreset(id, i) { _rpRegistry[id].applyPreset(i); }
+function rpNavCal(id, cid, delta, e) { e.stopPropagation(); _rpRegistry[id].navCal(cid, delta); }
+function rpPickDay(id, ds) { _rpRegistry[id].pickDay(ds); }
+
+// ---------- 图标（内联 SVG symbol） ----------
+var ICONS = {
+  workbench: '<svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  works: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 3 14.5v-9Z" stroke="currentColor" stroke-width="1.5"/><path d="m7 12 2.5-2.5L12 12l1.5-1.5L15 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  contract: '<svg viewBox="0 0 20 20" fill="none"><path d="M6 3h6l3 3v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v3h3M8 10h4M8 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  earnings: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 15V8a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 15V4a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v11" stroke="currentColor" stroke-width="1.5"/><path d="M13 15v-5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  settlement: '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  bell: '<svg viewBox="0 0 20 20" fill="none"><path d="M16 13.5V9a6 6 0 1 0-12 0v4.5L2.5 15h15L16 13.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 17a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  down: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cert: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5 11.8 4l2.3-.4 1 2.1 2.2.7-.5 2.2 1.2 2-1.8 1.5.1 2.4-2.4.4-1.2 2.1-2.2-.9L10 17.5l-1.8.6-1.2-2.1-2.4-.4.1-2.4L2.9 11l1.2-2-.5-2.2 2.2-.7 1-2.1L9.1 4 10 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m7.5 10 1.7 1.7 3.3-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  user: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  arrowRight: '<svg viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 10 3.5 3.5L15 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  info: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  warn: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  plus: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  upload: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 13V4m0 0L6 8m4-4 4 4M4 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  film: '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 3v14M13 3v14M3 7h4M3 13h4M13 7h4M13 13h4" stroke="currentColor" stroke-width="1.2"/></svg>'
+};
+
+function icon(name) { return ICONS[name] || ''; }
+
+// ---------- 通用侧边栏 + 顶栏渲染（供各页面复用） ----------
+function renderTopbar(opts) {
+  opts = opts || {};
+  var userName = opts.userName || '光影工场';
+  var avatar = opts.avatar || '光';
+  var unread = opts.unread || 0;
+  var dot = unread > 0 ? '<span class="dot"></span>' : '';
+  return '' +
+  '<div class="topbar">' +
+    '<div class="topbar-inner">' +
+      '<div class="topbar-left">' +
+        '<a href="workbench.html" class="row" style="gap:12px">' +
+          '<div class="topbar-logo">' + t('短') + '</div>' +
+          '<span class="topbar-title">' + t('版权开放平台') + '</span>' +
+        '</a>' +
+        '<div class="topbar-divider"></div>' +
+        '<span class="topbar-sub">' + t('内容合作方') + '</span>' +
+      '</div>' +
+      '<div class="topbar-right">' +
+        '<div class="topbar-icon">' + icon('bell') + dot + '</div>' +
+        '<div class="topbar-user" onclick="toggleUserMenu()">' +
+          '<div class="topbar-avatar">' + avatar + '</div>' +
+          '<span class="topbar-name">' + userName + '</span>' +
+          '<span class="topbar-caret">' + icon('down') + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div id="userMenu" class="user-menu" style="display:none">' +
+    '<a href="profile.html">' + t('个人中心') + '</a>' +
+    '<span class="logout-link" onclick="if(confirm(\'' + t('确认退出登录？') + '\')) location.href=\'login.html\'">' + t('退出登录') + '</span>' +
+  '</div>';
+}
+
+function renderSidebar(active) {
+  var items = [
+    { key: 'workbench', label: t('工作台'), href: 'workbench.html' },
+    { key: 'works',     label: t('作品管理'), sub: [{ key: 'works', label: t('成品剧'), href: 'works.html' }] },
+    { key: 'contract',  label: t('合同管理'), href: 'contracts.html' },
+    { key: 'earnings',  label: t('收益管理'), sub: [
+        { key: 'earnings',   label: t('收益明细'), href: 'earnings.html' },
+        { key: 'settlement', label: t('结算单'),   href: 'settlement.html' }
+      ] }
+  ];
+  var html = '<div class="sidebar">';
+  items.forEach(function (it) {
+    // 判断该目录是否包含当前 active 的子项
+    var childActiveKey = null;
+    if (it.sub) {
+      it.sub.forEach(function (s) { if (s.key === active) childActiveKey = s.key; });
+    }
+    var isGroup = !!it.sub && it.sub.length;
+    var isGroupOpen = childActiveKey !== null;
+
+    if (isGroup) {
+      // 目录：点击展开/收起，不跳转
+      html += '<div class="sidebar-group' + (isGroupOpen ? ' open' : '') + '">' +
+        '<div class="sidebar-item' + (childActiveKey !== null ? ' active' : '') + '" onclick="toggleSidebarGroup(this)">' +
+          icon(it.key) + '<span>' + it.label + '</span>' +
+          '<span class="arrow">' + icon('down') + '</span>' +
+        '</div>' +
+        '<div class="sidebar-sub">' + it.sub.map(function (s) {
+          if (s.onclick) {
+            return '<span class="sidebar-item' + (s.key === active ? ' active' : '') + '" onclick="' + s.onclick + '">' + s.label + '</span>';
+          }
+          return '<a class="sidebar-item' + (s.key === active ? ' active' : '') + '" href="' + s.href + '">' + s.label + '</a>';
+        }).join('') + '</div>' +
+      '</div>';
+    } else {
+      html += '<a class="sidebar-item' + (it.key === active ? ' active' : '') + '" href="' + it.href + '">' +
+        icon(it.key) + '<span>' + it.label + '</span>' +
+      '</a>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+// 点击目录展开/收起子菜单
+function toggleSidebarGroup(el) {
+  var group = el.parentElement;
+  group.classList.toggle('open');
+}
+
+function toggleUserMenu() {
+  var m = document.getElementById('userMenu');
+  if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function (e) {
+  var m = document.getElementById('userMenu');
+  if (m && !e.target.closest('.topbar-user') && !e.target.closest('.user-menu')) {
+    m.style.display = 'none';
+  }
+});
+</script>
+<script>/* ============================================================
+   版权开放平台 · B端公共脚本 admin/assets/common.js
+   覆盖 renderTopbar / renderSidebar 为运营后台视角
+   复用 cp/assets/common.js 的 showToast/openModal/closeModal/statusTag 等
+   ============================================================ */
+
+// ---------- B端顶部栏（运营后台） ----------
+function renderTopbar(opts) {
+  opts = opts || {};
+  var userName = opts.userName || '运营管理员';
+  var avatar = opts.avatar || '运';
+  return '' +
+  '<div class="topbar">' +
+    '<div class="topbar-inner">' +
+      '<div class="topbar-left">' +
+        '<a href="javascript:void(0)" class="row" style="gap:12px">' +
+          '<div class="topbar-logo">短</div>' +
+          '<span class="topbar-title">版权开放平台</span>' +
+        '</a>' +
+        '<div class="topbar-divider"></div>' +
+        '<span class="topbar-sub">运营后台</span>' +
+        '<a class="topbar-switch" href="../workbench.html">内容合作方</a>' +
+      '</div>' +
+      '<div class="topbar-right">' +
+        '<div class="topbar-user">' +
+          '<div class="topbar-avatar">' + avatar + '</div>' +
+          '<span class="topbar-name">' + userName + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// ---------- B端侧栏（二级菜单：账号/合同/作品管理各含「审核」「全部」子页） ----------
+function renderSidebar(active) {
+  var items = [
+    { key: 'accounts', label: '主体认证', href: 'accounts.html' },
+    { key: 'contracts', label: '合同列表', href: 'contracts.html' },
+    { key: 'works', label: '作品列表', href: 'works.html' },
+    { key: 'settlement', label: '结算管理', href: 'settlement.html' },
+    { key: 'config', label: '系统配置', sub: [
+        { key: 'personnel', label: '人员配置', href: 'personnel.html' }
+      ] }
+  ];
+  var html = '<div class="sidebar">';
+  items.forEach(function (it) {
+    var childActiveKey = null;
+    if (it.sub) {
+      it.sub.forEach(function (s) { if (s.key === active) childActiveKey = s.key; });
+    }
+    var isGroup = !!it.sub && it.sub.length;
+    var isGroupOpen = childActiveKey !== null;
+
+    if (isGroup) {
+      html += '<div class="sidebar-group' + (isGroupOpen ? ' open' : '') + '">' +
+        '<div class="sidebar-item' + (childActiveKey !== null ? ' active' : '') + '" onclick="toggleSidebarGroup(this)">' +
+          icon(it.key) + '<span>' + it.label + '</span>' +
+          '<span class="arrow">' + icon('down') + '</span>' +
+        '</div>' +
+        '<div class="sidebar-sub">' + it.sub.map(function (s) {
+          if (s.onclick) {
+            return '<span class="sidebar-item' + (s.key === active ? ' active' : '') + '" onclick="' + s.onclick + '">' + s.label + '</span>';
+          }
+          return '<a class="sidebar-item' + (s.key === active ? ' active' : '') + '" href="' + s.href + '">' + s.label + '</a>';
+        }).join('') + '</div>' +
+      '</div>';
+    } else {
+      html += '<a class="sidebar-item' + (it.key === active ? ' active' : '') + '" href="' + it.href + '">' +
+        icon(it.key) + '<span>' + it.label + '</span>' +
+      '</a>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+// 复用 cp 的 icon 函数（若已加载 common.js 则存在；兜底）
+if (typeof icon !== 'function') {
+  function icon(name) { return ''; }
+}
+
+// 追加 B 端缺失的图标（cp 的 ICONS 里没有 accounts/contracts/config/personnel）
+if (typeof ICONS !== 'undefined') {
+  ICONS.accounts = '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 8.5h4M15 6.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+  ICONS.contracts = '<svg viewBox="0 0 20 20" fill="none"><path d="M6 3h6l3 3v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v3h3M8 10h4M8 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  ICONS.config = '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 3.5v2M10 14.5v2M3.5 10h2M14.5 10h2M5.4 5.4l1.4 1.4M13.2 13.2l1.4 1.4M14.6 5.4l-1.4 1.4M6.8 13.2l-1.4 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  ICONS.personnel = '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+}
+
+// ============================================================
+// B端认证管理演示数据
+// ============================================================
+
+// 主体认证状态：pending 待审核 | certed 已认证 | rejected 审核驳回
+var CERT_STATUS = {
+  pending:  { label: '待审核',   cls: 'tag-orange' },
+  certed:   { label: '已认证',   cls: 'tag-green' },
+  rejected: { label: '审核驳回', cls: 'tag-pink' }
+};
+
+function certStatusTag(key) {
+  var s = CERT_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + s.label + '</span>';
+}
+
+// 账号状态：enabled 启用 | disabled 停用
+var ACCOUNT_STATUS = {
+  enabled:  { label: '启用', cls: 'tag-green' },
+  disabled: { label: '停用', cls: 'tag-dark' }
+};
+
+function accountStatusTag(key) {
+  var s = ACCOUNT_STATUS[key] || { label: key, cls: 'tag-gray' };
+  return '<span class="tag ' + s.cls + '">' + s.label + '</span>';
+}
+
+// 认证类型：personal 个人 | company 企业
+var CERT_TYPE = {
+  personal: '个人',
+  company: '企业'
+};
+
+// ========== 认证类型枚举（2026-09-21 起：仅境内个人/境内企业，两级） ==========
+// certType(personal|company) -> 两级 label
+var CERT_TYPE_OPTIONS = [
+  { key: 'personal-mainland', label: '个人' },
+  { key: 'company-domestic',  label: '企业' }
+];
+function certTypeKey(certType, certSub) {
+  if (certType === 'personal') return 'personal-mainland';
+  if (certType === 'company') return 'company-domestic';
+  return '';
+}
+function certTypeFullLabel(certType, certSub) {
+  var key = certTypeKey(certType, certSub);
+  var o = CERT_TYPE_OPTIONS.find(function (x) { return x.key === key; });
+  if (o) return o.label;
+  if (certType === 'personal') return '个人';
+  if (certType === 'company') return '企业';
+  return '—';
+}
+function certTypeTag(certType, certSub) {
+  return '<span class="tag tag-blue">' + certTypeFullLabel(certType, certSub) + '</span>';
+}
+
+// 审核人名单（= 商务枚举：主体认证由商务审核）
+var REVIEWERS = ['枥文', '冰雨', '禾呈', '芋头', '泰瑞', '大料'];
+// 商务枚举（与审核人一致）
+var BUSINESS_LIST = REVIEWERS.slice();
+
+// 当前登录商务（作为「使用者」）
+var CURRENT_OPERATOR = '枥文';
+
+// ============================================================
+// 通用组件（B 端三页面复用）
+// ============================================================
+
+// 联想输入单选：acInput(inputId, panelId, hiddenId, options, emptyText)
+// options 为字符串数组；点击选项写入 input 显示值 + hidden 存值
+function acInput(inputId, panelId, hiddenId, options, emptyText) {
+  var input = document.getElementById(inputId);
+  var panel = document.getElementById(panelId);
+  var kw = input.value.trim();
+  var matches = options.filter(function (o) { return o.indexOf(kw) !== -1; });
+
+  if (matches.length === 0) {
+    panel.innerHTML = '<div class="ac-empty">' + (emptyText || '无匹配项') + '</div>';
+  } else {
+    panel.innerHTML = matches.map(function (o) {
+      var idx = o.indexOf(kw);
+      var label = kw ? o.slice(0, idx) + '<span class="hl">' + o.slice(idx, idx + kw.length) + '</span>' + o.slice(idx + kw.length) : o;
+      return '<div class="ac-opt" onclick="acSelect(\'' + inputId + '\',\'' + panelId + '\',\'' + hiddenId + '\',\'' + o + '\')">' + label + '</div>';
+    }).join('');
+  }
+
+  var rect = input.getBoundingClientRect();
+  panel.style.left = rect.left + 'px';
+  panel.style.top = (rect.bottom + 4) + 'px';
+  panel.style.width = rect.width + 'px';
+  panel.classList.add('show');
+}
+function acSelect(inputId, panelId, hiddenId, value) {
+  document.getElementById(inputId).value = value;
+  document.getElementById(hiddenId).value = value;
+  document.getElementById(panelId).classList.remove('show');
+}
+
+// 下拉多选渲染：renderMsMulti(options, selected, contentId, panelId, toggleFn, removeFn, placeholder)
+function renderMsMulti(options, selected, contentId, panelId, toggleFn, removeFn, placeholder) {
+  var c = document.getElementById(contentId);
+  var MAX_TAGS = 2;
+  if (selected.length === 0) {
+    c.innerHTML = '<span class="ms-placeholder">' + (placeholder || '全部') + '</span>';
+  } else {
+    var html = '';
+    var shown = selected.slice(0, MAX_TAGS);
+    shown.forEach(function (k) {
+      var label = labelOfOpt(options, k);
+      html += '<span class="ms-tag">' + label + '<span class="ms-x" onclick="' + removeFn + '(\'' + escQ(k) + '\', event)">×</span></span>';
+    });
+    if (selected.length > MAX_TAGS) html += '<span class="ms-tag more">+ ' + (selected.length - MAX_TAGS) + '</span>';
+    c.innerHTML = html;
+  }
+  var panel = document.getElementById(panelId);
+  panel.innerHTML = options.map(function (s) {
+    var key = s.key !== undefined ? s.key : s;
+    var label = s.label !== undefined ? s.label : s;
+    var checked = selected.indexOf(key) !== -1;
+    return '<div class="ms-opt' + (checked ? ' checked' : '') + '" onclick="' + toggleFn + '(\'' + escQ(key) + '\', event)">' +
+      '<span class="opt-check">✓</span>' + label + '</div>';
+  }).join('');
+}
+function labelOfOpt(options, k) {
+  var o = options.find(function (x) { return (x.key !== undefined ? x.key : x) === k; });
+  if (!o) return k;
+  return o.label !== undefined ? o.label : o;
+}
+function escQ(s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+function toggleMsPanel(panelId, boxId, e) {
+  e.stopPropagation();
+  var panel = document.getElementById(panelId);
+  var box = document.getElementById(boxId);
+  var open = panel.classList.contains('show');
+  panel.classList.toggle('show', !open);
+  box.classList.toggle('open', !open);
+}
+function toggleInArr(arr, k) {
+  var i = arr.indexOf(k);
+  if (i === -1) arr.push(k); else arr.splice(i, 1);
+}
+
+// 可搜索多选：内容区显示 tag，面板含搜索框 + 过滤选项
+// searchMultiRender(contentId, panelId, searchInputId, options, selected, toggleFn, removeFn, placeholder)
+function searchMultiRender(contentId, panelId, searchInputId, options, selected, toggleFn, removeFn, placeholder) {
+  var c = document.getElementById(contentId);
+  var MAX_TAGS = 3;
+  if (selected.length === 0) {
+    c.innerHTML = '<span class="ms-placeholder">' + (placeholder || '请选择') + '</span>';
+  } else {
+    var html = '';
+    var shown = selected.slice(0, MAX_TAGS);
+    shown.forEach(function (k) {
+      html += '<span class="ms-tag">' + labelOfOpt(options, k) + '<span class="ms-x" onclick="' + removeFn + '(\'' + escQ(k) + '\', event)">×</span></span>';
+    });
+    if (selected.length > MAX_TAGS) html += '<span class="ms-tag more">+ ' + (selected.length - MAX_TAGS) + '</span>';
+    c.innerHTML = html;
+  }
+  searchMultiFilter(panelId, searchInputId, options, selected, toggleFn);
+}
+function searchMultiFilter(panelId, searchInputId, options, selected, toggleFn) {
+  var panel = document.getElementById(panelId);
+  var kw = (document.getElementById(searchInputId).value || '').trim().toLowerCase();
+  var list = options.filter(function (o) {
+    var label = (o.label !== undefined ? o.label : o).toLowerCase();
+    var key = String(o.key !== undefined ? o.key : o).toLowerCase();
+    return !kw || label.indexOf(kw) !== -1 || key.indexOf(kw) !== -1;
+  });
+  panel.innerHTML = list.map(function (s) {
+    var key = s.key !== undefined ? s.key : s;
+    var label = s.label !== undefined ? s.label : s;
+    var checked = selected.indexOf(key) !== -1;
+    return '<div class="ms-opt' + (checked ? ' checked' : '') + '" onclick="' + toggleFn + '(\'' + escQ(key) + '\', event)">' +
+      '<span class="opt-check">✓</span>' + label + '</div>';
+  }).join('');
+  if (list.length === 0) panel.innerHTML = '<div class="ac-empty">无匹配项</div>';
+}
+
+// 账号演示数据（账号层：账号级信息；主体见 DEMO_SUBJECTS）
+var DEMO_ACCOUNTS = [
+  { id: '1001', nickname: '光影工场', email: 'guang***@163.com', phone: '138****6688', plainEmail: 'guangying@163.com', plainPhone: '13812346688', status: 'enabled', registerTime: '2026-06-01 09:00:00' },
+  { id: '1002', nickname: '新锐工作室', email: 'xinru***@qq.com', phone: '159****2211', plainEmail: 'xinrui@qq.com', plainPhone: '15912342211', status: 'enabled', registerTime: '2026-08-15 14:00:00' },
+  { id: '1003', nickname: '追光传媒', email: 'zhui***@126.com', phone: '137****3355', plainEmail: 'zhuiguang@126.com', plainPhone: '13712343355', status: 'enabled', registerTime: '2026-07-01 10:00:00' },
+  { id: '1004', nickname: '梦工厂传媒', email: 'meng***@163.com', phone: '186****9988', plainEmail: 'menggongchang@163.com', plainPhone: '18612349988', status: 'disabled', registerTime: '2026-05-20 09:00:00' },
+  { id: '1005', nickname: '星辰短剧', email: 'xing***@gmail.com', phone: '130****7744', plainEmail: 'xingchen@gmail.com', plainPhone: '13012347744', status: 'enabled', registerTime: '2026-09-01 11:00:00' },
+  { id: '1006', nickname: '星河传媒', email: 'xinghe***@163.com', phone: '151****8899', plainEmail: 'xinghe@163.com', plainPhone: '15112348899', status: 'enabled', registerTime: '2026-09-05 10:00:00' },
+  { id: '1007', nickname: '晓雨传媒', email: 'linxy***@163.com', phone: '136****1111', plainEmail: 'linxiaoyu@163.com', plainPhone: '13600001111', status: 'enabled', registerTime: '2026-08-15 09:00:00' },
+  { id: '1008', nickname: '子墨传媒', email: 'zhouzm***@qq.com', phone: '139****2222', plainEmail: 'zhouzimo@qq.com', plainPhone: '13900002222', status: 'enabled', registerTime: '2026-09-10 15:00:00' }
+];
+
+// 主体演示数据（一个账号多个主体，每个主体独立认证 + 独立合同）
+// certStatus: pending 待审核 | certed 已认证 | rejected 审核驳回
+// reviewStage（仅 pending 有意义）: unclaimed 待领取 | claimed 审核中（已领取）
+var DEMO_SUBJECTS = [
+  {
+    subjectId: 'SUB1001-01', accountId: '1001', subjectName: '杭州光影映画文化传媒有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'certed', reviewer: '枥文', reviewStage: '', reviewTime: '2026-06-05 14:00:00', certSubmitTime: '2026-06-05 10:00:00',
+    cert: {
+      domesticCompanyName: '杭州光影映画文化传媒有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', contactAddr: '杭州市西湖区文三路100号',
+      contact: '张伟', contactPhone: '13812346688', contactEmail: 'zhangwei@163.com',
+      bankName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', bankAccount: '6222000088888888',
+      bankEn: 'Industrial and Commercial Bank of China, Hangzhou Branch',
+      companyAddrEn: 'No.100, Wensan Road, Xihu District, Hangzhou, China',
+      bankAddrEn: 'No.1, Qingchun Road, Shangcheng District, Hangzhou, China',
+      swift: 'ICBKCNBJHZP', business: '枥文'
+    },
+    exclusiveRate: '30', nonExclusiveRate: '20'
+  },
+  {
+    subjectId: 'SUB1001-02', accountId: '1001', subjectName: '杭州光影映画网络科技有限公司', subjectType: 'company', isDefault: false,
+    certStatus: 'pending', reviewer: '', reviewStage: 'unclaimed', reviewTime: '', certSubmitTime: '2026-09-13 09:00:00',
+    cert: {
+      domesticCompanyName: '杭州光影映画网络科技有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Guangying Yinghua Network Technology Co., Ltd.', contactAddr: '杭州市西湖区文二路88号',
+      contact: '刘洋', contactPhone: '13512347766', contactEmail: 'liuyang@163.com',
+      bankName: 'Hangzhou Guangying Yinghua Network Technology Co., Ltd.', bankAccount: '6217000077887788',
+      bankEn: 'China Merchants Bank, Hangzhou Branch',
+      companyAddrEn: 'No.88, Wener Road, Xihu District, Hangzhou, China',
+      bankAddrEn: 'No.88, Wener Road, Xihu District, Hangzhou, China',
+      swift: 'CMBCCNBS', business: '冰雨'
+    },
+    exclusiveRate: '', nonExclusiveRate: ''
+  },
+  {
+    subjectId: 'SUB1001-03', accountId: '1001', subjectName: '杭州光影映画内容有限公司', subjectType: 'company', isDefault: false,
+    certStatus: 'certed', reviewer: '禾呈', reviewStage: '', reviewTime: '2026-07-12 15:00:00', certSubmitTime: '2026-07-10 09:00:00',
+    cert: {
+      domesticCompanyName: '杭州光影映画内容有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Guangying Yinghua Content Co., Ltd.', contactAddr: '杭州市西湖区文一路55号',
+      contact: '赵敏', contactPhone: '13612348800', contactEmail: 'zhaomin@163.com',
+      bankName: 'Hangzhou Guangying Yinghua Content Co., Ltd.', bankAccount: '6228000055665566',
+      bankEn: 'China Construction Bank, Hangzhou Branch',
+      companyAddrEn: 'No.55, Wenyi Road, Xihu District, Hangzhou, China',
+      bankAddrEn: 'No.55, Wenyi Road, Xihu District, Hangzhou, China',
+      swift: 'PCBCCNBJ', business: '禾呈'
+    },
+    exclusiveRate: '25', nonExclusiveRate: '15'
+  },
+  {
+    subjectId: 'SUB1002-01', accountId: '1002', subjectName: '杭州新锐文化传播有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'pending', reviewer: '', reviewStage: 'unclaimed', reviewTime: '', certSubmitTime: '2026-09-11 09:30:00',
+    cert: {
+      domesticCompanyName: '杭州新锐文化传播有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Xinrui Culture Communication Co., Ltd.', contactAddr: '杭州市余杭区文一西路969号',
+      contact: '李婷', contactPhone: '15912342211', contactEmail: 'liting@qq.com',
+      bankName: 'Hangzhou Xinrui Culture Communication Co., Ltd.', bankAccount: '6214000022112211',
+      bankEn: 'China Merchants Bank, Hangzhou Branch',
+      companyAddrEn: 'No.969, Wenyi West Road, Yuhang District, Hangzhou, China',
+      bankAddrEn: 'No.969, Wenyi West Road, Yuhang District, Hangzhou, China',
+      swift: 'CMBCCNBS', business: '芋头'
+    },
+    exclusiveRate: '', nonExclusiveRate: ''
+  },
+  {
+    subjectId: 'SUB1003-01', accountId: '1003', subjectName: '杭州追光文化传媒有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'rejected', reviewer: '冰雨', reviewStage: '', reviewTime: '2026-09-10 15:00:00', certSubmitTime: '2026-09-10 09:00:00',
+    rejectReason: '认证信息有误，请重新提交',
+    cert: {
+      domesticCompanyName: '杭州追光文化传媒有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Zhuiguang Culture Media Co., Ltd.', contactAddr: '杭州市拱墅区莫干山路100号',
+      contact: '王小明', contactPhone: '13712343355', contactEmail: 'wangxiaoming@163.com',
+      bankName: 'Hangzhou Zhuiguang Culture Media Co., Ltd.', bankAccount: '6217000000000000',
+      bankEn: 'China Construction Bank, Hangzhou Branch',
+      companyAddrEn: 'No.100, Moganshan Road, Gongshu District, Hangzhou, China',
+      bankAddrEn: 'No.100, Moganshan Road, Gongshu District, Hangzhou, China',
+      swift: 'PCBCCNBJ', business: '冰雨'
+    },
+    exclusiveRate: '', nonExclusiveRate: ''
+  },
+  {
+    subjectId: 'SUB1004-01', accountId: '1004', subjectName: '杭州梦工厂传媒有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'certed', reviewer: '泰瑞', reviewStage: '', reviewTime: '2026-05-25 15:00:00', certSubmitTime: '2026-05-25 10:00:00',
+    cert: {
+      domesticCompanyName: '杭州梦工厂传媒有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Dreamworks Media Co., Ltd.', contactAddr: '杭州市萧山区市心北路100号',
+      contact: '王芳', contactPhone: '18612349988', contactEmail: 'wangfang@163.com',
+      bankName: 'Hangzhou Dreamworks Media Co., Ltd.', bankAccount: '6217000066666666',
+      bankEn: 'Bank of China, Hangzhou Branch',
+      companyAddrEn: 'No.100, Shixin North Road, Xiaoshan District, Hangzhou, China',
+      bankAddrEn: 'No.100, Shixin North Road, Xiaoshan District, Hangzhou, China',
+      swift: 'BKCHCNBJ', business: '泰瑞'
+    },
+    exclusiveRate: '28', nonExclusiveRate: '18'
+  },
+  {
+    subjectId: 'SUB1005-01', accountId: '1005', subjectName: '杭州星辰文化传媒有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'pending', reviewer: '', reviewStage: 'unclaimed', reviewTime: '', certSubmitTime: '2026-09-12 09:00:00',
+    cert: {
+      domesticCompanyName: '杭州星辰文化传媒有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Xingchen Culture Media Co., Ltd.', contactAddr: '杭州市上城区延安路99号',
+      contact: '周明', contactPhone: '13012347744', contactEmail: 'zhouming@gmail.com',
+      bankName: 'Hangzhou Xingchen Culture Media Co., Ltd.', bankAccount: '6222000044554455',
+      bankEn: 'Bank of China, Hangzhou Branch',
+      companyAddrEn: 'No.99, Yanan Road, Shangcheng District, Hangzhou, China',
+      bankAddrEn: 'No.99, Yanan Road, Shangcheng District, Hangzhou, China',
+      swift: 'BKCHCNBJ', business: '大料'
+    },
+    exclusiveRate: '', nonExclusiveRate: ''
+  },
+  {
+    subjectId: 'SUB1006-01', accountId: '1006', subjectName: '杭州星河文化传媒有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'pending', reviewer: '枥文', reviewStage: 'claimed', reviewTime: '', certSubmitTime: '2026-09-12 09:00:00',
+    cert: {
+      domesticCompanyName: '杭州星河文化传媒有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Xinghe Culture Media Co., Ltd.', contactAddr: '杭州市滨江区江陵路88号',
+      contact: '陈强', contactPhone: '15112348899', contactEmail: 'chenqiang@163.com',
+      bankName: 'Hangzhou Xinghe Culture Media Co., Ltd.', bankAccount: '6230000033333333',
+      bankEn: 'China Merchants Bank, Hangzhou Branch',
+      companyAddrEn: 'No.88, Jiangling Road, Binjiang District, Hangzhou, China',
+      bankAddrEn: 'No.88, Jiangling Road, Binjiang District, Hangzhou, China',
+      swift: 'CMBCCNBS', business: '枥文'
+    },
+    exclusiveRate: '', nonExclusiveRate: ''
+  },
+  {
+    subjectId: 'SUB1007-01', accountId: '1007', subjectName: '杭州晓雨文化传媒有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'certed', reviewer: '泰瑞', reviewStage: '', reviewTime: '2026-08-20 10:00:00', certSubmitTime: '2026-08-18 09:00:00',
+    cert: {
+      domesticCompanyName: '杭州晓雨文化传媒有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Xiaoyu Culture Media Co., Ltd.', contactAddr: '杭州市西湖区文二路18号',
+      contact: '林晓雨', contactPhone: '13600001111', contactEmail: 'linxiaoyu@163.com',
+      bankName: 'Hangzhou Xiaoyu Culture Media Co., Ltd.', bankAccount: '6228000011112222',
+      bankEn: 'Agricultural Bank of China, Hangzhou Branch',
+      companyAddrEn: 'No.18, Wener Road, Xihu District, Hangzhou, China',
+      bankAddrEn: 'No.18, Wener Road, Xihu District, Hangzhou, China',
+      swift: 'ABOCCNBJ', business: '泰瑞'
+    },
+    exclusiveRate: '', nonExclusiveRate: ''
+  },
+  {
+    subjectId: 'SUB1008-01', accountId: '1008', subjectName: '杭州子墨文化传媒有限公司', subjectType: 'company', isDefault: true,
+    certStatus: 'pending', reviewer: '', reviewStage: 'unclaimed', reviewTime: '', certSubmitTime: '2026-09-14 10:00:00',
+    cert: {
+      domesticCompanyName: '杭州子墨文化传媒有限公司', bizLicense: '营业执照.jpg',
+      company: 'Hangzhou Zimo Culture Media Co., Ltd.', contactAddr: '杭州市余杭区良渚街道5号',
+      contact: '周子墨', contactPhone: '13900002222', contactEmail: 'zhouzimo@qq.com',
+      bankName: 'Hangzhou Zimo Culture Media Co., Ltd.', bankAccount: '6217000022223333',
+      bankEn: 'China Merchants Bank, Hangzhou Branch',
+      companyAddrEn: 'No.5, Liangzhu Street, Yuhang District, Hangzhou, China',
+      bankAddrEn: 'No.5, Liangzhu Street, Yuhang District, Hangzhou, China',
+      swift: 'CMBCCNBS', business: '大料'
+    },
+    exclusiveRate: '', nonExclusiveRate: ''
+  }
+];
+
+// ============================================================
+</script>
+<script>
+  document.getElementById('topbar-root').innerHTML = renderTopbar({});
+  document.getElementById('sidebar-root').innerHTML = renderSidebar('accounts');
+
+  var VIEW = 'all';
+  var selected = [];          // 多选（存主体 subjectId）
+  var currentBizIds = [];
+  var currentRejectIds = [];
+  var currentSubjectId = null;
+
+  function findAccount(id) { return DEMO_ACCOUNTS.find(function (a) { return a.id === id; }); }
+  function findSubject(id) { return DEMO_SUBJECTS.find(function (s) { return s.subjectId === id; }); }
+  function accountOfSubject(s) { return findAccount(s.accountId); }
+  function accountOptions() { return DEMO_ACCOUNTS.map(function (a) { return a.nickname + '(' + a.id + ')'; }); }
+  function viewAccount(id) { var a = findAccount(id); if (a) showToast('账号：' + a.nickname + '（' + a.id + '）', 'ok'); }
+
+  // 认证状态枚举（主体级 3 态）
+  var STATUS_OPTIONS = [
+    { key: 'pending', label: '待审核' },
+    { key: 'certed', label: '已认证' },
+    { key: 'rejected', label: '审核驳回' }
+  ];
+  var selectedStatus = [];
+  function renderStatus() { renderMsMulti(STATUS_OPTIONS, selectedStatus, 'statusContent', 'statusPanel', 'toggleStatus', 'removeStatus', '全部状态'); }
+  function toggleStatus(k, e) { e.stopPropagation(); toggleInArr(selectedStatus, k); renderStatus(); }
+  function removeStatus(k, e) { e.stopPropagation(); var i = selectedStatus.indexOf(k); if (i !== -1) selectedStatus.splice(i, 1); renderStatus(); }
+
+  var reviewPicker = createRangePicker('rpReviewWrap', { dateOnly: false });
+  var registerPicker = createRangePicker('rpRegisterWrap', { dateOnly: false });
+  var submitPicker = createRangePicker('rpSubmitWrap', { dateOnly: false });
+
+  function isPending(s) { return s.certStatus === 'pending'; }
+  function isUnclaimed(s) { return isPending(s) && s.reviewStage !== 'claimed'; }
+  function isClaimedByMe(s) { return isPending(s) && s.reviewStage === 'claimed' && s.reviewer === CURRENT_OPERATOR; }
+
+  function initView() {
+    document.getElementById('statusWrap').style.display = 'flex';
+    document.getElementById('reviewerWrap').style.display = 'flex';
+    document.getElementById('reviewTimeWrap').style.display = 'flex';
+    document.getElementById('pageTitle').textContent = '主体认证';
+    document.getElementById('pageDesc').textContent = '查看平台所有生产方主体的认证信息';
+    document.getElementById('sidebar-root').innerHTML = renderSidebar('accounts');
+  }
+
+  var expanded = false;
+  function toggleExpand() {
+    expanded = !expanded;
+    document.getElementById('expandPanel').style.display = expanded ? 'flex' : 'none';
+    document.getElementById('expandToggle').textContent = expanded ? '收起筛选 ▴' : '展开筛选 ▾';
+  }
+
+  function filteredSubjects() {
+    var account = document.getElementById('searchAccountHidden').value;
+    var subjectName = document.getElementById('searchSubjectName').value.trim();
+    var email = document.getElementById('searchEmail').value.trim();
+    var phone = document.getElementById('searchPhone').value.trim();
+    var business = document.getElementById('searchBusiness').value;
+    var reviewer = document.getElementById('searchReviewerHidden').value;
+    var rv = reviewPicker.get();
+    var rg = registerPicker.get();
+    var sb = submitPicker.get();
+    return DEMO_SUBJECTS.filter(function (s) {
+      var a = accountOfSubject(s);
+      if (account && (a.nickname + '(' + a.id + ')') !== account) return false;
+      if (subjectName && s.subjectName.indexOf(subjectName) === -1) return false;
+      if (email && a.email.indexOf(email) === -1) return false;
+      if (phone && a.phone.indexOf(phone) === -1) return false;
+      if (business && s.cert.business !== business) return false;
+      if (VIEW === 'all') {
+        if (selectedStatus.length > 0 && selectedStatus.indexOf(s.certStatus) === -1) return false;
+        if (reviewer && s.reviewer !== reviewer) return false;
+        if (rv.start && (!s.reviewTime || s.reviewTime < rv.start)) return false;
+        if (rv.end && (!s.reviewTime || s.reviewTime > rv.end)) return false;
+      }
+      if (rg.start && (!a.registerTime || a.registerTime < rg.start)) return false;
+      if (rg.end && (!a.registerTime || a.registerTime > rg.end)) return false;
+      if (sb.start && (!s.certSubmitTime || s.certSubmitTime < sb.start)) return false;
+      if (sb.end && (!s.certSubmitTime || s.certSubmitTime > sb.end)) return false;
+      return true;
+    });
+  }
+
+  function resetSearch() {
+    document.getElementById('searchAccount').value = '';
+    document.getElementById('searchAccountHidden').value = '';
+    document.getElementById('searchSubjectName').value = '';
+    document.getElementById('searchEmail').value = '';
+    document.getElementById('searchPhone').value = '';
+    document.getElementById('searchBusiness').value = '';
+    document.getElementById('searchReviewer').value = '';
+    document.getElementById('searchReviewerHidden').value = '';
+    selectedStatus = [];
+    reviewPicker.reset(); registerPicker.reset(); submitPicker.reset();
+    renderStatus();
+    selected = [];
+    renderList();
+  }
+
+  function renderHead() {
+    var cols = [['', '40px'], ['主体', '210px'], ['所属账号', '165px'], ['手机号', '130px'], ['邮箱', '150px'], ['商务', '90px'], ['注册时间', '160px'], ['认证状态', '110px'], ['审核人', '80px'], ['提交认证时间', '160px'], ['审核时间', '160px'], ['操作', '160px']];
+    document.getElementById('tableHead').innerHTML = '<tr>' + cols.map(function (c) {
+      if (c[0] === '') return '<th class="cb-col sticky-l" style="width:' + c[1] + '"><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"></th>';
+      if (c[0] === '主体') return '<th class="sticky-l2" style="width:' + c[1] + '">' + c[0] + '</th>';
+      if (c[0] === '操作') return '<th class="th-op sticky-r" style="width:' + c[1] + '">' + c[0] + '</th>';
+      return '<th style="width:' + c[1] + '">' + c[0] + '</th>';
+    }).join('') + '</tr>';
+  }
+
+  function certStatusCell(s) {
+    return certStatusTag(s.certStatus);
+  }
+
+  function renderOps(s) {
+    var ops = [];
+    ops.push('<span class="op-link" onclick="viewCert(\'' + s.subjectId + '\')">详情</span>');
+    ops.push('<span class="op-link" onclick="openBizEdit(\'' + s.subjectId + '\')">编辑商务</span>');
+    return '<div class="op-col">' + ops.join('') + '</div>';
+  }
+
+  function renderList() {
+    var list = filteredSubjects();
+    renderHead();
+    document.getElementById('checkAll').checked = false;
+
+    var tbody = document.getElementById('accountList');
+    var colSpan = 12;
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="' + colSpan + '"><div class="empty"><div class="empty-text">暂无相关主体</div></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(function (s) {
+      var a = accountOfSubject(s);
+      var checked = selected.indexOf(s.subjectId) !== -1;
+      var subjectCell = '<div class="cell-main">' + (s.cert.company || s.subjectName) + '</div>';
+      var accountCell = '<div class="account-cell" onclick="viewAccount(\'' + a.id + '\')">' +
+        '<div class="cell-main">' + a.nickname + '（' + a.id + '）</div>' +
+        '<div class="cell-sub">' + (s.cert.domesticCompanyName || '—') + '</div>' +
+      '</div>';
+      var row = '<tr>' +
+        '<td class="cb-col sticky-l"><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleSelect(\'' + s.subjectId + '\')"></td>' +
+        '<td class="sticky-l2">' + subjectCell + '</td>' +
+        '<td>' + accountCell + '</td>' +
+        '<td class="mono text-2">' + a.phone + '</td>' +
+        '<td class="text-2 mono">' + a.email + '</td>' +
+        '<td>' + (s.cert.business || '—') + '</td>' +
+        '<td class="mono text-2">' + (a.registerTime || '—') + '</td>';
+      if (VIEW === 'all') {
+        row += '<td>' + certStatusCell(s) + '</td>' +
+          '<td>' + (s.reviewer || '—') + '</td>';
+      }
+      row += '<td class="mono text-2">' + (s.certSubmitTime || '—') + '</td>';
+      if (VIEW === 'all') {
+        row += '<td class="mono text-2">' + (s.reviewTime || '—') + '</td>';
+      }
+      row += '<td class="sticky-r">' + renderOps(s) + '</td></tr>';
+      return row;
+    }).join('');
+  }
+
+  // ========== 多选 ==========
+  function toggleSelect(id) { toggleInArr(selected, id); renderList(); }
+  function toggleCheckAll() {
+    var all = document.getElementById('checkAll').checked;
+    var list = filteredSubjects();
+    if (all) list.forEach(function (s) { if (selected.indexOf(s.subjectId) === -1) selected.push(s.subjectId); });
+    else { var ids = list.map(function (s) { return s.subjectId; }); selected = selected.filter(function (id) { return ids.indexOf(id) === -1; }); }
+    renderList();
+  }
+  function selectedSubjects() { return selected.map(findSubject).filter(Boolean); }
+
+  // ========== 批量操作 ==========
+  function batchPass() {
+    var list = selectedSubjects();
+    if (!list.length) { showToast('请先选择要操作的数据', 'err'); return; }
+    currentBizIds = list.map(function (s) { return s.subjectId; });
+    openModal('bizModal');
+  }
+  function batchReject() {
+    var list = selectedSubjects();
+    if (!list.length) { showToast('请先选择要操作的数据', 'err'); return; }
+    currentRejectIds = list.map(function (s) { return s.subjectId; });
+    document.getElementById('rejectAccountName').textContent = '已选 ' + currentRejectIds.length + ' 个主体';
+    document.getElementById('rejectReasonInput').value = '';
+    updateRejectCount();
+    openModal('rejectModal');
+  }
+
+  // ========== 通过 / 驳回（作用于主体，通过时设置主体级分成比例） ==========
+  function doPass() {
+    currentBizIds.forEach(function (id) {
+      var s = findSubject(id);
+      if (!s) return;
+      s.certStatus = 'certed'; s.reviewStage = '';
+      s.reviewer = CURRENT_OPERATOR; s.reviewTime = nowStr();
+    });
+    selected = []; renderList();
+    showToast('已通过', 'ok');
+  }
+  function confirmBiz() {
+    closeModal('bizModal');
+    closeModal('certModal');
+    doPass();
+  }
+
+  // ========== 编辑商务（列表所有数据可用；仅商务，可输入匹配的单选下拉） ==========
+  var bizEditSubjectId = null;
+  function openBizEdit(subjectId) {
+    var s = findSubject(subjectId);
+    if (!s) return;
+    bizEditSubjectId = subjectId;
+    var cur = s.cert.business || '';
+    document.getElementById('bizEditInput').value = cur;
+    document.getElementById('bizEditValue').value = cur;
+    document.getElementById('bizEditPanel').classList.remove('show');
+    openModal('bizEditModal');
+  }
+  function confirmBizEdit() {
+    var s = findSubject(bizEditSubjectId);
+    if (!s) return;
+    var v = document.getElementById('bizEditInput').value.trim();
+    if (!v) { showToast('请选择商务', 'err'); return; }
+    if (BUSINESS_LIST.indexOf(v) === -1) { showToast('请从下拉列表中选择商务', 'err'); return; }
+    s.cert.business = v;
+    closeModal('bizEditModal');
+    renderList();
+    showToast('商务已更新为「' + v + '」', 'ok');
+  }
+  function updateRejectCount() {
+    var el = document.getElementById('rejectReasonInput');
+    var cnt = document.getElementById('rejectCount');
+    if (el && cnt) cnt.textContent = el.value.length + ' / 500';
+  }
+  function doReject(reason) {
+    currentRejectIds.forEach(function (id) {
+      var s = findSubject(id);
+      if (!s) return;
+      s.certStatus = 'rejected'; s.reviewStage = '';
+      s.reviewer = CURRENT_OPERATOR; s.reviewTime = nowStr();
+      s.rejectReason = reason;
+    });
+    selected = []; renderList();
+    showToast('已驳回', 'ok');
+  }
+  function confirmReject() {
+    var reason = document.getElementById('rejectReasonInput').value.trim();
+    if (!reason) { showToast('请填写驳回原因', 'err'); return; }
+    closeModal('rejectModal');
+    closeModal('certModal');
+    doReject(reason);
+  }
+
+  // ========== 单条操作 ==========
+  function claimOne(id) {
+    var s = findSubject(id);
+    if (s) { s.reviewStage = 'claimed'; s.reviewer = CURRENT_OPERATOR; }
+    renderList();
+    viewCert(id);
+    showToast('已领取，展开详情', 'ok');
+  }
+
+  function nowStr() {
+    var d = new Date();
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+
+  // ========== 认证信息弹窗（详情，含通过/驳回） ==========
+  function viewCert(id) {
+    var s = findSubject(id);
+    var a = accountOfSubject(s);
+    currentSubjectId = id;
+    document.getElementById('certModalTitle').textContent = '认证信息 - ' + s.subjectName;
+    var bodyHtml = '<div class="acct-info">' +
+      '<div class="ai-item"><span class="ai-label">所属账号</span><span class="ai-value">' + a.nickname + '（' + a.id + '）</span></div>' +
+      '<div class="ai-item"><span class="ai-label">主体名称</span><span class="ai-value">' + s.subjectName + '</span></div>' +
+      '<div class="ai-item"><span class="ai-label">邮箱</span><span class="ai-value mono">' + a.plainEmail + '</span></div>' +
+      '<div class="ai-item"><span class="ai-label">手机号</span><span class="ai-value mono">' + a.plainPhone + '</span></div>' +
+    '</div>';
+    bodyHtml += '<div class="cert-block"><div class="cert-block-body">' +
+      renderCertBlock(s.cert) +
+      '</div></div>';
+    if (s.rejectReason) {
+      bodyHtml += '<div class="notice notice-warn" style="margin:0"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><div>驳回原因：' + s.rejectReason + '</div></div>';
+    }
+    document.getElementById('certModalBody').innerHTML = bodyHtml;
+
+    var canPass = (s.certStatus === 'pending');
+    var canReject = (s.certStatus === 'pending');
+    var foot = '<button class="btn btn-outline" onclick="closeModal(\'certModal\')">关闭</button>';
+    if (canReject) foot += '<button class="btn btn-danger" onclick="certReject()">驳回</button>';
+    if (canPass) foot += '<button class="btn btn-primary" onclick="certPass()">通过</button>';
+    document.getElementById('certModalFoot').innerHTML = foot;
+    openModal('certModal');
+  }
+  function certPass() {
+    currentBizIds = [currentSubjectId];
+    openModal('bizModal');
+  }
+  function certReject() {
+    currentRejectIds = [currentSubjectId];
+    var s = findSubject(currentSubjectId);
+    document.getElementById('rejectAccountName').textContent = s.subjectName;
+    document.getElementById('rejectReasonInput').value = '';
+    updateRejectCount();
+    openModal('rejectModal');
+  }
+
+  function renderCertBlock(cert) {
+    var html = '';
+    html += '<div style="font-size:13px;font-weight:600;color:var(--text);padding:12px 0 4px;margin-top:4px;border-bottom:1px solid var(--border-strong)">国内主体信息</div>';
+    html += '<div style="font-size:12px;color:var(--text-3);margin:6px 0 4px">主要用于资质认证审核，不会用于后续签约</div>';
+    html += certField('国内公司名称', cert.domesticCompanyName);
+    html += certField('营业执照', cert.bizLicense ? '<span class="tag tag-gray" style="margin:0">' + cert.bizLicense + '</span>' : '');
+    html += certField('商务', cert.business);
+    html += '<div style="font-size:13px;font-weight:600;color:var(--text);padding:12px 0 4px;margin-top:4px;border-bottom:1px solid var(--border-strong)">海外主体信息</div>';
+    html += '<div style="font-size:12px;color:var(--text-3);margin:6px 0 4px">主要用于后续合同签署、收款</div>';
+    html += certField('海外公司全称', cert.company);
+    html += certField('联系地址', cert.contactAddr);
+    html += certField('联系人', cert.contact);
+    html += certField('联系电话', cert.contactPhone);
+    html += certField('联系邮箱', cert.contactEmail);
+    html += certField('开户名称', cert.bankName);
+    html += certField('开户账号', cert.bankAccount);
+    html += certField('开户银行', cert.bankEn);
+    html += certField('公司地址', cert.companyAddrEn);
+    html += certField('银行地址', cert.bankAddrEn);
+    html += certField('银行Swift代码', cert.swift);
+    return html;
+  }
+  function certField(label, value) {
+    return '<div class="cert-field"><div class="f-label">' + label + '</div><div class="f-value">' + (value || '<span class="text-3">—</span>') + '</div></div>';
+  }
+  function imgList(arr) {
+    if (!arr || !arr.length) return '';
+    return '<div style="display:flex;flex-wrap:wrap;gap:6px">' + arr.map(function (n) {
+      return '<span class="tag tag-gray" style="margin:0">' + n + '</span>';
+    }).join('') + '</div>';
+  }
+
+  // 点击外部关闭下拉
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.autocomplete')) document.querySelectorAll('.ac-panel').forEach(function (p) { p.classList.remove('show'); });
+    if (!e.target.closest('#statusBox') && !e.target.closest('#statusPanel')) { document.getElementById('statusPanel').classList.remove('show'); document.getElementById('statusBox').classList.remove('open'); }
+    if (!e.target.closest('#rpReviewWrap')) { document.getElementById('rpReviewWrapPanel').classList.remove('show'); document.getElementById('rpReviewWrapBox').classList.remove('open'); }
+    if (!e.target.closest('#rpRegisterWrap')) { document.getElementById('rpRegisterWrapPanel').classList.remove('show'); document.getElementById('rpRegisterWrapBox').classList.remove('open'); }
+    if (!e.target.closest('#rpSubmitWrap')) { document.getElementById('rpSubmitWrapPanel').classList.remove('show'); document.getElementById('rpSubmitWrapBox').classList.remove('open'); }
+  });
+
+  // 初始化
+  initView();
+  renderStatus();
+  renderList();
+
+</script>
+</body>
+</html>
