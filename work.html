@@ -699,6 +699,58 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .op-mini { color: var(--brand); cursor: pointer; font-size: 12px; white-space: nowrap; }
   .op-mini:hover { text-decoration: underline; }
 
+  /* ===== 上传 / 替换：拖拽上传弹窗 ===== */
+  .up-drop {
+    border: 1.5px dashed var(--border-strong); border-radius: 12px; padding: 34px 20px;
+    text-align: center; cursor: pointer; transition: all .15s; background: #fafbfc;
+  }
+  .up-drop:hover, .up-drop.dragover { border-color: var(--brand); background: var(--brand-weak); }
+  .up-drop-icon { width: 42px; height: 42px; margin: 0 auto 12px; color: var(--brand); }
+  .up-drop-icon svg { width: 42px; height: 42px; }
+  .up-drop-main { font-size: 14px; font-weight: 500; color: var(--text); }
+  .up-drop-sub { font-size: 12px; color: var(--text-3); margin-top: 8px; line-height: 1.7; }
+  .up-files { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; max-height: 210px; overflow-y: auto; }
+  .up-file { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--fill-1); border-radius: 8px; font-size: 13px; }
+  .up-file .uf-ep { flex-shrink: 0; padding: 1px 8px; border-radius: 4px; background: var(--brand-weak); color: var(--brand); font-size: 12px; }
+  .up-file .uf-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .up-file .uf-size { color: var(--text-3); font-size: 12px; flex-shrink: 0; }
+  .up-file .uf-del { color: var(--text-3); cursor: pointer; flex-shrink: 0; }
+  .up-file .uf-del:hover { color: var(--danger); }
+  .up-empty { font-size: 12px; color: var(--text-3); text-align: center; padding: 8px 0 2px; }
+
+  /* ===== 百度网盘提取：右侧抽屉 ===== */
+  .drawer-mask { position: fixed; inset: 0; background: rgba(20,24,30,.45); z-index: 300; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .drawer-mask.show { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 580px; max-width: 96vw; background: #fff;
+    z-index: 301; box-shadow: -8px 0 30px rgba(20,24,30,.16); display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform .26s ease;
+  }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .drawer-title { font-size: 16px; font-weight: 600; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 20px 22px; }
+  .drawer-foot { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pan-form { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .pan-form .form-item { margin-bottom: 0; }
+  .pan-hint { margin-top: 18px; padding: 14px 16px; background: var(--fill-1); border-radius: 8px; font-size: 12px; color: var(--text-3); line-height: 1.7; }
+  .pan-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 16px; }
+  .pan-table th, .pan-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+  .pan-table th { color: var(--text-3); font-weight: 500; background: #fafbfc; white-space: nowrap; }
+  .pan-table tbody tr:hover td { background: #fafbfc; }
+  .pan-table .pan-name { word-break: break-all; }
+  .pan-table input[type="checkbox"] { accent-color: var(--brand); width: 15px; height: 15px; cursor: pointer; }
+
+  /* ===== 单元格上传方式菜单 ===== */
+  .ep-act-menu {
+    position: fixed; z-index: 320; min-width: 132px; padding: 6px; background: #fff;
+    border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    display: none;
+  }
+  .ep-act-menu.show { display: block; }
+  .ep-act-item { padding: 8px 12px; font-size: 13px; color: var(--text); border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .ep-act-item:hover { background: #f5f7fa; color: var(--brand); }
+
   /* 上传进度 */
   .progress-track { height: 4px; background: var(--fill-2); border-radius: 2px; overflow: hidden; margin-top: 4px; }
   .progress-bar { height: 100%; width: 0; background: var(--brand); border-radius: 2px; transition: width .25s ease; }
@@ -1211,52 +1263,78 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   </div>
 </div>
 
-<!-- 百度网盘提取弹窗 -->
-<div class="modal-mask" id="panModal">
-  <div class="modal">
+<!-- 本地上传 / 替换弹窗（拖拽上传演示） -->
+<div class="modal-mask" id="upModal">
+  <div class="modal" style="width:580px">
     <div class="modal-head">
-      <div class="modal-title">百度网盘提取</div>
-      <span class="modal-close" onclick="closeModal('panModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+      <div class="modal-title" id="upModalTitle">本地上传</div>
+      <span class="modal-close" onclick="closeUpModal()"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
     </div>
     <div class="modal-body">
-      <div class="form-item">
-        <label class="form-label">分享链接</label>
-        <input type="text" class="form-input" id="panLink" placeholder="https://pan.baidu.com/s/xxxx">
+      <div class="up-drop" id="upDrop" onclick="pickDemoFiles()"
+           ondragover="event.preventDefault(); this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault(); this.classList.remove('dragover'); pickDemoFiles();">
+        <div class="up-drop-icon">
+          <svg viewBox="0 0 48 48" fill="none"><path d="M24 32V12m0 0-8 8m8-8 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 32v4a4 4 0 0 0 4 4h20a4 4 0 0 0 4-4v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="up-drop-main">点击上传或拖拽视频到此处</div>
+        <div class="up-drop-sub">请将文件以集数 - 如1、2、3…命名，便于自动识别集数</div>
       </div>
-      <div class="form-item" style="margin-bottom:0">
-        <label class="form-label">提取码</label>
-        <input type="text" class="form-input" id="panCode" placeholder="4 位提取码" maxlength="4">
-      </div>
+      <div class="up-files" id="upFileList"></div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-outline" onclick="closeModal('panModal')">取消</button>
-      <button class="btn btn-primary" onclick="confirmPan()">提交提取</button>
+      <button class="btn btn-outline" onclick="closeUpModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmUpModal()">开始上传</button>
     </div>
   </div>
 </div>
 
-<!-- 上传/替换文件弹窗 -->
-<div class="modal-mask" id="fileModal">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title" id="fileModalTitle">上传文件</div>
-      <span class="modal-close" onclick="closeModal('fileModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    </div>
-    <div class="modal-body">
-      <div class="notice notice-info" style="margin-bottom:12px">
-        <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <div id="fileModalTip">从本地上传文件（演示）。</div>
+<!-- 百度网盘提取抽屉 -->
+<div class="drawer-mask" id="panMask" onclick="closePanDrawer()"></div>
+<div class="drawer" id="panDrawer">
+  <div class="drawer-head">
+    <div class="drawer-title">百度网盘提取</div>
+    <span class="modal-close" onclick="closePanDrawer()"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+  </div>
+  <div class="drawer-body">
+    <div class="pan-form">
+      <div class="form-item" style="flex:1;min-width:220px">
+        <label class="form-label">分享链接</label>
+        <input type="text" class="form-input" id="panDrawerLink" placeholder="https://pan.baidu.com/s/xxxx">
       </div>
-      <div class="form-item" style="margin-bottom:0">
-        <label class="form-label">选择文件</label>
-        <input type="text" class="form-input" id="fileLocalName" placeholder="点击选择文件（演示）" readonly onclick="simulatePick()" style="cursor:pointer">
+      <div class="form-item" style="width:130px">
+        <label class="form-label">提取码</label>
+        <input type="text" class="form-input" id="panDrawerCode" placeholder="4 位提取码" maxlength="4">
       </div>
+      <button class="btn btn-primary" type="button" onclick="doPanExtract()">提交提取</button>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-outline" onclick="closeModal('fileModal')">取消</button>
-      <button class="btn btn-primary" onclick="confirmFileUpload()">开始上传</button>
+    <div class="pan-hint" id="panHint">填写分享链接与提取码后点击「提交提取」，下方将展示从网盘中提取到的文件列表。</div>
+    <table class="pan-table" id="panTable" style="display:none">
+      <thead>
+        <tr>
+          <th style="width:36px"><input type="checkbox" id="panCheckAll" onchange="togglePanAll()"></th>
+          <th>文件名称</th>
+          <th style="width:86px">文件类型</th>
+          <th style="width:96px">文件大小</th>
+        </tr>
+      </thead>
+      <tbody id="panTbody"></tbody>
+    </table>
+  </div>
+  <div class="drawer-foot">
+    <span class="fs-13 text-3" id="panSelInfo">已选 0 项</span>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" onclick="closePanDrawer()">取消</button>
+      <button class="btn btn-primary" onclick="confirmPanUpload()">上传</button>
     </div>
   </div>
+</div>
+
+<!-- 单元格：上传 / 替换方式选择菜单 -->
+<div class="ep-act-menu" id="epActMenu">
+  <div class="ep-act-item" onclick="pickUploadMethod('local')">本地上传</div>
+  <div class="ep-act-item" onclick="pickUploadMethod('pan')">网盘上传</div>
 </div>
 
 <!-- 批量替换已改为 hover 下拉菜单（见 ep-toolbar 内 batchReplaceBtn），不再使用弹窗 -->
@@ -3022,34 +3100,35 @@ function __reenter(page) {
       }
     }
     var hasFile = !!name && st !== 'failed';
-    // 需求：删除「上传」按钮（未上传状态），仅保留有内容后的「替换」与失败后的「重试」
-    if (st === 'failed' || hasFile) {
-      var op = (st === 'failed') ? t('重试') : t('替换');
-      html += '<div class="file-op"><span class="op-mini" onclick="openFileModal(' + e.no + ',\'' + kind + '\')">' + op + '</span></div>';
-    }
+    // 未上传：上传（可选本地上传 / 网盘上传）；已上传：替换；失败：重试
+    var opText = (st === 'failed') ? t('重试') : (hasFile ? t('替换') : t('上传'));
+    html += '<div class="file-op"><span class="op-mini" onclick="openEpActMenu(' + e.no + ',\'' + kind + '\',event)">' + opText + '</span></div>';
     return html;
   }
 
   function renderFileCell(e, kind, emptyText) {
     var st = e[kind + 'Status'] || 'none';
     var name = e[kind];
+    var html = '';
 
     if (st === 'none' || !name) {
-      return '<span class="file-empty">' + emptyText + '</span>';
+      html = '<span class="file-empty">' + emptyText + '</span>';
+    } else {
+      html = '<span class="file-link' + (st === 'failed' ? ' failed' : '') + '" onclick="downloadFile__upload(' + e.no + ',\'' + kind + '\')">' + name + '</span>';
+      if (st === 'uploading') {
+        var prog = e[kind + 'Progress'] || 0;
+        html += '<div class="progress-track"><div class="progress-bar" style="width:' + prog + '%"></div></div>' +
+                '<div class="progress-text">' + t('上传中') + ' ' + prog + '%</div>';
+      } else if (st === 'failed') {
+        html += '<div class="progress-track"><div class="progress-bar error" style="width:100%"></div></div>' +
+                '<div class="progress-text error">' + t('上传失败') + '</div>';
+      }
     }
 
-    var link = '<span class="file-link' + (st === 'failed' ? ' failed' : '') + '" onclick="downloadFile__upload(' + e.no + ',\'' + kind + '\')">' + name + '</span>';
-
-    if (st === 'uploading') {
-      var prog = e[kind + 'Progress'] || 0;
-      link += '<div class="progress-track"><div class="progress-bar" style="width:' + prog + '%"></div></div>' +
-              '<div class="progress-text">' + t('上传中') + ' ' + prog + '%</div>';
-    } else if (st === 'failed') {
-      link += '<div class="progress-track"><div class="progress-bar error" style="width:100%"></div></div>' +
-              '<div class="progress-text error">' + t('上传失败') + '</div>';
-    }
-
-    return link;
+    var hasFile = !!name && st !== 'failed';
+    var opText = (st === 'failed') ? t('重试') : (hasFile ? t('替换') : t('上传'));
+    html += '<div class="file-op"><span class="op-mini" onclick="openEpActMenu(' + e.no + ',\'' + kind + '\',event)">' + opText + '</span></div>';
+    return html;
   }
 
   // ========== 多选 / 批量替换 ==========
@@ -3064,20 +3143,12 @@ function __reenter(page) {
     selectedEps = all ? episodes.map(function (e) { return e.no; }) : [];
     renderEpisodes();
   }
-  // 批量替换（hover 下拉选择替换类型后，本地上传替换所选集的对应内容）
+  // 批量替换：选类型后先选「本地上传 / 网盘上传」，再走与单元格一致的替换界面
   function batchReplaceKind(kind) {
     if (selectedEps.length === 0) return;
-    var name = document.getElementById('fName').value.trim() || t('短剧');
-    var kindLabel = kind === 'videoNoSub' ? t('无字幕视频') : (kind === 'videoSub' ? t('有字幕视频') : t('字幕文件'));
-    selectedEps.forEach(function (no) {
-      var e = findEp(no);
-      if (!e) return;
-      fillEpByKind(e, name, kind);
-    });
-    renderEpisodes();
-    selectedEps.forEach(function (no) { simulateProgress(no, kind); });
-    selectedEps = [];
-    showToast((isEnglish() ? 'Local batch replace: ' : '已通过本地批量替换 ') + kindLabel, 'ok');
+    actCtx = { mode: 'batchReplace', kind: kind, eps: selectedEps.slice() };
+    var btn = document.getElementById('batchReplaceBtn').querySelector('button');
+    showActMenu(btn);
   }
 
   function downloadFile__upload(no, kind) {
@@ -3094,9 +3165,9 @@ function __reenter(page) {
   function findEp(no) { return episodes.find(function (x) { return x.no === no; }); }
 
   // ========== 按类型填充某集文件（本地上传 / 网盘提取 / 批量替换共用） ==========
-  function fillEpByKind(e, name, kind) {
+  function fillEpByKind(e, name, kind, fname) {
     var ext = kind === 'srt' ? '.srt' : (kind === 'videoSub' ? '_字幕.mp4' : '.mp4');
-    e[kind] = name + '_第' + e.no + '集' + ext;
+    e[kind] = fname || (name + '_第' + e.no + '集' + ext);
     e[kind + 'Info'] = null;
     e[kind + 'Status'] = 'uploading';
     e[kind + 'Progress'] = 0;
@@ -3105,51 +3176,225 @@ function __reenter(page) {
     return kind === 'videoNoSub' ? t('无字幕视频') : (kind === 'videoSub' ? t('有字幕视频') : t('字幕文件'));
   }
 
-  // ========== 本地上传（hover 下拉选类型后，模拟本地选择对应类型文件并上传） ==========
-  function localUploadKind(kind) {
-    var name = document.getElementById('fName').value.trim() || t('短剧');
-    var emptyIdx = [];
-    episodes.forEach(function (e, idx) {
-      if (!e[kind]) emptyIdx.push(idx);
-    });
-    if (emptyIdx.length === 0) {
-      showToast(kindLabel(kind) + (isEnglish() ? ' already uploaded' : ' 已全部上传'), 'ok');
-      return;
-    }
-    shuffle(emptyIdx);
-    var count = Math.floor(Math.random() * 4) + 1;
-    var targets = emptyIdx.slice(0, Math.min(count, emptyIdx.length));
-    targets.forEach(function (idx) { fillEpByKind(episodes[idx], name, kind); });
-    renderEpisodes();
-    targets.forEach(function (idx) { simulateProgress(episodes[idx].no, kind); });
-    showToast((isEnglish() ? 'Local upload started: ' : '已从本地上传 ') + kindLabel(kind), 'ok');
+  // ========== 上传 / 替换：状态与工具 ==========
+  var upCtx = { mode: 'batch', kind: 'videoNoSub', no: null };   // mode: batch 批量上传 | cell 单集 | batchReplace 批量替换
+  var upFiles = [];                                              // [{ep, name, size}]
+  var actCtx = null;                                             // 上传方式菜单上下文 {mode, no?, kind, eps?}
+  var panCtx = { mode: 'batch', kind: 'videoNoSub', no: null };
+  var panFiles = [];
+  var panSelected = [];
+
+  function kindExt(kind) { return kind === 'srt' ? '.srt' : '.mp4'; }
+  function fileTypeText(kind) { return kind === 'srt' ? '字幕' : '视频'; }
+  function fileSizeText(kind) {
+    return kind === 'srt'
+      ? (Math.random() * 60 + 20).toFixed(1) + 'KB'
+      : (Math.random() * 360 + 40).toFixed(1) + 'MB';
   }
 
-  // ========== 百度网盘提取（hover 下拉选类型后，弹窗输入链接&提取码，按类型提取） ==========
-  var curPanKind = 'videoNoSub';
-  function openPanModal(kind) {
-    curPanKind = kind || 'videoNoSub';
-    openModal('panModal');
+  // --- 单元格「上传 / 替换」：选择上传方式 ---
+  // 单元格「上传 / 替换」：打开方式菜单
+  function openEpActMenu(no, kind, ev) {
+    actCtx = { mode: 'cell', no: no, kind: kind };
+    showActMenu(ev && ev.target);
+    if (ev) ev.stopPropagation();
   }
-  function confirmPan() {
-    closeModal('panModal');
-    var name = document.getElementById('fName').value.trim() || t('短剧');
-    var kind = curPanKind;
-    var emptyIdx = [];
-    episodes.forEach(function (e, idx) {
-      if (!e[kind]) emptyIdx.push(idx);
-    });
-    if (emptyIdx.length === 0) {
-      showToast(kindLabel(kind) + (isEnglish() ? ' already imported' : ' 已全部提取'), 'ok');
+  // 菜单定位（锚定到触发元素）
+  function showActMenu(anchorEl) {
+    var menu = document.getElementById('epActMenu');
+    menu.classList.add('show');
+    var r = anchorEl ? anchorEl.getBoundingClientRect() : { left: 240, top: 240, bottom: 260 };
+    var left = Math.min(r.left, window.innerWidth - 156);
+    var top = r.bottom + 6;
+    if (top + 96 > window.innerHeight) top = Math.max(12, r.top - 96);
+    menu.style.left = Math.max(12, left) + 'px';
+    menu.style.top = top + 'px';
+  }
+  function closeEpActMenu() {
+    var m = document.getElementById('epActMenu');
+    if (m) m.classList.remove('show');
+  }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#epActMenu') && !e.target.closest('.op-mini') && !e.target.closest('.ep-dropdown-item')) closeEpActMenu();
+  });
+  function pickUploadMethod(mode) {
+    var ctx = actCtx;
+    closeEpActMenu();
+    if (!ctx) return;
+    if (mode === 'local') openUpModal(ctx);
+    else openPanDrawer(ctx);
+  }
+
+  // ========== 本地上传 / 替换（拖拽上传弹窗） ==========
+  function openUpModal(ctx) {
+    upCtx = ctx;
+    upFiles = [];
+    var kindName = kindLabel(ctx.kind);
+    var e = ctx.mode === 'cell' ? findEp(ctx.no) : null;
+    var hasFile = e && e[ctx.kind] && e[ctx.kind + 'Status'] !== 'failed';
+    var act = (ctx.mode === 'cell' && !hasFile) ? t('上传') : t('替换');
+    if (ctx.mode === 'batch') act = t('上传');
+    var epText = '';
+    if (ctx.mode === 'cell') epText = ' · ' + (isEnglish() ? 'Ep. ' + ctx.no : '第 ' + ctx.no + ' 集');
+    else if (ctx.mode === 'batchReplace') epText = ' · ' + (isEnglish() ? ctx.eps.length + ' eps' : '已选 ' + ctx.eps.length + ' 集');
+    document.getElementById('upModalTitle').textContent = t('本地') + act + ' · ' + kindName + epText;
+    renderUpFiles();
+    openModal('upModal');
+  }
+  function closeUpModal() {
+    closeModal('upModal');
+    upFiles = [];
+  }
+  // 演示：模拟「点击上传 / 拖拽文件」后选中文件
+  function pickDemoFiles() {
+    var kind = upCtx.kind;
+    if (upCtx.mode === 'cell') {
+      upFiles = [{ ep: upCtx.no, name: upCtx.no + kindExt(kind), size: fileSizeText(kind) }];
+    } else if (upCtx.mode === 'batchReplace') {
+      upFiles = upCtx.eps.slice().sort(function (a, b) { return a - b; }).map(function (no) {
+        return { ep: no, name: no + kindExt(kind), size: fileSizeText(kind) };
+      });
+    } else {
+      var exist = upFiles.map(function (f) { return f.ep; });
+      var emptyNos = episodes.filter(function (e) { return !e[kind] && exist.indexOf(e.no) === -1; }).map(function (e) { return e.no; });
+      if (emptyNos.length === 0) { showToast(kindLabel(kind) + t('已选择全部待上传文件'), 'ok'); return; }
+      shuffle(emptyNos);
+      var count = Math.min(Math.floor(Math.random() * 4) + 2, emptyNos.length);
+      var picked = emptyNos.slice(0, count).sort(function (a, b) { return a - b; });
+      upFiles = upFiles.concat(picked.map(function (no) {
+        return { ep: no, name: no + kindExt(kind), size: fileSizeText(kind) };
+      })).sort(function (a, b) { return a.ep - b.ep; });
+    }
+    renderUpFiles();
+  }
+  function renderUpFiles() {
+    var box = document.getElementById('upFileList');
+    if (!box) return;
+    if (upFiles.length === 0) {
+      box.innerHTML = '<div class="up-empty">' + t('尚未选择文件，点击上方区域选择或拖拽文件') + '</div>';
       return;
     }
-    shuffle(emptyIdx);
-    var count = Math.floor(Math.random() * 4) + 2;
-    var targets = emptyIdx.slice(0, Math.min(count, emptyIdx.length));
-    targets.forEach(function (idx) { fillEpByKind(episodes[idx], name, kind); });
+    box.innerHTML = upFiles.map(function (f, i) {
+      return '<div class="up-file">' +
+        '<span class="uf-ep">' + (isEnglish() ? 'Ep. ' + f.ep : '第 ' + f.ep + ' 集') + '</span>' +
+        '<span class="uf-name">' + f.name + '</span>' +
+        '<span class="uf-size">' + f.size + '</span>' +
+        '<span class="uf-del" onclick="removeUpFile(' + i + ')">' + t('删除') + '</span>' +
+      '</div>';
+    }).join('');
+  }
+  function removeUpFile(i) {
+    upFiles.splice(i, 1);
+    renderUpFiles();
+  }
+  function confirmUpModal() {
+    if (upFiles.length === 0) { showToast(t('请先选择需要上传的文件'), 'err'); return; }
+    var name = document.getElementById('fName').value.trim() || t('短剧');
+    var kind = upCtx.kind;
+    var ctxMode = upCtx.mode;
+    var list = upFiles.slice();
+    closeUpModal();
+    if (ctxMode === 'batchReplace') selectedEps = [];
+    list.forEach(function (f) {
+      var e = findEp(f.ep);
+      if (!e) return;
+      fillEpByKind(e, name, kind, f.name);
+    });
     renderEpisodes();
-    targets.forEach(function (idx) { simulateProgress(episodes[idx].no, kind); });
-    showToast((isEnglish() ? 'Extracted from Baidu Netdisk: ' : '已从百度网盘提取 ') + kindLabel(kind), 'ok');
+    list.forEach(function (f) { simulateProgress(f.ep, kind); });
+    showToast(t('已开始上传 ') + list.length + t(' 个文件'), 'ok');
+  }
+
+  // ========== 百度网盘提取（右侧抽屉） ==========
+  function openPanDrawer(ctx) {
+    panCtx = ctx;
+    panFiles = [];
+    panSelected = [];
+    document.getElementById('panDrawerLink').value = 'https://pan.baidu.com/s/1demoabcd';
+    document.getElementById('panDrawerCode').value = 'ab12';
+    document.getElementById('panTbody').innerHTML = '';
+    document.getElementById('panTable').style.display = 'none';
+    document.getElementById('panHint').style.display = 'block';
+    updatePanSel();
+    document.getElementById('panMask').classList.add('show');
+    document.getElementById('panDrawer').classList.add('show');
+  }
+  function closePanDrawer() {
+    document.getElementById('panMask').classList.remove('show');
+    document.getElementById('panDrawer').classList.remove('show');
+  }
+  // 提交提取：demo 直接演示，无需填写链接/提取码
+  function doPanExtract() {
+    var kind = panCtx.kind;
+    var list = panCtx.mode === 'batchReplace'
+      ? panCtx.eps.slice().sort(function (a, b) { return a - b; })
+      : episodes.map(function (e) { return e.no; });
+    panFiles = list.map(function (no) {
+      return { ep: no, name: no + kindExt(kind), type: fileTypeText(kind), size: fileSizeText(kind) };
+    });
+    panSelected = [];
+    document.getElementById('panHint').style.display = 'none';
+    document.getElementById('panTable').style.display = 'table';
+    renderPanFiles();
+    showToast(t('已提取到 ') + panFiles.length + t(' 个文件'), 'ok');
+  }
+  function renderPanFiles() {
+    document.getElementById('panTbody').innerHTML = panFiles.map(function (f) {
+      var checked = panSelected.indexOf(f.ep) !== -1;
+      return '<tr>' +
+        '<td><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="togglePanPick(' + f.ep + ')"></td>' +
+        '<td class="pan-name">' + f.name + '</td>' +
+        '<td>' + f.type + '</td>' +
+        '<td>' + f.size + '</td>' +
+      '</tr>';
+    }).join('');
+    var all = panFiles.length > 0 && panSelected.length === panFiles.length;
+    document.getElementById('panCheckAll').checked = all;
+    updatePanSel();
+  }
+  function togglePanPick(ep) {
+    var i = panSelected.indexOf(ep);
+    if (i === -1) panSelected.push(ep); else panSelected.splice(i, 1);
+    panSelected.sort(function (a, b) { return a - b; });
+    renderPanFiles();
+  }
+  function togglePanAll() {
+    var all = document.getElementById('panCheckAll').checked;
+    panSelected = all ? panFiles.map(function (f) { return f.ep; }) : [];
+    renderPanFiles();
+  }
+  function updatePanSel() {
+    var el = document.getElementById('panSelInfo');
+    if (el) el.textContent = t('已选 ') + panSelected.length + t(' 项');
+  }
+  function confirmPanUpload() {
+    if (panSelected.length === 0) { showToast(t('请选择要上传的文件'), 'err'); return; }
+    var kind = panCtx.kind;
+    var ctxMode = panCtx.mode;
+    var name = document.getElementById('fName').value.trim() || t('短剧');
+    var targets = panCtx.mode === 'cell' ? [panCtx.no] : panSelected.slice();
+    var items = targets.map(function (ep) {
+      var f = panFiles.find(function (x) { return x.ep === ep; }) || { name: ep + kindExt(kind) };
+      return { ep: ep, name: f.name };
+    });
+    closePanDrawer();
+    if (ctxMode === 'batchReplace') selectedEps = [];
+    items.forEach(function (it) {
+      var e = findEp(it.ep);
+      if (!e) return;
+      fillEpByKind(e, name, kind, it.name);
+    });
+    renderEpisodes();
+    items.forEach(function (it) { simulateProgress(it.ep, kind); });
+    showToast(t('已开始上传 ') + items.length + t(' 个文件'), 'ok');
+  }
+
+  // 工具栏入口：本地上传 / 百度网盘提取（批量）
+  function localUploadKind(kind) {
+    openUpModal({ mode: 'batch', kind: kind, no: null });
+  }
+  function openPanModal(kind) {
+    openPanDrawer({ mode: 'batch', kind: kind, no: null });
   }
 
   function shuffle(arr) {
@@ -3157,48 +3402,6 @@ function __reenter(page) {
       var j = Math.floor(Math.random() * (i + 1));
       var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
     }
-  }
-
-  // ========== 单个文件上传/替换/重试弹窗（仅本地） ==========
-  var curFileNo = null;
-  var curFileKind = 'videoNoSub';
-
-  function openFileModal(no, kind) {
-    curFileNo = no; curFileKind = kind;
-    var e = findEp(no);
-    var st = e[kind + 'Status'] || 'none';
-    var hasFile = !!e[kind];
-    var kindName = kind === 'videoNoSub' ? t('无字幕视频') : t('有字幕视频');
-    var titleText;
-    if (st === 'failed') titleText = t('重试') + kindName;
-    else if (hasFile) titleText = t('替换') + kindName;
-    else titleText = t('上传') + kindName;
-    var epSuffix = isEnglish() ? (' - Ep. ' + no) : (' - 第 ' + no + ' 集');
-    document.getElementById('fileModalTitle').textContent = titleText + epSuffix;
-    document.getElementById('fileModalTip').textContent = t('从本地上传文件（演示）。');
-    document.getElementById('fileLocalName').value = '';
-    openModal('fileModal');
-  }
-
-  function simulatePick() {
-    var name = document.getElementById('fName').value.trim() || t('短剧');
-    var fname = name + '_第' + curFileNo + '集' + (curFileKind === 'videoNoSub' ? '.mp4' : '_字幕.mp4');
-    document.getElementById('fileLocalName').value = fname;
-    showToast(t('已选择文件（演示）'), 'ok');
-  }
-
-  function confirmFileUpload() {
-    var e = findEp(curFileNo);
-    var name = document.getElementById('fName').value.trim() || t('短剧');
-    var fname = document.getElementById('fileLocalName').value.trim() || (name + '_第' + curFileNo + '集' + (curFileKind === 'videoNoSub' ? '.mp4' : '_字幕.mp4'));
-
-    e[curFileKind] = fname;
-    e[curFileKind + 'Info'] = null;
-    e[curFileKind + 'Status'] = 'uploading';
-    e[curFileKind + 'Progress'] = 3;
-    closeModal('fileModal');
-    renderEpisodes();
-    simulateProgress(curFileNo, curFileKind);
   }
 
   function simulateProgress(no, kind) {
