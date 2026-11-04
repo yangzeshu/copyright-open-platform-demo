@@ -736,27 +736,15 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         </div>
       </div>
 
-      <!-- e签宝：下拉单选（支持输入筛选） -->
+      <!-- e签宝：单行输入合同名称 / 合同ID -->
       <div id="muEsignBlock">
         <div class="form-item">
           <label class="form-label">授权入驻合同<span class="req">*</span></label>
-          <div class="autocomplete">
-            <input type="text" class="ant-input" id="muFw" placeholder="请选择或输入合同名称 / 合同ID" autocomplete="off" style="width:100%"
-              oninput="acInput('muFw','muFwPanel','muFwValue', ESIGN_FW_OPTS, '无匹配的合同')"
-              onfocus="acInput('muFw','muFwPanel','muFwValue', ESIGN_FW_OPTS, '无匹配的合同')">
-            <input type="hidden" id="muFwValue" value="">
-            <div class="ac-panel" id="muFwPanel"></div>
-          </div>
+          <input type="text" class="ant-input" id="muFw" placeholder="请输入授权入驻合同的合同名称 / 合同ID" style="width:100%">
         </div>
         <div class="form-item" style="margin-bottom:0">
           <label class="form-label">保密协议<span class="req">*</span></label>
-          <div class="autocomplete">
-            <input type="text" class="ant-input" id="muNda" placeholder="请选择或输入合同名称 / 合同ID" autocomplete="off" style="width:100%"
-              oninput="acInput('muNda','muNdaPanel','muNdaValue', ESIGN_NDA_OPTS, '无匹配的合同')"
-              onfocus="acInput('muNda','muNdaPanel','muNdaValue', ESIGN_NDA_OPTS, '无匹配的合同')">
-            <input type="hidden" id="muNdaValue" value="">
-            <div class="ac-panel" id="muNdaPanel"></div>
-          </div>
+          <input type="text" class="ant-input" id="muNda" placeholder="请输入保密协议的合同名称 / 合同ID" style="width:100%">
         </div>
       </div>
 
@@ -2062,9 +2050,8 @@ var DEMO_ACCOUNTS = [
     ['muSubject', 'muFw', 'muNda'].forEach(function (id) {
       var el = document.getElementById(id); if (el) el.value = '';
     });
-    ['muSubjectValue', 'muFwValue', 'muNdaValue'].forEach(function (id) {
-      var el = document.getElementById(id); if (el) el.value = '';
-    });
+    var subjHidden = document.getElementById('muSubjectValue');
+    if (subjHidden) subjHidden.value = '';
     setMuType('esign');
     renderMuFiles();
     openModal('manualModal');
@@ -2136,11 +2123,8 @@ var DEMO_ACCOUNTS = [
     if (MU_TYPE === 'esign') {
       var fw = document.getElementById('muFw').value.trim();
       var nda = document.getElementById('muNda').value.trim();
-      if (!fw) { showToast('请选择授权入驻合同', 'err'); return; }
-      if (!nda) { showToast('请选择保密协议', 'err'); return; }
-      if (ESIGN_FW_OPTS.indexOf(fw) === -1 || ESIGN_NDA_OPTS.indexOf(nda) === -1) {
-        showToast('请从下拉列表中选择 e签宝合同', 'err'); return;
-      }
+      if (!fw) { showToast('请输入授权入驻合同的合同名称 / 合同ID', 'err'); return; }
+      if (!nda) { showToast('请输入保密协议的合同名称 / 合同ID', 'err'); return; }
       docsInfo = { type: 'esign', framework: fw, nda: nda };
     } else {
       if (!MU_FILES.framework) { showToast('请上传授权入驻合同 PDF', 'err'); return; }
