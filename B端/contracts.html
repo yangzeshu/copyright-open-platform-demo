@@ -813,25 +813,35 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   </div>
 </div>
 
-<!-- 补充信息弹窗（通过时：单选占位） -->
+<!-- 审核通过：填写甲方信息 -->
 <div class="modal-mask" id="bizModal">
-  <div class="modal">
+  <div class="modal" style="width:520px">
     <div class="modal-head">
-      <div class="modal-title">补充信息</div>
+      <div class="modal-title">甲方信息</div>
       <span class="modal-close" onclick="closeModal('bizModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
     </div>
     <div class="modal-body">
+      <div style="font-size:12px;color:var(--text-3);margin:0 0 16px">审核通过前，请补全甲方（平台方）信息，填写完成后提交进入下一环节。</div>
+      <div class="form-item">
+        <label class="form-label">联系人<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="paContact" placeholder="请输入联系人" style="width:100%">
+      </div>
+      <div class="form-item">
+        <label class="form-label">联系电话<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="paPhone" placeholder="请输入联系电话" maxlength="11" style="width:100%">
+      </div>
+      <div class="form-item">
+        <label class="form-label">联系邮箱<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="paEmail" placeholder="请输入联系邮箱" style="width:100%">
+      </div>
       <div class="form-item" style="margin-bottom:0">
-        <label class="form-label">补充信息<span class="req" style="color:var(--danger);margin-left:2px">*</span></label>
-        <div class="radio-group">
-          <label class="radio-item"><input type="radio" name="suppInfo" value="选项 A">选项 A</label>
-          <label class="radio-item"><input type="radio" name="suppInfo" value="选项 B">选项 B</label>
-        </div>
+        <label class="form-label">合作期限<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="paTerm" placeholder="如：1 年 / 24 个月" style="width:100%">
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal('bizModal')">取消</button>
-      <button class="btn btn-primary" onclick="confirmBiz()">确定</button>
+      <button class="btn btn-primary" onclick="confirmBiz()">提交</button>
     </div>
   </div>
 </div>
@@ -2326,9 +2336,33 @@ var DEMO_ACCOUNTS = [
   // 详情弹窗内通过/驳回
   function certPass() {
     currentBizNos = [currentContractNo];
+    openPassForm();
+  }
+  // 打开「甲方信息」表单（通过前必填）
+  function openPassForm() {
+    ['paContact', 'paPhone', 'paEmail', 'paTerm'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
     openModal('bizModal');
   }
   function confirmBiz() {
+    var contact = document.getElementById('paContact').value.trim();
+    var phone = document.getElementById('paPhone').value.trim();
+    var email = document.getElementById('paEmail').value.trim();
+    var term = document.getElementById('paTerm').value.trim();
+    if (!contact) { showToast('请输入联系人', 'err'); return; }
+    if (!phone) { showToast('请输入联系电话', 'err'); return; }
+    if (!email) { showToast('请输入联系邮箱', 'err'); return; }
+    if (!term) { showToast('请输入合作期限', 'err'); return; }
+
+    // 记录甲方信息到对应合同
+    var info = { contact: contact, phone: phone, email: email, term: term, submitTime: nowStr() };
+    currentBizNos.forEach(function (no) {
+      var c = findContract(no);
+      if (c) c.partyAInfo = info;
+    });
+
     closeModal('bizModal');
     closeModal('detailModal');
     doPass(currentBizNos);
@@ -2356,7 +2390,7 @@ var DEMO_ACCOUNTS = [
     var list = selectedContracts();
     if (!list.length) { showToast('请先选择要操作的数据', 'err'); return; }
     currentBizNos = list.map(function (c) { return c.no; });
-    openModal('bizModal');
+    openPassForm();
   }
   function doPass(nos) {
     nos.forEach(function (no) {
