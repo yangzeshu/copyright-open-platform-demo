@@ -688,6 +688,71 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   </div>
 </div>
 
+<!-- 编辑主体弹窗（仅海外主体信息） -->
+<div class="modal-mask" id="certEditModal">
+  <div class="modal" style="width:620px">
+    <div class="modal-head">
+      <div class="modal-title">编辑主体信息</div>
+      <span class="modal-close" onclick="closeModal('certEditModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--text-3);margin:0 0 14px">仅可编辑海外主体信息（用于合同签署与收款）</div>
+      <div class="form-item">
+        <label class="form-label">海外公司全称<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="ceCompany" style="width:100%">
+      </div>
+      <div class="form-item">
+        <label class="form-label">联系地址<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="ceContactAddr" style="width:100%">
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <label class="form-label">联系人<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="ceContact" style="width:100%">
+        </div>
+        <div class="form-item">
+          <label class="form-label">联系电话<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="ceContactPhone" style="width:100%">
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">联系邮箱<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="ceContactEmail" style="width:100%">
+      </div>
+      <div class="form-item">
+        <label class="form-label">开户名称<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="ceBankName" style="width:100%">
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <label class="form-label">开户账号<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="ceBankAccount" style="width:100%">
+        </div>
+        <div class="form-item">
+          <label class="form-label">银行Swift代码<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="ceSwift" style="width:100%">
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">开户银行<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="ceBank" style="width:100%">
+      </div>
+      <div class="form-item">
+        <label class="form-label">公司地址<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="ceCompanyAddrEn" style="width:100%">
+      </div>
+      <div class="form-item" style="margin-bottom:0">
+        <label class="form-label">银行地址<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="ceBankAddrEn" style="width:100%">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('certEditModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmCertEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- 驳回原因弹窗 -->
 <div class="modal-mask" id="rejectModal">
   <div class="modal">
@@ -1812,11 +1877,7 @@ var DEMO_ACCOUNTS = [
   { id: '1001', nickname: '光影工场', email: 'guang***@163.com', phone: '138****6688', plainEmail: 'guangying@163.com', plainPhone: '13812346688', status: 'enabled', registerTime: '2026-06-01 09:00:00' },
   { id: '1002', nickname: '新锐工作室', email: 'xinru***@qq.com', phone: '159****2211', plainEmail: 'xinrui@qq.com', plainPhone: '15912342211', status: 'enabled', registerTime: '2026-08-15 14:00:00' },
   { id: '1003', nickname: '追光传媒', email: 'zhui***@126.com', phone: '137****3355', plainEmail: 'zhuiguang@126.com', plainPhone: '13712343355', status: 'enabled', registerTime: '2026-07-01 10:00:00' },
-  { id: '1004', nickname: '梦工厂传媒', email: 'meng***@163.com', phone: '186****9988', plainEmail: 'menggongchang@163.com', plainPhone: '18612349988', status: 'disabled', registerTime: '2026-05-20 09:00:00' },
-  { id: '1005', nickname: '星辰短剧', email: 'xing***@gmail.com', phone: '130****7744', plainEmail: 'xingchen@gmail.com', plainPhone: '13012347744', status: 'enabled', registerTime: '2026-09-01 11:00:00' },
-  { id: '1006', nickname: '星河传媒', email: 'xinghe***@163.com', phone: '151****8899', plainEmail: 'xinghe@163.com', plainPhone: '15112348899', status: 'enabled', registerTime: '2026-09-05 10:00:00' },
-  { id: '1007', nickname: '晓雨传媒', email: 'linxy***@163.com', phone: '136****1111', plainEmail: 'linxiaoyu@163.com', plainPhone: '13600001111', status: 'enabled', registerTime: '2026-08-15 09:00:00' },
-  { id: '1008', nickname: '子墨传媒', email: 'zhouzm***@qq.com', phone: '139****2222', plainEmail: 'zhouzimo@qq.com', plainPhone: '13900002222', status: 'enabled', registerTime: '2026-09-10 15:00:00' }
+  { id: '1004', nickname: '梦工厂传媒', email: 'meng***@163.com', phone: '186****9988', plainEmail: 'menggongchang@163.com', plainPhone: '18612349988', status: 'disabled', registerTime: '2026-05-20 09:00:00' }
 ];
 
 // 主体演示数据（一个账号多个主体，每个主体独立认证 + 独立合同）
@@ -1852,21 +1913,6 @@ var DEMO_SUBJECTS = [
       swift: 'CMBCCNBS', business: '冰雨'
     },
     exclusiveRate: '', nonExclusiveRate: ''
-  },
-  {
-    subjectId: 'SUB1001-03', accountId: '1001', subjectName: '杭州光影映画内容有限公司', subjectType: 'company', isDefault: false,
-    certStatus: 'certed', reviewer: '禾呈', reviewStage: '', reviewTime: '2026-07-12 15:00:00', certSubmitTime: '2026-07-10 09:00:00',
-    cert: {
-      domesticCompanyName: '杭州光影映画内容有限公司', bizLicense: '营业执照.jpg',
-      company: 'Hangzhou Guangying Yinghua Content Co., Ltd.', contactAddr: '杭州市西湖区文一路55号',
-      contact: '赵敏', contactPhone: '13612348800', contactEmail: 'zhaomin@163.com',
-      bankName: 'Hangzhou Guangying Yinghua Content Co., Ltd.', bankAccount: '6228000055665566',
-      bankEn: 'China Construction Bank, Hangzhou Branch',
-      companyAddrEn: 'No.55, Wenyi Road, Xihu District, Hangzhou, China',
-      bankAddrEn: 'No.55, Wenyi Road, Xihu District, Hangzhou, China',
-      swift: 'PCBCCNBJ', business: '禾呈'
-    },
-    exclusiveRate: '25', nonExclusiveRate: '15'
   },
   {
     subjectId: 'SUB1002-01', accountId: '1002', subjectName: '杭州新锐文化传播有限公司', subjectType: 'company', isDefault: true,
@@ -1913,67 +1959,8 @@ var DEMO_SUBJECTS = [
       swift: 'BKCHCNBJ', business: '泰瑞'
     },
     exclusiveRate: '28', nonExclusiveRate: '18'
-  },
-  {
-    subjectId: 'SUB1005-01', accountId: '1005', subjectName: '杭州星辰文化传媒有限公司', subjectType: 'company', isDefault: true,
-    certStatus: 'pending', reviewer: '', reviewStage: 'unclaimed', reviewTime: '', certSubmitTime: '2026-09-12 09:00:00',
-    cert: {
-      domesticCompanyName: '杭州星辰文化传媒有限公司', bizLicense: '营业执照.jpg',
-      company: 'Hangzhou Xingchen Culture Media Co., Ltd.', contactAddr: '杭州市上城区延安路99号',
-      contact: '周明', contactPhone: '13012347744', contactEmail: 'zhouming@gmail.com',
-      bankName: 'Hangzhou Xingchen Culture Media Co., Ltd.', bankAccount: '6222000044554455',
-      bankEn: 'Bank of China, Hangzhou Branch',
-      companyAddrEn: 'No.99, Yanan Road, Shangcheng District, Hangzhou, China',
-      bankAddrEn: 'No.99, Yanan Road, Shangcheng District, Hangzhou, China',
-      swift: 'BKCHCNBJ', business: '大料'
-    },
-    exclusiveRate: '', nonExclusiveRate: ''
-  },
-  {
-    subjectId: 'SUB1006-01', accountId: '1006', subjectName: '杭州星河文化传媒有限公司', subjectType: 'company', isDefault: true,
-    certStatus: 'pending', reviewer: '枥文', reviewStage: 'claimed', reviewTime: '', certSubmitTime: '2026-09-12 09:00:00',
-    cert: {
-      domesticCompanyName: '杭州星河文化传媒有限公司', bizLicense: '营业执照.jpg',
-      company: 'Hangzhou Xinghe Culture Media Co., Ltd.', contactAddr: '杭州市滨江区江陵路88号',
-      contact: '陈强', contactPhone: '15112348899', contactEmail: 'chenqiang@163.com',
-      bankName: 'Hangzhou Xinghe Culture Media Co., Ltd.', bankAccount: '6230000033333333',
-      bankEn: 'China Merchants Bank, Hangzhou Branch',
-      companyAddrEn: 'No.88, Jiangling Road, Binjiang District, Hangzhou, China',
-      bankAddrEn: 'No.88, Jiangling Road, Binjiang District, Hangzhou, China',
-      swift: 'CMBCCNBS', business: '枥文'
-    },
-    exclusiveRate: '', nonExclusiveRate: ''
-  },
-  {
-    subjectId: 'SUB1007-01', accountId: '1007', subjectName: '杭州晓雨文化传媒有限公司', subjectType: 'company', isDefault: true,
-    certStatus: 'certed', reviewer: '泰瑞', reviewStage: '', reviewTime: '2026-08-20 10:00:00', certSubmitTime: '2026-08-18 09:00:00',
-    cert: {
-      domesticCompanyName: '杭州晓雨文化传媒有限公司', bizLicense: '营业执照.jpg',
-      company: 'Hangzhou Xiaoyu Culture Media Co., Ltd.', contactAddr: '杭州市西湖区文二路18号',
-      contact: '林晓雨', contactPhone: '13600001111', contactEmail: 'linxiaoyu@163.com',
-      bankName: 'Hangzhou Xiaoyu Culture Media Co., Ltd.', bankAccount: '6228000011112222',
-      bankEn: 'Agricultural Bank of China, Hangzhou Branch',
-      companyAddrEn: 'No.18, Wener Road, Xihu District, Hangzhou, China',
-      bankAddrEn: 'No.18, Wener Road, Xihu District, Hangzhou, China',
-      swift: 'ABOCCNBJ', business: '泰瑞'
-    },
-    exclusiveRate: '', nonExclusiveRate: ''
-  },
-  {
-    subjectId: 'SUB1008-01', accountId: '1008', subjectName: '杭州子墨文化传媒有限公司', subjectType: 'company', isDefault: true,
-    certStatus: 'pending', reviewer: '', reviewStage: 'unclaimed', reviewTime: '', certSubmitTime: '2026-09-14 10:00:00',
-    cert: {
-      domesticCompanyName: '杭州子墨文化传媒有限公司', bizLicense: '营业执照.jpg',
-      company: 'Hangzhou Zimo Culture Media Co., Ltd.', contactAddr: '杭州市余杭区良渚街道5号',
-      contact: '周子墨', contactPhone: '13900002222', contactEmail: 'zhouzimo@qq.com',
-      bankName: 'Hangzhou Zimo Culture Media Co., Ltd.', bankAccount: '6217000022223333',
-      bankEn: 'China Merchants Bank, Hangzhou Branch',
-      companyAddrEn: 'No.5, Liangzhu Street, Yuhang District, Hangzhou, China',
-      bankAddrEn: 'No.5, Liangzhu Street, Yuhang District, Hangzhou, China',
-      swift: 'CMBCCNBS', business: '大料'
-    },
-    exclusiveRate: '', nonExclusiveRate: ''
   }
+
 ];
 
 // ============================================================
@@ -2093,6 +2080,10 @@ var DEMO_SUBJECTS = [
   function renderOps(s) {
     var ops = [];
     ops.push('<span class="op-link" onclick="viewCert(\'' + s.subjectId + '\')">详情</span>');
+    // 待审核 / 已认证 可编辑海外主体信息
+    if (s.certStatus === 'pending' || s.certStatus === 'certed') {
+      ops.push('<span class="op-link" onclick="openCertEdit(\'' + s.subjectId + '\')">编辑</span>');
+    }
     ops.push('<span class="op-link" onclick="openBizEdit(\'' + s.subjectId + '\')">编辑商务</span>');
     return '<div class="op-col">' + ops.join('') + '</div>';
   }
@@ -2180,6 +2171,52 @@ var DEMO_SUBJECTS = [
     closeModal('bizModal');
     closeModal('certModal');
     doPass();
+  }
+
+  // ========== 编辑主体（仅海外主体信息） ==========
+  var certEditId = null;
+  var CERT_EDIT_FIELDS = [
+    ['ceCompany', 'company'],
+    ['ceContactAddr', 'contactAddr'],
+    ['ceContact', 'contact'],
+    ['ceContactPhone', 'contactPhone'],
+    ['ceContactEmail', 'contactEmail'],
+    ['ceBankName', 'bankName'],
+    ['ceBankAccount', 'bankAccount'],
+    ['ceBank', 'bankEn'],
+    ['ceCompanyAddrEn', 'companyAddrEn'],
+    ['ceBankAddrEn', 'bankAddrEn'],
+    ['ceSwift', 'swift']
+  ];
+  function openCertEdit(subjectId) {
+    var s = findSubject(subjectId);
+    if (!s) return;
+    certEditId = subjectId;
+    var c = s.cert || {};
+    CERT_EDIT_FIELDS.forEach(function (f) {
+      document.getElementById(f[0]).value = c[f[1]] || '';
+    });
+    openModal('certEditModal');
+  }
+  function confirmCertEdit() {
+    var s = findSubject(certEditId);
+    if (!s) return;
+    var vals = {};
+    for (var i = 0; i < CERT_EDIT_FIELDS.length; i++) {
+      var el = document.getElementById(CERT_EDIT_FIELDS[i][0]);
+      var v = el.value.trim();
+      if (!v) {
+        showToast('请填写' + el.parentElement.querySelector('.form-label').textContent.replace('*', ''), 'err');
+        el.focus();
+        return;
+      }
+      vals[CERT_EDIT_FIELDS[i][1]] = v;
+    }
+    s.cert = s.cert || {};
+    for (var k in vals) s.cert[k] = vals[k];
+    closeModal('certEditModal');
+    renderList();
+    showToast('主体信息已保存', 'ok');
   }
 
   // ========== 编辑商务（列表所有数据可用；仅商务，可输入匹配的单选下拉） ==========

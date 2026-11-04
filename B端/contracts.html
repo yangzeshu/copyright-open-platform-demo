@@ -505,9 +505,31 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .form-label .req { color: var(--danger); margin-left: 2px; }
   .char-count { text-align: right; font-size: 12px; color: var(--text-3); margin-top: 4px; }
 
-  .batch-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .batch-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .batch-bar .sel-info { font-size: 13px; color: var(--text-2); }
   .batch-bar .sel-info b { color: var(--brand); }
+
+  /* 手动上传合同 */
+  .list-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .radio-cards { display: flex; gap: 10px; flex-wrap: wrap; }
+  .radio-card {
+    display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px;
+    border: 1px solid var(--border-strong); border-radius: 8px; background: #fff;
+    font-size: 13px; color: var(--text-2); cursor: pointer; transition: all .15s;
+  }
+  .radio-card:hover { border-color: var(--brand); color: var(--brand); }
+  .radio-card.active { border-color: var(--brand); background: var(--brand-weak); color: var(--brand); font-weight: 600; }
+  .radio-card input { accent-color: var(--brand); cursor: pointer; }
+  .file-drop {
+    display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #fafbfc;
+    border: 1px dashed var(--border-strong); border-radius: 8px; font-size: 13px; color: var(--text-3);
+    cursor: pointer; transition: all .15s;
+  }
+  .file-drop:hover { border-color: var(--brand); color: var(--brand); }
+  .file-drop.has { border-style: solid; background: #fff; color: var(--text); }
+  .file-drop .fd-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-drop .fd-del { color: var(--text-3); flex-shrink: 0; }
+  .file-drop .fd-del:hover { color: var(--danger); }
 
   /* 合同预览文档 */
   .doc-wrap { background: #fff; border: 1px solid var(--border-strong); border-radius: 10px; padding: 32px 36px; }
@@ -650,10 +672,14 @@ textarea.form-input { resize: vertical; min-height: 90px; }
       </div>
 
       <!-- 批量操作栏 -->
-      <div class="batch-bar">
-        <span class="sel-info">已选 <b id="selCount">0</b> 项</span>
+      <div class="list-bar">
+        <button class="btn btn-primary btn-sm" onclick="openManualUpload()">手动上传</button>
         <button class="btn btn-primary btn-sm" onclick="batchPass()">批量通过</button>
         <button class="btn btn-danger btn-sm" onclick="batchReject()">批量驳回</button>
+      </div>
+
+      <div class="batch-bar">
+        <span class="sel-info">已选 <b id="selCount">0</b> 项</span>
       </div>
 
       <div class="table-wrap">
@@ -675,6 +701,81 @@ textarea.form-input { resize: vertical; min-height: 90px; }
     </div>
     <div class="modal-body" id="detailBody"></div>
     <div class="modal-foot" id="detailFoot"></div>
+  </div>
+</div>
+
+<!-- 手动上传合同弹窗 -->
+<div class="modal-mask" id="manualModal">
+  <div class="modal" style="width:560px">
+    <div class="modal-head">
+      <div class="modal-title">手动上传合同</div>
+      <span class="modal-close" onclick="closeManualUpload()"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item">
+        <label class="form-label">主体<span class="req">*</span></label>
+        <div class="autocomplete">
+          <input type="text" class="ant-input" id="muSubject" placeholder="请选择或输入主体名称" autocomplete="off" style="width:100%"
+            oninput="acInput('muSubject','muSubjectPanel','muSubjectValue', MU_SUBJECT_NAMES, '无匹配的主体')"
+            onfocus="acInput('muSubject','muSubjectPanel','muSubjectValue', MU_SUBJECT_NAMES, '无匹配的主体')">
+          <input type="hidden" id="muSubjectValue" value="">
+          <div class="ac-panel" id="muSubjectPanel"></div>
+        </div>
+        <div class="form-hint" style="font-size:12px;color:var(--text-3);margin-top:6px">仅可选认证状态为「已认证」的主体</div>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label">合同文件<span class="req">*</span></label>
+        <div class="radio-cards">
+          <label class="radio-card active" id="muTypeEsign" onclick="setMuType('esign')">
+            <input type="radio" name="muType" value="esign" checked>e签宝合同
+          </label>
+          <label class="radio-card" id="muTypeOffline" onclick="setMuType('offline')">
+            <input type="radio" name="muType" value="offline">线下合同
+          </label>
+        </div>
+      </div>
+
+      <!-- e签宝：下拉单选（支持输入筛选） -->
+      <div id="muEsignBlock">
+        <div class="form-item">
+          <label class="form-label">授权入驻合同<span class="req">*</span></label>
+          <div class="autocomplete">
+            <input type="text" class="ant-input" id="muFw" placeholder="请选择或输入合同名称 / 合同ID" autocomplete="off" style="width:100%"
+              oninput="acInput('muFw','muFwPanel','muFwValue', ESIGN_FW_OPTS, '无匹配的合同')"
+              onfocus="acInput('muFw','muFwPanel','muFwValue', ESIGN_FW_OPTS, '无匹配的合同')">
+            <input type="hidden" id="muFwValue" value="">
+            <div class="ac-panel" id="muFwPanel"></div>
+          </div>
+        </div>
+        <div class="form-item" style="margin-bottom:0">
+          <label class="form-label">保密协议<span class="req">*</span></label>
+          <div class="autocomplete">
+            <input type="text" class="ant-input" id="muNda" placeholder="请选择或输入合同名称 / 合同ID" autocomplete="off" style="width:100%"
+              oninput="acInput('muNda','muNdaPanel','muNdaValue', ESIGN_NDA_OPTS, '无匹配的合同')"
+              onfocus="acInput('muNda','muNdaPanel','muNdaValue', ESIGN_NDA_OPTS, '无匹配的合同')">
+            <input type="hidden" id="muNdaValue" value="">
+            <div class="ac-panel" id="muNdaPanel"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 线下合同：上传 PDF -->
+      <div id="muOfflineBlock" style="display:none">
+        <div class="form-item">
+          <label class="form-label">授权入驻合同（PDF）<span class="req">*</span></label>
+          <div class="file-drop" id="muFwDrop" onclick="pickMuFile('framework')"></div>
+        </div>
+        <div class="form-item" style="margin-bottom:0">
+          <label class="form-label">保密协议（PDF）<span class="req">*</span></label>
+          <div class="file-drop" id="muNdaDrop" onclick="pickMuFile('nda')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeManualUpload()">取消</button>
+      <button class="btn btn-primary" onclick="submitManualUpload()">确定</button>
+    </div>
   </div>
 </div>
 
@@ -1152,6 +1253,39 @@ var DEMO_CONTRACTS = [
     refillReason: ''
   }
 ];
+
+// ===== 手动上传合同：可选主体（仅已认证）与 e签宝已签署合同（演示数据） =====
+var MU_SUBJECTS = [
+  {
+    subjectId: 'SUB1001-01', accountName: '光影工场', accountId: '1001',
+    subjectName: '杭州光影映画文化传媒有限公司', company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
+    contactName: '张伟', contactPhone: '13812346688', contactEmail: 'zhangwei@163.com',
+    contactAddr: '杭州市西湖区文三路100号', bankAccount: '6222000088888888',
+    bankEn: 'Industrial and Commercial Bank of China, Hangzhou Branch', business: '枥文'
+  },
+  {
+    subjectId: 'SUB1004-01', accountName: '梦工厂传媒', accountId: '1004',
+    subjectName: '杭州梦工厂传媒有限公司', company: 'Hangzhou Dreamworks Media Co., Ltd.',
+    contactName: '王芳', contactPhone: '18612349988', contactEmail: 'wangfang@163.com',
+    contactAddr: '杭州市萧山区市心北路100号', bankAccount: '6217000066666666',
+    bankEn: 'Bank of China, Hangzhou Branch', business: '冰雨'
+  }
+];
+var MU_SUBJECT_NAMES = MU_SUBJECTS.map(function (s) { return s.company; });
+
+// e签宝已签署合同（名称 + 合同ID）
+var ESIGN_DOCS = {
+  framework: [
+    { name: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd. 授权入驻合同', id: 'ES202609010011' },
+    { name: 'Hangzhou Dreamworks Media Co., Ltd. 授权入驻合同', id: 'ES202609010012' }
+  ],
+  nda: [
+    { name: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd. 保密协议', id: 'ES202609010021' },
+    { name: 'Hangzhou Dreamworks Media Co., Ltd. 保密协议', id: 'ES202609010022' }
+  ]
+};
+var ESIGN_FW_OPTS = ESIGN_DOCS.framework.map(function (d) { return d.name + '（' + d.id + '）'; });
+var ESIGN_NDA_OPTS = ESIGN_DOCS.nda.map(function (d) { return d.name + '（' + d.id + '）'; });
 
 // 合同类型映射（两份：合作框架协议 + 保密协议）
 var CONTRACT_TYPE = {
@@ -1908,6 +2042,124 @@ var DEMO_ACCOUNTS = [
     document.getElementById('sidebar-root').innerHTML = renderSidebar('contracts');
   }
 
+  // ========== 手动上传合同 ==========
+  var MU_TYPE = 'esign';
+  var MU_FILES = { framework: '', nda: '' };
+
+  function openManualUpload() {
+    MU_TYPE = 'esign';
+    MU_FILES = { framework: '', nda: '' };
+    ['muSubject', 'muFw', 'muNda'].forEach(function (id) {
+      var el = document.getElementById(id); if (el) el.value = '';
+    });
+    ['muSubjectValue', 'muFwValue', 'muNdaValue'].forEach(function (id) {
+      var el = document.getElementById(id); if (el) el.value = '';
+    });
+    setMuType('esign');
+    renderMuFiles();
+    openModal('manualModal');
+  }
+  function closeManualUpload() { closeModal('manualModal'); }
+
+  function setMuType(t) {
+    MU_TYPE = t;
+    document.getElementById('muTypeEsign').classList.toggle('active', t === 'esign');
+    document.getElementById('muTypeOffline').classList.toggle('active', t === 'offline');
+    var radio = document.querySelector('input[name="muType"][value="' + t + '"]');
+    if (radio) radio.checked = true;
+    document.getElementById('muEsignBlock').style.display = t === 'esign' ? 'block' : 'none';
+    document.getElementById('muOfflineBlock').style.display = t === 'offline' ? 'block' : 'none';
+  }
+
+  // 演示：点击即选中一个 PDF
+  function pickMuFile(kind) {
+    MU_FILES[kind] = kind === 'framework'
+      ? '授权入驻合同（双方盖章）.pdf'
+      : '保密协议（双方盖章）.pdf';
+    renderMuFiles();
+  }
+  function clearMuFile(kind, e) {
+    if (e) e.stopPropagation();
+    MU_FILES[kind] = '';
+    renderMuFiles();
+  }
+  function renderMuFiles() {
+    renderOneMuFile('muFwDrop', 'framework', '点击上传授权入驻合同 PDF');
+    renderOneMuFile('muNdaDrop', 'nda', '点击上传保密协议 PDF');
+  }
+  function renderOneMuFile(boxId, kind, emptyText) {
+    var box = document.getElementById(boxId);
+    if (!box) return;
+    var name = MU_FILES[kind];
+    if (!name) {
+      box.classList.remove('has');
+      box.innerHTML = '<svg viewBox="0 0 20 20" fill="none" style="width:16px;height:16px;flex-shrink:0"><path d="M10 13V4m0 0L6 8m4-4 4 4M4 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + emptyText + '</span>';
+    } else {
+      box.classList.add('has');
+      box.innerHTML = '<svg viewBox="0 0 20 20" fill="none" style="width:16px;height:16px;flex-shrink:0;color:var(--brand)"><path d="M12 3H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7l-3-4Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v4h4" stroke="currentColor" stroke-width="1.5"/></svg>' +
+        '<span class="fd-name">' + name + '</span>' +
+        '<span class="fd-del" onclick="clearMuFile(\'' + kind + '\', event)">删除</span>';
+    }
+  }
+
+  function nextContractNo() {
+    var d = new Date();
+    var ym = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2);
+    var prefix = 'HT' + ym + '-';
+    var max = 0;
+    DEMO_CONTRACTS.forEach(function (c) {
+      if (c.no.indexOf(prefix) === 0) {
+        var n = parseInt(c.no.slice(prefix.length), 10);
+        if (!isNaN(n) && n > max) max = n;
+      }
+    });
+    return prefix + ('00' + (max + 1)).slice(-3);
+  }
+
+  function submitManualUpload() {
+    var subjName = document.getElementById('muSubject').value.trim();
+    var subj = null;
+    MU_SUBJECTS.forEach(function (x) { if (x.company === subjName) subj = x; });
+    if (!subj) { showToast('请从下拉列表中选择主体', 'err'); return; }
+
+    var docsInfo = null;
+    if (MU_TYPE === 'esign') {
+      var fw = document.getElementById('muFw').value.trim();
+      var nda = document.getElementById('muNda').value.trim();
+      if (!fw) { showToast('请选择授权入驻合同', 'err'); return; }
+      if (!nda) { showToast('请选择保密协议', 'err'); return; }
+      if (ESIGN_FW_OPTS.indexOf(fw) === -1 || ESIGN_NDA_OPTS.indexOf(nda) === -1) {
+        showToast('请从下拉列表中选择 e签宝合同', 'err'); return;
+      }
+      docsInfo = { type: 'esign', framework: fw, nda: nda };
+    } else {
+      if (!MU_FILES.framework) { showToast('请上传授权入驻合同 PDF', 'err'); return; }
+      if (!MU_FILES.nda) { showToast('请上传保密协议 PDF', 'err'); return; }
+      docsInfo = { type: 'offline', framework: MU_FILES.framework, nda: MU_FILES.nda };
+    }
+
+    var now = nowStr();
+    var rec = {
+      no: nextContractNo(),
+      company: subj.company,
+      docs: ['framework', 'nda'],
+      status: 'done',
+      accountName: subj.accountName, accountId: subj.accountId,
+      subjectName: subj.subjectName, subjectId: subj.subjectId, subjectType: 'company',
+      contactName: subj.contactName, contactPhone: subj.contactPhone,
+      business: subj.business,
+      generateTime: now, signTime: now,
+      reviewer: CURRENT_OPERATOR, reviewStage: '', reviewTime: now,
+      partyB: pb(subj.company, subj.contactAddr, subj.contactName, subj.contactPhone, subj.contactEmail, subj.company, subj.bankAccount, subj.bankEn),
+      refillReason: '',
+      manualDocs: docsInfo
+    };
+    DEMO_CONTRACTS.unshift(rec);
+    closeManualUpload();
+    renderList();
+    showToast('已新增已签署合同：' + rec.no, 'ok');
+  }
+
   function filteredContracts() {
     var no = document.getElementById('searchNo').value.trim();
     var name = document.getElementById('searchName').value.trim();
@@ -1981,7 +2233,10 @@ var DEMO_ACCOUNTS = [
   function renderOps(c) {
     var ops = [];
     ops.push('<span class="op-link" onclick="viewDetail(\'' + c.no + '\')">详情</span>');
-    ops.push('<span class="op-link" onclick="previewContract(\'' + c.no + '\')">模板预览</span>');
+    // 已签署合同不再展示「模板预览」
+    if (c.status !== 'done') {
+      ops.push('<span class="op-link" onclick="previewContract(\'' + c.no + '\')">模板预览</span>');
+    }
     if (c.status === 'done') {
       ops.push('<span class="op-link" onclick="downloadContract(\'' + c.no + '\')">合同下载</span>');
     }
