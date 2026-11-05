@@ -1210,7 +1210,7 @@ var DEMO_SETTLEMENTS = [
 ];
 
 // ---------- 合同演示数据（C 端 / B 端共享） ----------
-// status: fill 填写信息 | generating 合同生成 | refill 合同信息重填 | pending 待签署 | done 已签署
+// status: generating 审核中 | refill 审核驳回 | pending 待签署 | done 已签署
 // reviewStage（仅 generating 有意义）: unclaimed 待领取 | claimed 审核中
 
 // 乙方 8 字段（两份合同共用）
@@ -1311,7 +1311,7 @@ function typeLabel(key) {
   return t(c.label);
 }
 
-// 合同状态映射（4 态；「填写信息」态实际不存在，已删）
+// 合同状态映射（4 态）
 // 注意：generating 对外展示为「审核中」，refill 对外展示为「审核驳回」
 var CONTRACT_STATUS = {
   generating: { label: '审核中',   cls: 'tag-blue' },

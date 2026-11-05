@@ -2377,7 +2377,7 @@ function __reenter(page) {
   }
 
   // ========== 时间范围（使用公共 createRangePicker） ==========
-  // 四个实例：上传时间、审核时间、上架时间（精确到秒）+ 版权授权时间（精确到日）
+  // 三个实例：上传时间、审核时间、上架时间（精确到秒）
   var uploadPicker = createRangePicker('rpUploadWrap', { dateOnly: false });
   var reviewPicker = createRangePicker('rpReviewWrap', { dateOnly: false });
   var shelfPicker = createRangePicker('rpShelfWrap', { dateOnly: false });
