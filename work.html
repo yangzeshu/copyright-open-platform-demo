@@ -828,6 +828,24 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 
   .detail-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; }
   .detail-card .card-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+
+  /* ===== 新版上传页：分区 tab / 物料文件列表 ===== */
+  .sec-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin: 4px 0 16px; }
+  .sec-tab { padding: 8px 16px; font-size: 13px; color: var(--text-3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .sec-tab:hover { color: var(--brand); }
+  .sec-tab.active { color: var(--brand); font-weight: 600; border-bottom-color: var(--brand); }
+  .mod-hint { font-size: 12px; color: var(--text-3); line-height: 1.9; background: #fafbfc; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; white-space: pre-line; }
+  .mod-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .mod-bar .spacer { flex: 1; }
+  .mf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .mf-table th, .mf-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+  .mf-table th { color: var(--text-3); font-weight: 500; background: #fafbfc; white-space: nowrap; }
+  .mf-table tbody tr:hover td { background: #fafbfc; }
+  .mf-thumb { width: 34px; height: 34px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #fff; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+  .mf-name { display: flex; align-items: center; gap: 10px; }
+  .mf-empty { padding: 22px; text-align: center; color: var(--text-3); font-size: 13px; background: #fafbfc; border-radius: 8px; }
+  .sub-title-input { max-width: 420px; }
 </style>
 </head>
 <body>
@@ -884,26 +902,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <!-- 折叠筛选项 -->
         <div class="search-panel filter-extra" id="expandPanel" style="display:none">
           <div class="search-item">
-            <label>主权益</label>
-            <div class="ms-wrap">
-              <div class="ms-box" id="equityBox" onclick="toggleEquityPanel(event)">
-                <div id="equityContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
-                <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              </div>
-              <div class="ms-panel" id="equityPanel"></div>
-            </div>
-          </div>
-          <div class="search-item">
-            <label>授权渠道</label>
-            <div class="ms-wrap">
-              <div class="ms-box" id="channelBox" onclick="toggleChannelPanel(event)">
-                <div id="channelContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
-                <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              </div>
-              <div class="ms-panel" id="channelPanel"></div>
-            </div>
-          </div>
-          <div class="search-item">
             <label>上传时间</label>
             <div class="rp-wrap" id="rpUploadWrap"></div>
           </div>
@@ -914,10 +912,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
           <div class="search-item">
             <label>上架时间</label>
             <div class="rp-wrap" id="rpShelfWrap"></div>
-          </div>
-          <div class="search-item">
-            <label>版权授权时间</label>
-            <div class="rp-wrap" id="rpAuthWrap"></div>
           </div>
         </div>
 
@@ -942,11 +936,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
           <tr>
             <th class="sticky-l" style="width:200px">短剧</th>
             <th style="width:80px">剧集数</th>
-            <th style="width:140px">版权授权时间</th>
             <th style="width:200px">授权主体</th>
-            <th style="width:80px">授权方式</th>
-            <th style="width:130px">主权益</th>
-            <th style="width:130px">授权渠道</th>
             <th style="width:150px">上传时间</th>
             <th style="width:150px">审核时间</th>
             <th style="width:150px">上架时间</th>
@@ -988,276 +978,83 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 <div class="layout">
   <div id="__work_upload__sidebar-root"></div>
   <div class="content">
-    <div class="upload-wrap">
-      <div class="page-head">
-        <div class="page-title" id="pageTitle">上传短剧</div>
-        <div class="page-desc" id="pageDesc">填写短剧基础信息，上传剧集视频与字幕文件</div>
+    <div class="page-head" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="page-title" id="upPageTitle">新建短剧</div>
+        <div class="page-desc">填写基础信息，并上传海报、花絮、预告片、法务版视频与剧集视频</div>
       </div>
+      <button class="btn btn-outline" onclick="__nav('works.html')">返回列表</button>
+    </div>
 
-      <div class="reject-banner" id="rejectBanner" style="display:none">
-        <svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <div><b>审核驳回原因：</b><span id="rejectReasonText"></span></div>
-      </div>
-
-      <!-- 步骤条 -->
-      <div class="steps">
-        <div class="step active" id="step1"><div class="step-dot">1</div><div class="step-label">基础信息</div></div>
-        <div class="step-line" id="stepLine1"></div>
-        <div class="step" id="step2"><div class="step-dot">2</div><div class="step-label">上传物料</div></div>
-      </div>
-
-      <!-- 第 1 步：基础信息 -->
-      <div id="step1Panel">
-
-        <!-- 模块：基础信息 -->
-        <div class="card">
-          <div class="card-title">基础信息</div>
-
-          <div class="form-item">
-            <label class="form-label"><span>短剧名称</span><span class="req">*</span></label>
-            <input type="text" class="form-input" id="fName" placeholder="请输入短剧名称">
-          </div>
-          <div class="form-item">
-            <label class="form-label">短剧别名</label>
-            <input type="text" class="form-input" id="fAlias" placeholder="请输入短剧别名">
-          </div>
-          <div class="form-item">
-            <label class="form-label">短剧封面</label>
-            <div class="cover-box">
-              <div class="cover-preview" id="coverPreview" onclick="pickCover()">
-                <svg viewBox="0 0 20 20" fill="none" width="26" height="26"><path d="M10 13V4m0 0L6 8m4-4 4 4M4 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>上传封面</span>
-              </div>
-              <div class="cover-tip">建议尺寸 3:4，支持 JPG / PNG 格式，大小不超过 5MB。</div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-item">
-              <label class="form-label"><span>源语言</span><span class="req">*</span></label>
-              <select class="form-input" id="fSrcLang">
-                <option value="">请选择源语言</option>
-                <option value="简体中文">简体中文</option>
-                <option value="英语">英语</option>
-              </select>
-            </div>
-            <div class="form-item">
-              <label class="form-label"><span>总集数</span><span class="req">*</span></label>
-              <input type="number" class="form-input" id="fTotalEp" placeholder="请输入总集数" min="1">
-            </div>
-          </div>
-          <div class="form-item">
-            <label class="form-label"><span>短剧简介</span><span class="req">*</span></label>
-            <textarea class="form-input" id="fDesc" placeholder="请输入短剧简介" style="min-height:100px"></textarea>
-          </div>
-          <div class="form-item" style="margin-bottom:0">
-            <label class="form-label">建议付费集数</label>
-            <input type="number" class="form-input" id="fSuggestPay" placeholder="请输入建议付费集数" min="0" style="max-width:220px">
-          </div>
+    <!-- 一、基础信息 -->
+    <div class="card">
+      <div class="card-title">基础信息</div>
+      <div class="form-row">
+        <div class="form-item">
+          <label class="form-label"><span>短剧名称</span><span class="req">*</span></label>
+          <input class="form-input" id="upName" placeholder="请输入短剧名称">
         </div>
-
-        <!-- 模块：授权信息 -->
-        <div class="card">
-          <div class="card-title">授权信息</div>
-          <div class="form-row">
-            <div class="form-item">
-              <label class="form-label"><span>授权主体</span><span class="req">*</span></label>
-              <div class="ms-wrap" id="__work_upload__subjectWrap">
-                <input type="text" class="form-input" id="__work_upload__subjectInput" placeholder="输入公司全称进行匹配" autocomplete="off" oninput="filterSubject__upload()" onfocus="filterSubject__upload()">
-                <div class="ms-panel" id="__work_upload__subjectPanel"></div>
-              </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-item">
-              <label class="form-label"><span>授权方式</span><span class="req">*</span></label>
-              <select class="form-input" id="fAuthType" style="max-width:50%" onchange="syncAuthType()">
-                <option value="">请选择授权方式</option>
-                <option value="独家">独家</option>
-                <option value="非独家">非独家</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-item">
-              <label class="form-label"><span>主权益</span><span class="req">*</span></label>
-              <div class="ms-wrap">
-                <div class="ms-box" id="__work_upload__equityBox" onclick="toggleEquityPanel__upload(event)">
-                  <div id="__work_upload__equityContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
-                  <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                </div>
-                <div class="ms-panel" id="__work_upload__equityPanel"></div>
-              </div>
-            </div>
-            <div class="form-item">
-              <label class="form-label"><span>授权渠道</span><span class="req">*</span></label>
-              <div class="ms-wrap">
-                <div class="ms-box" id="__work_upload__channelBox" onclick="toggleChannelPanel__upload(event)">
-                  <div id="__work_upload__channelContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
-                  <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                </div>
-                <div class="ms-panel" id="__work_upload__channelPanel"></div>
-              </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-item">
-              <label class="form-label"><span>IAA限制类型</span><span class="req">*</span></label>
-              <select class="form-input" id="fIaaLimitType" onchange="syncIaaLimit()">
-                <option value="">请选择限制类型</option>
-                <option value="不限制">不限制</option>
-                <option value="不授权">不授权</option>
-                <option value="按照约定时间上线">按照约定时间上线</option>
-              </select>
-            </div>
-            <div class="form-item" id="iaaOnlineWrap" style="display:none">
-              <label class="form-label">IAA约定可上线时间</label>
-              <input type="date" class="form-input" id="fIaaOnlineTime">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-item">
-              <label class="form-label"><span>版权授权时间</span><span class="req">*</span></label>
-              <input type="date" class="form-input" id="fCopyrightStart">
-            </div>
-            <div class="form-item">
-              <label class="form-label"><span>版权到期时间</span><span class="req">*</span></label>
-              <input type="date" class="form-input" id="fCopyrightEnd">
-            </div>
-          </div>
-          <div class="form-item">
-            <label class="form-label">约定上线时间</label>
-            <input type="date" class="form-input" id="fOnlineTime" style="max-width:50%">
-          </div>
-          <div class="form-item">
-            <label class="form-label"><span>友商信息</span><span class="req">*</span></label>
-            <input type="text" class="form-input" id="fFriendInfo" maxlength="100" placeholder="共同采买或者享有本剧版权的其他公司">
-            <div class="form-hint">请描述共同采买或者享有这部剧的其他公司</div>
-          </div>
-          <div class="form-item">
-            <label class="form-label"><span>社媒可发布描述</span><span class="req">*</span></label>
-            <input type="text" class="form-input" id="fSocialMediaDesc" maxlength="100" placeholder="请输入社媒可发布描述">
-          </div>
-          <div class="form-item" style="margin-bottom:0">
-            <label class="form-label"><span>授权地区</span><span class="req">*</span></label>
-            <input type="text" class="form-input" id="fAuthRegion" maxlength="100" placeholder="请输入授权地区">
-          </div>
-        </div>
-
-      </div>
-
-      <!-- 第 2 步：上传物料 -->
-      <div id="step2Panel" style="display:none">
-        <!-- 模块：上传物料（原上传剧集） -->
-        <div class="card">
-          <div class="card-title">上传物料</div>
-          <div class="ep-toolbar">
-            <div class="ep-dropdown">
-              <button class="btn btn-primary btn-sm" type="button">
-                <svg viewBox="0 0 20 20" fill="none" width="15" height="15"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span>本地上传</span>
-                <svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m6 8 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="ep-dropdown-menu">
-                <button type="button" class="ep-dropdown-item" onclick="localUploadKind('videoNoSub')">无字幕视频</button>
-                <button type="button" class="ep-dropdown-item" onclick="localUploadKind('videoSub')">有字幕视频</button>
-                <button type="button" class="ep-dropdown-item" onclick="localUploadKind('srt')">字幕文件</button>
-              </div>
-            </div>
-            <div class="ep-dropdown">
-              <button class="btn btn-outline btn-sm" type="button">
-                <svg viewBox="0 0 20 20" fill="none" width="15" height="15"><path d="M4 16h12M12 4v6l2.5-2.5L17 10V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>百度网盘提取</span>
-                <svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m6 8 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="ep-dropdown-menu">
-                <button type="button" class="ep-dropdown-item" onclick="openPanModal('videoNoSub')">无字幕视频</button>
-                <button type="button" class="ep-dropdown-item" onclick="openPanModal('videoSub')">有字幕视频</button>
-                <button type="button" class="ep-dropdown-item" onclick="openPanModal('srt')">字幕文件</button>
-              </div>
-            </div>
-            <div class="ep-dropdown" id="batchReplaceBtn" style="display:none">
-              <button class="btn btn-outline btn-sm" type="button">
-                <svg viewBox="0 0 20 20" fill="none" width="15" height="15"><path d="M4 4h6l2 2h4v10H4V4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 11l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>批量替换</span>
-                <svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m6 8 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="ep-dropdown-menu">
-                <button type="button" class="ep-dropdown-item" onclick="batchReplaceKind('videoNoSub')">无字幕视频</button>
-                <button type="button" class="ep-dropdown-item" onclick="batchReplaceKind('videoSub')">有字幕视频</button>
-                <button type="button" class="ep-dropdown-item" onclick="batchReplaceKind('srt')">字幕文件</button>
-              </div>
-            </div>
-            <div class="spacer"></div>
-            <span class="text-3 fs-13"><span>共</span> <b id="epCount">10</b> <span>集</span></span>
-          </div>
-          <div class="ep-tip">支持本地、百度网盘提取两种上传/替换方式。请将文件按照【1(集数)】或【1(集数)-剧集名称】命名（如不指定剧集名称，系统会默认命名为"短剧名称_第X集"），系统会自动检测文件名称、文件类型进行对应集数剧集视频、字幕的上传/替换。</div>
-
-          <div class="notice notice-warn" style="margin-bottom:16px">
-            <svg viewBox="0 0 20 20" fill="none"><path d="M10 3 2.5 16h15L10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <div>源语言为简体中文时，必须上传无字幕视频&字幕，鼓励上传有字幕视频；源语言不为简体中文时，必须上传无字幕视频、有字幕视频、字幕</div>
-          </div>
-
-          <table class="ep-table">
-            <thead>
-              <tr>
-                <th style="width:40px"><input type="checkbox" id="epCheckAll" onchange="toggleEpCheckAll()"></th>
-                <th style="width:60px">集数</th>
-                <th style="width:150px">剧集标题</th>
-                <th style="width:220px">无字幕视频</th>
-                <th style="width:220px">有字幕视频</th>
-                <th style="width:200px">字幕文件</th>
-              </tr>
-            </thead>
-            <tbody id="epList"></tbody>
-          </table>
-        </div>
-
-        <!-- 模块：其他物料 -->
-        <div class="card">
-          <div class="card-title">其他物料</div>
-
-          <div class="form-item">
-            <label class="form-label">物料网盘链接</label>
-            <div class="form-row">
-              <div class="form-item" style="margin-bottom:0">
-                <label class="form-label fs-12 text-3">百度网盘链接</label>
-                <input type="text" class="form-input" id="fMatPanLink" placeholder="请输入百度网盘链接">
-              </div>
-              <div class="form-item" style="margin-bottom:0;max-width:200px">
-                <label class="form-label fs-12 text-3">提取码</label>
-                <input type="text" class="form-input" id="fMatPanCode" placeholder="请输入提取码" maxlength="4">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-item" style="margin-bottom:0">
-            <label class="form-label">附件</label>
-            <div class="mat-upload-box" onclick="addAttachment()">
-              <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V4m0 0L6 8m4-4 4 4M4 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>上传附件</span>
-            </div>
-            <div class="mat-list" id="attachList"></div>
-            <div class="mat-tip">其他物料可压缩为zip压缩包上传</div>
-          </div>
-
-          <div class="form-item" style="margin-bottom:0">
-            <label class="form-label">物料说明</label>
-            <textarea class="form-input" id="fMatDesc" rows="4" maxlength="500" placeholder="请输入物料说明（选填）" oninput="updateMatDescCount()"></textarea>
-            <div class="form-hint" style="text-align:right" id="matDescCount">0 / 500</div>
-          </div>
+        <div class="form-item">
+          <label class="form-label"><span>剧集数</span><span class="req">*</span></label>
+          <input class="form-input" id="upCount" type="number" min="1" max="200" placeholder="请输入剧集数" oninput="onCountChange()">
         </div>
       </div>
+    </div>
 
-      <!-- 底部操作 -->
-      <div class="foot-bar">
-        <div class="left" id="footHint"></div>
-        <div class="right">
-          <button class="btn btn-outline" onclick="goCancel()">取消</button>
-          <button class="btn btn-outline" id="btnPrev" onclick="gotoStep(1)" style="display:none">上一步</button>
-          <button class="btn btn-outline" id="btnDraft" onclick="doDraft()" style="display:none">暂存</button>
-          <button class="btn btn-primary" id="btnNext" onclick="gotoStep(2)">下一步</button>
-          <button class="btn btn-primary" id="btnSubmit" onclick="doSubmit()" style="display:none">提交审核</button>
-        </div>
+    <!-- 二、海报 -->
+    <div class="card">
+      <div class="card-title">海报</div>
+      <div class="sec-tabs" id="posterTabs">
+        <span class="sec-tab active" onclick="switchPosterTab('posterMain')">主标题</span>
+        <span class="sec-tab" onclick="switchPosterTab('posterA')">副标题A</span>
+        <span class="sec-tab" onclick="switchPosterTab('posterB')">副标题B</span>
+      </div>
+      <div id="posterPanel"></div>
+    </div>
+
+    <!-- 三、花絮 -->
+    <div class="card">
+      <div class="card-title">花絮</div>
+      <div id="mod-bts"></div>
+    </div>
+
+    <!-- 四、预告片 -->
+    <div class="card">
+      <div class="card-title">预告片</div>
+      <div id="mod-trailer"></div>
+    </div>
+
+    <!-- 五、法务版视频 -->
+    <div class="card">
+      <div class="card-title">法务版视频</div>
+      <div id="mod-legal"></div>
+    </div>
+
+    <!-- 六、剧集视频 -->
+    <div class="card">
+      <div class="card-title">剧集视频</div>
+      <div class="sec-tabs" id="epTabs">
+        <span class="sec-tab active" onclick="switchEpTab('hd')">高清版</span>
+        <span class="sec-tab" onclick="switchEpTab('ov')">海外版</span>
+        <span class="sec-tab" onclick="switchEpTab('cn')">中英字幕版</span>
+      </div>
+      <div class="ep-toolbar">
+        <button class="btn btn-primary btn-sm" onclick="openEpBatchUpload('local')">本地上传</button>
+        <button class="btn btn-outline btn-sm" onclick="openEpBatchUpload('pan')">百度网盘上传</button>
+        <div class="spacer"></div>
+        <span class="text-3 fs-13"><span>共</span> <b id="epCount">0</b> <span>集</span></span>
+      </div>
+      <div class="ep-tip" id="epHint"></div>
+      <div id="epTableWrap"></div>
+    </div>
+
+    <!-- 底部操作 -->
+    <div class="foot-bar">
+      <div class="left" id="upFootHint"></div>
+      <div class="right">
+        <button class="btn btn-outline" onclick="__nav('works.html')">取消</button>
+        <button class="btn btn-outline" onclick="saveUp('draft')">暂存</button>
+        <button class="btn btn-primary" onclick="saveUp('reviewing')">提交审核</button>
       </div>
     </div>
   </div>
@@ -1336,9 +1133,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   <div class="ep-act-item" onclick="pickUploadMethod('local')">本地上传</div>
   <div class="ep-act-item" onclick="pickUploadMethod('pan')">网盘上传</div>
 </div>
-
-<!-- 批量替换已改为 hover 下拉菜单（见 ep-toolbar 内 batchReplaceBtn），不再使用弹窗 -->
-
 
 
 </div>
@@ -2414,7 +2208,7 @@ function __reenter(page) {
         window.MODE = getParam__upload('mode') || 'create';
         window.EDIT_ID = getParam__upload('id');
       }
-      if (typeof initMode === 'function') initMode();
+      if (typeof initUpPage === 'function') initUpPage();
       /* 新建模式必须清空上轮编辑残留（原版靠独立页面天然为空，合并版需显式重置） */
       if (window.MODE === 'create') {
         var _ids = ['fName', 'fAlias', 'fTotalEp', 'fDesc', 'fSuggestPay', 'fSocialMediaDesc',
@@ -2443,7 +2237,6 @@ function __reenter(page) {
           if (typeof initEpisodes === 'function') initEpisodes();
           if (typeof renderEpisodes === 'function') renderEpisodes();
         } catch (e3) {}
-        if (typeof gotoStep === 'function') gotoStep(1);
       }
     }
     if (page === 'work-detail') {
@@ -2547,13 +2340,13 @@ function __reenter(page) {
   function toggleEquityPanel(e) { togglePanel('equityPanel', 'equityBox', e); }
   function toggleEquity(k, e) { e.stopPropagation(); toggleIn(selectedEquity, k); renderEquity(); }
   function removeEquity(k, e) { e.stopPropagation(); var i = selectedEquity.indexOf(k); if (i !== -1) selectedEquity.splice(i, 1); renderEquity(); }
-  function renderEquity() { renderMs(RIGHTS_OPTIONS, selectedEquity, 'equityContent', 'equityPanel', t('全部'), 'toggleEquity', 'removeEquity'); }
+  function renderEquity() { if (!document.getElementById('equityContent')) return; renderMs(RIGHTS_OPTIONS, selectedEquity, 'equityContent', 'equityPanel', t('全部'), 'toggleEquity', 'removeEquity'); }
 
   // 授权渠道
   function toggleChannelPanel(e) { togglePanel('channelPanel', 'channelBox', e); }
   function toggleChannel(k, e) { e.stopPropagation(); toggleIn(selectedChannel, k); renderChannel(); }
   function removeChannel(k, e) { e.stopPropagation(); var i = selectedChannel.indexOf(k); if (i !== -1) selectedChannel.splice(i, 1); renderChannel(); }
-  function renderChannel() { renderMs(RIGHTS_OPTIONS, selectedChannel, 'channelContent', 'channelPanel', t('全部'), 'toggleChannel', 'removeChannel'); }
+  function renderChannel() { if (!document.getElementById('channelContent')) return; renderMs(RIGHTS_OPTIONS, selectedChannel, 'channelContent', 'channelPanel', t('全部'), 'toggleChannel', 'removeChannel'); }
 
   // 授权主体（可搜索多选，枚举 = 账号下属全部公司主体）
   function toggleSubjectPanel(e) { togglePanel('subjectPanel', 'subjectBox', e); }
@@ -2588,27 +2381,29 @@ function __reenter(page) {
   var uploadPicker = createRangePicker('rpUploadWrap', { dateOnly: false });
   var reviewPicker = createRangePicker('rpReviewWrap', { dateOnly: false });
   var shelfPicker = createRangePicker('rpShelfWrap', { dateOnly: false });
-  var authPicker = createRangePicker('rpAuthWrap', { dateOnly: true });
 
   // 点击外部关闭（时间范围面板由各实例的 wrap 容器控制）
   document.addEventListener('click', function (e) {
-    if (!e.target.closest('#msBox') && !e.target.closest('#msPanel')) { document.getElementById('msPanel').classList.remove('show'); document.getElementById('msBox').classList.remove('open'); }
-    if (!e.target.closest('#equityBox') && !e.target.closest('#equityPanel')) { document.getElementById('equityPanel').classList.remove('show'); document.getElementById('equityBox').classList.remove('open'); }
-    if (!e.target.closest('#channelBox') && !e.target.closest('#channelPanel')) { document.getElementById('channelPanel').classList.remove('show'); document.getElementById('channelBox').classList.remove('open'); }
-    if (!e.target.closest('#subjectBox') && !e.target.closest('#subjectPanel')) { document.getElementById('subjectPanel').classList.remove('show'); document.getElementById('subjectBox').classList.remove('open'); }
-    if (!e.target.closest('#rpUploadWrap')) { document.getElementById('rpUploadWrapPanel').classList.remove('show'); document.getElementById('rpUploadWrapBox').classList.remove('open'); }
-    if (!e.target.closest('#rpReviewWrap')) { document.getElementById('rpReviewWrapPanel').classList.remove('show'); document.getElementById('rpReviewWrapBox').classList.remove('open'); }
-    if (!e.target.closest('#rpShelfWrap')) { document.getElementById('rpShelfWrapPanel').classList.remove('show'); document.getElementById('rpShelfWrapBox').classList.remove('open'); }
-    if (!e.target.closest('#rpAuthWrap')) { document.getElementById('rpAuthWrapPanel').classList.remove('show'); document.getElementById('rpAuthWrapBox').classList.remove('open'); }
+    function closePair(boxId, panelId, wrapSel) {
+      if (e.target.closest(wrapSel)) return;
+      var p = document.getElementById(panelId), b = document.getElementById(boxId);
+      if (p) p.classList.remove('show');
+      if (b) b.classList.remove('open');
+    }
+    closePair('msBox', 'msPanel', '#msBox');
+    closePair('subjectBox', 'subjectPanel', '#subjectBox');
+    closePair('rpUploadWrapBox', 'rpUploadWrapPanel', '#rpUploadWrap');
+    closePair('rpReviewWrapBox', 'rpReviewWrapPanel', '#rpReviewWrap');
+    closePair('rpShelfWrapBox', 'rpShelfWrapPanel', '#rpShelfWrap');
   });
 
   function resetSearch() {
     document.getElementById('searchId').value = '';
     document.getElementById('searchName').value = '';
     selectedStatus = []; selectedEquity = []; selectedChannel = []; selectedSubject = [];
-    uploadPicker.reset(); reviewPicker.reset(); shelfPicker.reset(); authPicker.reset();
+    uploadPicker.reset(); reviewPicker.reset(); shelfPicker.reset();
     document.getElementById('subjectSearch').value = ''; subjectFilter = '';
-    renderStatus(); renderEquity(); renderChannel(); renderSubject();
+    renderStatus(); renderSubject();
     renderList();
   }
 
@@ -2625,7 +2420,6 @@ function __reenter(page) {
     var up = uploadPicker.get();
     var rv = reviewPicker.get();
     var sf = shelfPicker.get();
-    var au = authPicker.get();
     return DEMO_WORKS.filter(function (w) {
       if (id && w.id !== id) return false;
       if (name && w.name.indexOf(name) === -1) return false;
@@ -2636,11 +2430,7 @@ function __reenter(page) {
       if (rv.end && (!w.reviewTime || w.reviewTime > rv.end)) return false;
       if (sf.start && (!w.shelfTime || w.shelfTime < sf.start)) return false;
       if (sf.end && (!w.shelfTime || w.shelfTime > sf.end)) return false;
-      if (selectedEquity.length > 0 && !hasAny(w.equity, selectedEquity)) return false;
       if (selectedSubject.length > 0 && selectedSubject.indexOf(w.subjectName) === -1) return false;
-      if (selectedChannel.length > 0 && !hasAny(w.channel, selectedChannel)) return false;
-      if (au.start && (!w.authStart || w.authStart < au.start)) return false;
-      if (au.end && (!w.authEnd || w.authEnd > au.end)) return false;
       return true;
     });
   }
@@ -2694,7 +2484,7 @@ function __reenter(page) {
     var list = filteredWorks();
     var tbody = document.getElementById('workList');
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="12"><div class="empty"><div class="empty-text">' + t('暂无相关短剧') + '</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-text">' + t('暂无相关短剧') + '</div></div></td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (w) {
@@ -2708,11 +2498,7 @@ function __reenter(page) {
           '<div class="work-sub">' + w.id + '</div></div>' +
         '</div></td>' +
         '<td>' + epCell + '</td>' +
-        '<td>' + renderAuthTime(w) + '</td>' +
         '<td>' + (w.subjectName || '—') + '</td>' +
-        '<td>' + (w.authType || '—') + '</td>' +
-        '<td>' + renderTagList(w.equity) + '</td>' +
-        '<td>' + renderTagList(w.channel) + '</td>' +
         '<td class="text-2 mono">' + w.uploadTime + '</td>' +
         '<td class="text-2">' + reviewCell + '</td>' +
         '<td class="text-2">' + shelfCell + '</td>' +
@@ -2764,8 +2550,6 @@ function __reenter(page) {
 
   // 初始化
   renderStatus();
-  renderEquity();
-  renderChannel();
   renderSubject();
   renderList();
   applyI18n();
@@ -2775,431 +2559,249 @@ function __reenter(page) {
 
 <!-- ================= 页面脚本：work-upload ================= -->
 <script>
-
   document.getElementById('__work_upload__topbar-root').innerHTML = renderTopbar({ unread: 2 });
   document.getElementById('__work_upload__sidebar-root').innerHTML = renderSidebar('works');
 
-  // ========== 模式解析 ==========
+  // ===================== 配置 =====================
+  var MODULE_DEF = {
+    posterMain: {
+      title: '主标题', kind: 'image', subtitle: false,
+      hint: '请上传 3:4、16:9、9:16 三个尺寸的：带独家标 jpg/png、不带独家标 jpg/png、psd 文件、标题 png'
+    },
+    posterA: {
+      title: '副标题A', kind: 'image', subtitle: true,
+      hint: '请上传 3:4 不带独家标 jpg/png、psd 文件、标题 png'
+    },
+    posterB: {
+      title: '副标题B', kind: 'image', subtitle: true,
+      hint: '请上传 3:4 不带独家标 jpg/png、psd 文件、标题 png'
+    },
+    bts: { title: '花絮', kind: 'video', subtitle: false, hint: '2 个 30-60s 的高光 cut 剪辑' },
+    trailer: {
+      title: '预告片', kind: 'video', subtitle: false,
+      hint: '请分别上传「最后定帧海报带独家标识」「不带独家标识」两个类型，90s 以内、带英文字幕的 mp4 预告片。\n内容需要有吸引力、有故事线，需规避以下内容：\n① 踩人镜头：踩手、踩脚、踩任何部位（含侮辱性词汇，易被禁播）\n② 仰视视角：露出女性或男性内裤\n③ 脱衣细节：含仅腿部 / 脱裤动作（穿脱均禁止）\n④ 烧伤、面容狰狞、无眼等引人不适的画面\n⑤ 任何女性内衣、高开叉、蕾丝内衣\n⑥ 未成年：体现儿童悲惨 / 受虐 / 惊吓 / 色情画面'
+    },
+    legal: {
+      title: '法务版视频', kind: 'video', subtitle: false,
+      hint: '用于版权保护：将成片全集的海外版整合成一个视频文件，大小不超过 1G；需添加法务版水印；720p 仍无法压到 1G 以下时请尝试调低比特率；时长精确标准，不可缺少或重复添加片段。'
+    }
+  };
+
+  var EP_TABS = [
+    { key: 'hd', label: '高清版', srt: false,
+      hint: '纯净版视频：无英文字幕、无人名条 / 地名条 / 术语条（英文相关都不要有）；确保集数完整，不缺集、漏集，命名规范统一；画质清晰，要求 1080×1920；文件大小不超过 500MB。' },
+    { key: 'ov', label: '海外版', srt: true,
+      hint: '视频：带有英文字幕的全集完整视频，确保不缺集、漏集，命名规范统一；需要使用有助力推动剧情发展的 BGM、特效声音；需要添加人名条、地名条、术语条；不要出现大面积马赛克；画质清晰，要求 1080×1920；文件大小不超过 500MB。\n英文字幕 srt：字幕内容请先按「字幕标准（承制向）」内审；勿出现乱码、时间轴不要错乱；确保集数完整、命名规范统一。' },
+    { key: 'cn', label: '中英字幕版', srt: false,
+      hint: '在原英文字幕下方添加中文字幕，不要遗漏重要镜头的台词信息；中文字幕以不遮挡画面为原则，无其他参数要求；时长、画面与最终成片保持一致；确保集数完整，不缺集、漏集，命名规范统一。' }
+  ];
+
+  var IMG_POOL = ['3比4_带独家标.jpg', '16比9_带独家标.png', '9比16_带独家标.jpg', '3比4_不带独家标.png', 'psd_主视觉.psd', '标题.png'];
+  var UP = { mode: 'create', id: null, name: '', count: 10, media: {}, eps: [], posterTab: 'posterMain', epTab: 'hd' };
+
+  // ===================== 工具 =====================
   function getParam__upload(name) {
-    var m = new RegExp('[?&]' + name + '=([^&]*)').exec(__query());
-    return m ? decodeURIComponent(m[1]) : null;
+    var m = new RegExp('[?&]' + name + '=([^&#]*)').exec(location.hash || location.search || '');
+    return m ? decodeURIComponent(m[1]) : '';
   }
+  function newMedia() {
+    var m = {};
+    Object.keys(MODULE_DEF).forEach(function (k) { m[k] = { subtitle: '', files: [] }; });
+    return m;
+  }
+  function newEps(count) {
+    var arr = [];
+    for (var i = 1; i <= count; i++) arr.push({ no: i, hd: null, ov: null, ovSrt: null, cn: null });
+    return arr;
+  }
+  function fileType(name) {
+    var ext = (name.split('.').pop() || '').toLowerCase();
+    return ext.toUpperCase();
+  }
+  function fileSizeOf(kind) {
+    var size = kind === 'image'
+      ? (Math.random() * 6 + 0.8).toFixed(1) + 'MB'
+      : (kind === 'srt'
+        ? (Math.random() * 60 + 20).toFixed(0) + 'KB'
+        : (Math.random() * 260 + 40).toFixed(1) + 'MB');
+    return size;
+  }
+  function thumbColor(name) {
+    var pal = ['#ff9a9e', '#a18cd1', '#84c1ff', '#f6d365', '#96fbc4', '#fbc2eb'];
+    var sum = 0;
+    for (var i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+    return pal[sum % pal.length];
+  }
+
+  // ===================== 初始化 / 模式 =====================
   var MODE = getParam__upload('mode') || 'create';
   var EDIT_ID = getParam__upload('id');
 
-  var FIXED_EP = 10; // 固定 10 集
-  var coverPicked = false;
-  var coverUrl = ''; // 当前封面 URL（新建用）
-
-  // 剧集数据结构：{ no, title, videoNoSub, videoSub, srt, videoNoSubInfo:{duration,size}, videoSubInfo:{duration,size}, srtInfo, ...Status, ...Progress }
-  // status: 'none' | 'uploading' | 'done' | 'failed'
-  var episodes = [];
-  var selectedEps = []; // 批量替换多选（存集数 no）
-
-  // 其他物料附件
-  var attachments = [];
-  var MAX_ATTACH = 9;
-  var attachSeq = 0;
-
-  // ========== 初始化 ==========
-  function initEpisodes() {
-    episodes = [];
-    selectedEps = [];
-    for (var i = 1; i <= FIXED_EP; i++) {
-      episodes.push({ no: i, title: '', videoNoSub: '', videoSub: '', srt: '', videoNoSubInfo: null, videoSubInfo: null, srtInfo: null, videoNoSubProgress: 0, videoSubProgress: 0, srtProgress: 0, videoNoSubStatus: 'none', videoSubStatus: 'none', srtStatus: 'none' });
-    }
-  }
-
-  function initMode() {
-    var title = document.getElementById('pageTitle');
-    var desc = document.getElementById('pageDesc');
-    var isEdit = MODE === 'edit' || MODE === 'resubmit' || MODE === 'revise';
-
-    if (MODE === 'create') {
-      title.textContent = t('上传短剧');
-      desc.textContent = t('填写短剧基础信息，上传剧集视频与物料文件');
-    } else {
-      title.textContent = MODE === 'edit' ? t('编辑短剧') : t('修改并重新提交');
-      desc.textContent = t('修改短剧信息后重新提交');
-    }
-
-    if (isEdit && EDIT_ID) {
-      var w = findWorkById(EDIT_ID);
+  function initUpPage() {
+    MODE = getParam__upload('mode') || 'create';
+    EDIT_ID = getParam__upload('id');
+    UP = { mode: MODE, id: EDIT_ID || null, name: '', count: 10, media: newMedia(), eps: newEps(10), posterTab: 'posterMain', epTab: 'hd' };
+    if (MODE === 'edit' && EDIT_ID) {
+      var w = findWork(EDIT_ID);
       if (w) {
-        document.getElementById('fName').value = w.name || '';
-        document.getElementById('fAlias').value = w.alias || '';
-        document.getElementById('fSrcLang').value = w.srcLang || '';
-        document.getElementById('fTotalEp').value = w.episodeCount || '';
-        document.getElementById('fDesc').value = w.desc || '';
-        document.getElementById('fCopyrightStart').value = w.authStart || '';
-        document.getElementById('fCopyrightEnd').value = w.authEnd || '';
-        document.getElementById('fSuggestPay').value = w.suggestedPay !== undefined ? w.suggestedPay : '';
-        document.getElementById('fAuthType').value = w.authType || '';
-        document.getElementById('__work_upload__subjectInput').value = w.subjectName || '';
-        document.getElementById('fSocialMediaDesc').value = w.socialMediaDesc || '';
-        document.getElementById('fFriendInfo').value = w.friendInfo || '';
-        document.getElementById('fAuthRegion').value = w.authRegion || '';
-        syncAuthType();
-        selectedEquity = (w.equity && w.equity.length) ? w.equity.slice() : [];
-        selectedChannel = (w.channel && w.channel.length) ? w.channel.slice() : [];
-        document.getElementById('fIaaLimitType').value = w.iaaLimitType || '';
-        syncIaaLimit();
-        document.getElementById('fIaaOnlineTime').value = w.iaaOnlineTime || '';
-        document.getElementById('fOnlineTime').value = w.onlineTime || '';
-        document.getElementById('fMatPanLink').value = w.matPanLink || '';
-        document.getElementById('fMatPanCode').value = w.matPanCode || '';
-        document.getElementById('fMatDesc').value = w.matDesc || '';
-        attachments = (w.attachments && w.attachments.length) ? w.attachments.map(function (a) { return { name: a }; }) : [];
-        coverPicked = true;
-        coverUrl = w.cover || '';
-        updateCoverPreview(w.color, w.cover);
-        // 回填剧集
-        initEpisodes();
-        if (w.episodes && w.episodes.length) {
-          w.episodes.forEach(function (e, idx) {
-            if (idx < FIXED_EP) {
-              episodes[idx].title = isEnglish() ? ('Ep. ' + e.no) : ('第 ' + e.no + ' 集');
-              episodes[idx].videoNoSub = e.videoNoSub || '';
-              episodes[idx].videoSub = e.videoSub || '';
-              episodes[idx].srt = e.srt || '';
-              if (e.videoNoSub) { episodes[idx].videoNoSubInfo = genVideoInfo(e.videoNoSub); episodes[idx].videoNoSubStatus = 'done'; }
-              if (e.videoSub) { episodes[idx].videoSubInfo = genVideoInfo(e.videoSub); episodes[idx].videoSubStatus = 'done'; }
-              if (e.srt) { episodes[idx].srtInfo = genSrtInfo(e.srt); episodes[idx].srtStatus = 'done'; }
-            }
-          });
-        }
-      }
-    } else {
-      initEpisodes();
-    }
-
-    if (MODE === 'resubmit' && EDIT_ID) {
-      var w2 = findWorkById(EDIT_ID);
-      if (w2 && w2.rejectReason) {
-        document.getElementById('rejectReasonText').textContent = w2.rejectReason;
-        document.getElementById('rejectBanner').style.display = 'flex';
+        UP.name = w.name || '';
+        UP.count = w.episodeCount || 10;
+        UP.eps = newEps(UP.count);
+        if (w.media) UP.media = JSON.parse(JSON.stringify(w.media));
+        if (w.eps && w.eps.length) UP.eps = JSON.parse(JSON.stringify(w.eps));
       }
     }
-
-    document.getElementById('footHint').textContent = isEdit ? t('编辑/修改后直接点击「提交审核」提交') : t('填写短剧信息即可暂存或提交');
-    syncAuthType();
-    renderEpisodes();
-    renderAttachments();
-    updateMatDescCount();
+    document.getElementById('upPageTitle').textContent = MODE === 'edit' ? '编辑短剧' : '新建短剧';
+    document.getElementById('upName').value = UP.name;
+    document.getElementById('upCount').value = UP.count;
+    renderPosterPanel();
+    ['bts', 'trailer', 'legal'].forEach(renderModule);
+    renderEpSection();
   }
 
-  function findWorkById(id) {
-    if (typeof DEMO_WORKS === 'undefined') return null;
-    for (var i = 0; i < DEMO_WORKS.length; i++) if (DEMO_WORKS[i].id === id) return DEMO_WORKS[i];
-    return null;
+  // ===================== 基础信息联动 =====================
+  function onCountChange() {
+    var v = parseInt(document.getElementById('upCount').value, 10);
+    if (isNaN(v) || v < 1) v = 0;
+    if (v > 200) { v = 200; document.getElementById('upCount').value = 200; }
+    UP.count = v;
+    var eps = [];
+    for (var i = 1; i <= v; i++) eps.push(UP.eps[i - 1] || { no: i, hd: null, ov: null, ovSrt: null, cn: null });
+    UP.eps = eps;
+    renderEpSection();
   }
 
-  // ========== 步骤切换 ==========
-  // 暂存按钮可点击状态：仅「新建 / 编辑草稿」显示，且短剧名称非空才点亮
-  function syncDraftBtn() {
-    // demo 不做必填校验，暂存按钮始终可用
-    var btn = document.getElementById('btnDraft');
-    btn.disabled = false;
+  // ===================== 海报 tab =====================
+  function switchPosterTab(key) {
+    UP.posterTab = key;
+    var tabs = document.getElementById('posterTabs').children;
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', tabs[i].textContent === MODULE_DEF[key].title);
+    renderPosterPanel();
   }
-
-  function gotoStep(n) {
-    var s1 = document.getElementById('step1Panel');
-    var s2 = document.getElementById('step2Panel');
-    var st1 = document.getElementById('step1');
-    var st2 = document.getElementById('step2');
-    var line = document.getElementById('stepLine1');
-    // 暂存仅「新建 / 编辑草稿」可用；驳回重提交 / 审核通过重提交不支持暂存
-    var canDraft = (MODE === 'create' || MODE === 'edit');
-    if (n === 2) {
-      s1.style.display = 'none'; s2.style.display = 'block';
-      st1.className = 'step done'; st2.className = 'step active'; line.className = 'step-line done';
-      document.getElementById('btnNext').style.display = 'none';
-      document.getElementById('btnPrev').style.display = 'inline-flex';
-      document.getElementById('btnDraft').style.display = canDraft ? 'inline-flex' : 'none';
-      document.getElementById('btnSubmit').style.display = 'inline-flex';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      s1.style.display = 'block'; s2.style.display = 'none';
-      st1.className = 'step active'; st2.className = 'step'; line.className = 'step-line';
-      document.getElementById('btnNext').style.display = 'inline-flex';
-      document.getElementById('btnPrev').style.display = 'none';
-      document.getElementById('btnDraft').style.display = canDraft ? 'inline-flex' : 'none';
-      document.getElementById('btnSubmit').style.display = 'none';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  function renderPosterPanel() {
+    var key = UP.posterTab;
+    var def = MODULE_DEF[key];
+    var m = UP.media[key];
+    var html = '';
+    if (def.subtitle) {
+      html += '<div class="form-item"><label class="form-label"><span>' + def.title + '</span><span class="req">*</span></label>' +
+        '<input class="form-input sub-title-input" id="upSub' + key + '" placeholder="请输入' + def.title + '" value="' + (m.subtitle || '') + '" oninput="onSubTitleInput(\'' + key + '\')"></div>';
     }
-    syncDraftBtn();
+    html += '<div class="mod-hint">' + def.hint + '</div>';
+    html += moduleBar(key) + moduleFileTable(key);
+    document.getElementById('posterPanel').innerHTML = html;
+  }
+  function onSubTitleInput(key) {
+    var el = document.getElementById('upSub' + key);
+    if (el) UP.media[key].subtitle = el.value;
   }
 
-  // ========== IAA 限制类型联动 ==========
-  function syncIaaLimit() {
-    var v = document.getElementById('fIaaLimitType').value;
-    document.getElementById('iaaOnlineWrap').style.display = v === '按照约定时间上线' ? 'block' : 'none';
+  // ===================== 物料模块渲染 =====================
+  function moduleBar(key) {
+    return '<div class="mod-bar">' +
+      '<button class="btn btn-primary btn-sm" onclick="openModuleUpload(\'' + key + '\',\'local\')">本地上传</button>' +
+      '<button class="btn btn-outline btn-sm" onclick="openModuleUpload(\'' + key + '\',\'pan\')">百度网盘上传</button>' +
+      '<div class="spacer"></div>' +
+      '<span class="text-3 fs-13">已上传 <b>' + UP.media[key].files.length + '</b> 个文件</span>' +
+    '</div>';
   }
-  // 友商信息已改为必填常显字段，不再随授权方式联动
-  function syncAuthType() {}
-
-  // ========== 主权益 / 授权渠道 多选 ==========
-  var RIGHTS_OPTIONS = [
-    { key: 'app', label: 'app' },
-    { key: '小程序', label: '小程序' },
-    { key: '社媒', label: '社媒' }
-  ];
-  var selectedEquity = [];
-  var selectedChannel = [];
-  var selectedSubject = [];
-  var subjectFilter = '';
-  var MS_MAX_TAGS = 2;
-
-  function renderMs__upload(options, selected, contentId, panelId, emptyText, toggleFn, removeFn) {
-    var c = document.getElementById(contentId);
-    if (selected.length === 0) {
-      c.innerHTML = '<span class="ms-placeholder">' + emptyText + '</span>';
-    } else {
-      var html = '';
-      var shown = selected.slice(0, MS_MAX_TAGS);
-      shown.forEach(function (k) {
-        html += '<span class="ms-tag">' + labelOfR(options, k) + '<span class="ms-x" onclick="' + removeFn + '(\'' + k + '\', event)">×</span></span>';
-      });
-      if (selected.length > MS_MAX_TAGS) html += '<span class="ms-tag more">+ ' + (selected.length - MS_MAX_TAGS) + '</span>';
-      c.innerHTML = html;
-    }
-    var panel = document.getElementById(panelId);
-    panel.innerHTML = options.map(function (s) {
-      var checked = selected.indexOf(s.key) !== -1;
-      return '<div class="ms-opt' + (checked ? ' checked' : '') + '" onclick="' + toggleFn + '(\'' + s.key + '\', event)">' +
-        '<span class="opt-check">✓</span>' + t(s.label) + '</div>';
+  function moduleFileTable(key) {
+    var files = UP.media[key].files;
+    if (!files.length) return '<div class="mf-empty">暂无文件，点击上方按钮上传</div>';
+    var rows = files.map(function (f, i) {
+      var thumb = '';
+      if (f.type === 'JPG' || f.type === 'PNG') {
+        thumb = '<span class="mf-thumb" style="background:' + thumbColor(f.name) + '" onclick="viewBigImage(\'' + f.name + '\',\'' + thumbColor(f.name) + '\')">' + f.type + '</span>';
+      } else {
+        thumb = '<span class="mf-thumb" style="background:#c8ccd2">' + (f.type || 'FILE') + '</span>';
+      }
+      return '<tr><td><div class="mf-name">' + thumb + '<span>' + f.name + '</span></div></td>' +
+        '<td>' + f.size + '</td><td>' + f.type + '</td>' +
+        '<td class="th-op"><span class="op-link danger" onclick="delModuleFile(\'' + key + '\',' + i + ')">删除</span></td></tr>';
     }).join('');
+    return '<table class="mf-table"><thead><tr><th>文件名称</th><th style="width:120px">文件大小</th><th style="width:110px">文件类型</th><th style="width:110px">操作</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
-  function labelOfR(options, k) { var o = options.find(function (x) { return x.key === k; }); return o ? t(o.label) : k; }
-
-  function togglePanelM(panelId, boxId, e) {
-    e.stopPropagation();
-    var panel = document.getElementById(panelId);
-    var box = document.getElementById(boxId);
-    var open = panel.classList.contains('show');
-    panel.classList.toggle('show', !open);
-    box.classList.toggle('open', !open);
-  }
-  function toggleIn__upload(arr, k) {
-    var i = arr.indexOf(k);
-    if (i === -1) arr.push(k); else arr.splice(i, 1);
-  }
-
-  function toggleEquityPanel__upload(e) { togglePanelM('__work_upload__equityPanel', '__work_upload__equityBox', e); }
-  function toggleEquity__upload(k, e) { e.stopPropagation(); toggleIn__upload(selectedEquity, k); renderEquity__upload(); }
-  function removeEquity__upload(k, e) { e.stopPropagation(); var i = selectedEquity.indexOf(k); if (i !== -1) selectedEquity.splice(i, 1); renderEquity__upload(); }
-  function renderEquity__upload() { renderMs__upload(RIGHTS_OPTIONS, selectedEquity, '__work_upload__equityContent', '__work_upload__equityPanel', t('请选择主权益'), 'toggleEquity__upload', 'removeEquity__upload'); }
-
-  function toggleChannelPanel__upload(e) { togglePanelM('__work_upload__channelPanel', '__work_upload__channelBox', e); }
-  function toggleChannel__upload(k, e) { e.stopPropagation(); toggleIn__upload(selectedChannel, k); renderChannel__upload(); }
-  function removeChannel__upload(k, e) { e.stopPropagation(); var i = selectedChannel.indexOf(k); if (i !== -1) selectedChannel.splice(i, 1); renderChannel__upload(); }
-  function renderChannel__upload() { renderMs__upload(RIGHTS_OPTIONS, selectedChannel, '__work_upload__channelContent', '__work_upload__channelPanel', t('请选择授权渠道'), 'toggleChannel__upload', 'removeChannel__upload'); }
-
-  document.addEventListener('click', function (e) {
-    if (!e.target.closest('#__work_upload__equityBox') && !e.target.closest('#__work_upload__equityPanel')) { document.getElementById('__work_upload__equityPanel').classList.remove('show'); document.getElementById('__work_upload__equityBox').classList.remove('open'); }
-    if (!e.target.closest('#__work_upload__channelBox') && !e.target.closest('#__work_upload__channelPanel')) { document.getElementById('__work_upload__channelPanel').classList.remove('show'); document.getElementById('__work_upload__channelBox').classList.remove('open'); }
-  });
-
-  // ========== 封面 ==========
-  function pickCover() {
-    coverPicked = true;
-    coverUrl = 'https://picsum.photos/seed/upload' + Date.now() + '/300/400';
-    updateCoverPreview(null, coverUrl);
-    showToast(t('封面已选择（演示）'), 'ok');
-  }
-  function updateCoverPreview(color, cover) {
-    var box = document.getElementById('coverPreview');
-    box.classList.add('has');
-    if (cover) {
-      box.innerHTML = '<img src="' + cover + '" alt="cover" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.remove();this.parentElement.style.background=\'' + (color || 'linear-gradient(135deg,#ff9a9e,#fecfef)') + '\'">';
-    } else {
-      box.innerHTML = '<div style="width:100%;height:100%;background:' + (color || 'linear-gradient(135deg,#ff9a9e,#fecfef)') + '"></div>';
-    }
-  }
-
-  // ========== 其他物料：附件 ==========
-  function addAttachment() {
-    if (attachments.length >= MAX_ATTACH) { showToast(t('最多上传 9 个附件'), 'err'); return; }
-    attachSeq++;
-    var pool = ['宣传物料.zip', '海报.png', '预告片.mp4', '花絮.mp4', '剧照.zip', '主视觉.png'];
-    var name = pool[Math.floor(Math.random() * pool.length)];
-    if (Math.random() < 0.3) name = '物料包_' + attachSeq + '.zip';
-    attachments.push({ name: name });
-    renderAttachments();
-    showToast(t('附件已添加（演示）'), 'ok');
-  }
-  function removeAttachment(i) {
-    attachments.splice(i, 1);
-    renderAttachments();
-  }
-  function renderAttachments() {
-    var box = document.getElementById('attachList');
+  function renderModule(key) {
+    var box = document.getElementById('mod-' + key);
     if (!box) return;
-    if (attachments.length === 0) {
-      box.innerHTML = '<div class="text-3 fs-13">' + t('点击选择附件') + '</div>';
-      return;
-    }
-    box.innerHTML = attachments.map(function (a, i) {
-      return '<div class="mat-item">' +
-        '<span class="mat-icon"><svg viewBox="0 0 20 20" fill="none"><path d="M12 3H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7l-3-4Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v4h4" stroke="currentColor" stroke-width="1.5"/></svg></span>' +
-        '<span class="mat-name">' + a.name + '</span>' +
-        '<span class="mat-del" onclick="removeAttachment(' + i + ')">' + t('删除') + '</span>' +
-      '</div>';
+    box.innerHTML = '<div class="mod-hint">' + MODULE_DEF[key].hint + '</div>' + moduleBar(key) + moduleFileTable(key);
+  }
+  function delModuleFile(key, i) {
+    UP.media[key].files.splice(i, 1);
+    if (key === 'posterMain' || key === 'posterA' || key === 'posterB') renderPosterPanel();
+    else renderModule(key);
+  }
+  function viewBigImage(name, color) {
+    var box = document.getElementById('__w_tip');
+    box.innerHTML = '<div class="modal-mask show" onclick="this.classList.remove(\'show\');this.innerHTML=\'\'">' +
+      '<div class="modal" style="width:520px" onclick="event.stopPropagation()">' +
+        '<div class="modal-head"><div class="modal-title">' + name + '</div>' +
+        '<span class="modal-close" onclick="var m=this.closest(\'.modal-mask\');m.classList.remove(\'show\');m.innerHTML=\'\'">×</span></div>' +
+        '<div class="modal-body" style="text-align:center;padding-bottom:8px">' +
+          '<div style="width:100%;height:300px;border-radius:10px;background:linear-gradient(135deg,' + color + ',#fff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:600">' + name + '</div>' +
+          '<div class="text-3 fs-13" style="margin-top:12px">（演示：图片预览占位）</div>' +
+        '</div>' +
+      '</div></div>';
+  }
+
+  // ===================== 剧集视频 =====================
+  function switchEpTab(key) {
+    UP.epTab = key;
+    var tabs = document.getElementById('epTabs').children;
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', tabs[i].textContent === (EP_TABS.filter(function (t) { return t.key === key; })[0] || {}).label);
+    renderEpSection();
+  }
+  function curEpTab() {
+    return EP_TABS.filter(function (t) { return t.key === UP.epTab; })[0] || EP_TABS[0];
+  }
+  function renderEpSection() {
+    var tab = curEpTab();
+    document.getElementById('epCount').textContent = UP.eps.length;
+    document.getElementById('epHint').textContent = tab.hint;
+    var head = '<tr><th style="width:80px">集数</th><th>文件</th><th style="width:120px">时长</th><th style="width:110px">大小</th>' +
+      (tab.srt ? '<th style="width:260px">英文字幕 srt</th>' : '') + '</tr>';
+    var rows = UP.eps.map(function (ep) {
+      return '<tr><td><span class="ep-no">' + ep.no + '</span></td>' +
+        '<td>' + epCellHtml(ep, tab.key) + '</td>' +
+        '<td class="text-2">' + (ep[tab.key] && ep[tab.key].dur ? ep[tab.key].dur : '—') + '</td>' +
+        '<td class="text-2">' + (ep[tab.key] && ep[tab.key].size ? ep[tab.key].size : '—') + '</td>' +
+        (tab.srt ? '<td>' + epCellHtml(ep, 'ovSrt') + '</td>' : '') +
+        '</tr>';
     }).join('');
+    document.getElementById('epTableWrap').innerHTML =
+      '<table class="ep-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>';
   }
-
-  // ========== 剧集渲染 ==========
-  function genVideoInfo(name) {
-    return { duration: (Math.floor(Math.random() * 60) + 90) + 's', size: (Math.random() * 300 + 120).toFixed(1) + 'MB' };
-  }
-  function genSrtInfo(name) {
-    return { size: (Math.random() * 2 + 0.3).toFixed(2) + 'KB' };
-  }
-
-  function renderEpisodes() {
-    document.getElementById('epCount').textContent = episodes.length;
-    var rows = episodes.map(function (e) {
-      var checked = selectedEps.indexOf(e.no) !== -1;
-      return '<tr>' +
-        '<td><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleEpSelect(' + e.no + ')"></td>' +
-        '<td><span class="ep-no">' + e.no + '</span></td>' +
-        '<td><input type="text" class="ep-title-input" placeholder="' + t('剧集标题') + '" value="' + escAttr__upload(e.title) + '" oninput="updateEpTitle(' + e.no + ', this.value)"></td>' +
-        '<td>' + renderVideoCell(e, 'videoNoSub') + '</td>' +
-        '<td>' + renderVideoCell(e, 'videoSub') + '</td>' +
-        '<td>' + renderFileCell(e, 'srt', t('未上传')) + '</td>' +
-      '</tr>';
-    }).join('');
-    document.getElementById('epList').innerHTML = rows;
-    var checkAll = document.getElementById('epCheckAll');
-    checkAll.checked = episodes.length > 0 && selectedEps.length === episodes.length;
-    document.getElementById('batchReplaceBtn').style.display = selectedEps.length > 0 ? 'inline-flex' : 'none';
-  }
-
-  // 无字幕视频 / 有字幕视频 单元格：文件名 + 上传进度 + 时长大小 + 上传/替换按钮
-  function renderVideoCell(e, kind) {
-    var st = e[kind + 'Status'] || 'none';
-    var name = e[kind];
-    var html = '';
-    if (st === 'none' || !name) {
-      html = '<span class="file-empty">' + t('未上传') + '</span>';
+  function epCellHtml(ep, key) {
+    var f = ep[key];
+    if (!f) return '<span class="file-empty">未上传</span><div class="file-op"><span class="op-mini" onclick="openEpCellMenu(event,' + ep.no + ',\'' + key + '\')">上传</span></div>';
+    var html = '<span class="file-link">' + f.name + '</span>';
+    if (f.status === 'uploading') {
+      html += '<div class="progress-track"><div class="progress-bar" style="width:' + (f.progress || 0) + '%"></div></div>' +
+        '<div class="progress-text">上传中 ' + (f.progress || 0) + '%</div>';
     } else {
-      html = '<span class="file-link' + (st === 'failed' ? ' failed' : '') + '" onclick="downloadFile__upload(' + e.no + ',\'' + kind + '\')">' + name + '</span>';
-      if (st === 'uploading') {
-        var prog = e[kind + 'Progress'] || 0;
-        html += '<div class="progress-track"><div class="progress-bar" style="width:' + prog + '%"></div></div>' +
-                '<div class="progress-text">' + t('上传中') + ' ' + prog + '%</div>';
-      } else if (st === 'failed') {
-        html += '<div class="progress-track"><div class="progress-bar error" style="width:100%"></div></div>' +
-                '<div class="progress-text error">' + t('上传失败') + '</div>';
-      } else if (st === 'done') {
-        var info = e[kind + 'Info'];
-        if (info) {
-          var col = isEnglish() ? ': ' : '：';
-          html += '<div class="file-meta">' + t('时长') + col + info.duration + '　' + t('大小') + col + info.size + '</div>';
-        }
-      }
+      html += '<div class="file-op"><span class="op-mini" onclick="openEpCellMenu(event,' + ep.no + ',\'' + key + '\')">替换</span></div>';
     }
-    var hasFile = !!name && st !== 'failed';
-    // 未上传：上传（可选本地上传 / 网盘上传）；已上传：替换；失败：重试
-    var opText = (st === 'failed') ? t('重试') : (hasFile ? t('替换') : t('上传'));
-    html += '<div class="file-op"><span class="op-mini" onclick="openEpActMenu(' + e.no + ',\'' + kind + '\',event)">' + opText + '</span></div>';
     return html;
   }
-
-  function renderFileCell(e, kind, emptyText) {
-    var st = e[kind + 'Status'] || 'none';
-    var name = e[kind];
-    var html = '';
-
-    if (st === 'none' || !name) {
-      html = '<span class="file-empty">' + emptyText + '</span>';
-    } else {
-      html = '<span class="file-link' + (st === 'failed' ? ' failed' : '') + '" onclick="downloadFile__upload(' + e.no + ',\'' + kind + '\')">' + name + '</span>';
-      if (st === 'uploading') {
-        var prog = e[kind + 'Progress'] || 0;
-        html += '<div class="progress-track"><div class="progress-bar" style="width:' + prog + '%"></div></div>' +
-                '<div class="progress-text">' + t('上传中') + ' ' + prog + '%</div>';
-      } else if (st === 'failed') {
-        html += '<div class="progress-track"><div class="progress-bar error" style="width:100%"></div></div>' +
-                '<div class="progress-text error">' + t('上传失败') + '</div>';
-      }
-    }
-
-    var hasFile = !!name && st !== 'failed';
-    var opText = (st === 'failed') ? t('重试') : (hasFile ? t('替换') : t('上传'));
-    html += '<div class="file-op"><span class="op-mini" onclick="openEpActMenu(' + e.no + ',\'' + kind + '\',event)">' + opText + '</span></div>';
-    return html;
-  }
-
-  // ========== 多选 / 批量替换 ==========
-  function toggleEpSelect(no) {
-    var i = selectedEps.indexOf(no);
-    if (i === -1) selectedEps.push(no); else selectedEps.splice(i, 1);
-    selectedEps.sort(function (a, b) { return a - b; });
-    renderEpisodes();
-  }
-  function toggleEpCheckAll() {
-    var all = document.getElementById('epCheckAll').checked;
-    selectedEps = all ? episodes.map(function (e) { return e.no; }) : [];
-    renderEpisodes();
-  }
-  // 批量替换：选类型后先选「本地上传 / 网盘上传」，再走与单元格一致的替换界面
-  function batchReplaceKind(kind) {
-    if (selectedEps.length === 0) return;
-    actCtx = { mode: 'batchReplace', kind: kind, eps: selectedEps.slice() };
-    var btn = document.getElementById('batchReplaceBtn').querySelector('button');
-    showActMenu(btn);
-  }
-
-  function downloadFile__upload(no, kind) {
-    var e = findEp(no);
-    var name = e ? e[kind] : '';
-    if (!name) { showToast(t('文件尚未上传'), 'err'); return; }
-    showToast((isEnglish() ? 'Downloading ' : '正在下载 ') + name + (isEnglish() ? ' (demo)' : '（演示）'), 'ok');
-  }
-
-  function escAttr__upload(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
-  function updateEpTitle(no, val) {
-    var e = findEp(no); if (e) e.title = val;
-  }
-  function findEp(no) { return episodes.find(function (x) { return x.no === no; }); }
-
-  // ========== 按类型填充某集文件（本地上传 / 网盘提取 / 批量替换共用） ==========
-  function fillEpByKind(e, name, kind, fname) {
-    var ext = kind === 'srt' ? '.srt' : (kind === 'videoSub' ? '_字幕.mp4' : '.mp4');
-    e[kind] = fname || (name + '_第' + e.no + '集' + ext);
-    e[kind + 'Info'] = null;
-    e[kind + 'Status'] = 'uploading';
-    e[kind + 'Progress'] = 0;
-  }
-  function kindLabel(kind) {
-    return kind === 'videoNoSub' ? t('无字幕视频') : (kind === 'videoSub' ? t('有字幕视频') : t('字幕文件'));
-  }
-
-  // ========== 上传 / 替换：状态与工具 ==========
-  var upCtx = { mode: 'batch', kind: 'videoNoSub', no: null };   // mode: batch 批量上传 | cell 单集 | batchReplace 批量替换
-  var upFiles = [];                                              // [{ep, name, size}]
-  var actCtx = null;                                             // 上传方式菜单上下文 {mode, no?, kind, eps?}
-  var panCtx = { mode: 'batch', kind: 'videoNoSub', no: null };
-  var panFiles = [];
-  var panSelected = [];
-
-  function kindExt(kind) { return kind === 'srt' ? '.srt' : '.mp4'; }
-  function fileTypeText(kind) { return kind === 'srt' ? '字幕' : '视频'; }
-  function fileSizeText(kind) {
-    return kind === 'srt'
-      ? (Math.random() * 60 + 20).toFixed(1) + 'KB'
-      : (Math.random() * 360 + 40).toFixed(1) + 'MB';
-  }
-
-  // --- 单元格「上传 / 替换」：选择上传方式 ---
-  // 单元格「上传 / 替换」：打开方式菜单
-  function openEpActMenu(no, kind, ev) {
-    actCtx = { mode: 'cell', no: no, kind: kind };
-    showActMenu(ev && ev.target);
+  function openEpCellMenu(ev, no, key) {
+    ACT_CTX = { mode: 'ep', no: no, track: key };
+    showActMenu(ev.target);
     if (ev) ev.stopPropagation();
   }
-  // 菜单定位（锚定到触发元素）
+  function openModuleUpload(key, method) {
+    var ctx = { mode: 'module', key: key };
+    if (method === 'local') openUpModal(ctx);
+    else openPanDrawer(ctx);
+  }
+  function openEpBatchUpload(method) {
+    var tab = curEpTab();
+    var ctx = { mode: 'epBatch', track: tab.key };
+    if (method === 'local') openUpModal(ctx);
+    else openPanDrawer(ctx);
+  }
+
+  // ===================== 上传方式菜单 =====================
+  var ACT_CTX = null;
   function showActMenu(anchorEl) {
     var menu = document.getElementById('epActMenu');
     menu.classList.add('show');
@@ -3210,102 +2812,132 @@ function __reenter(page) {
     menu.style.left = Math.max(12, left) + 'px';
     menu.style.top = top + 'px';
   }
-  function closeEpActMenu() {
+  function closeActMenu() {
     var m = document.getElementById('epActMenu');
     if (m) m.classList.remove('show');
   }
   document.addEventListener('click', function (e) {
-    if (!e.target.closest('#epActMenu') && !e.target.closest('.op-mini') && !e.target.closest('.ep-dropdown-item')) closeEpActMenu();
+    if (!e.target.closest('#epActMenu') && !e.target.closest('.op-mini')) closeActMenu();
   });
-  function pickUploadMethod(mode) {
-    var ctx = actCtx;
-    closeEpActMenu();
+  function pickUploadMethod(method) {
+    var ctx = ACT_CTX;
+    closeActMenu();
     if (!ctx) return;
-    if (mode === 'local') openUpModal(ctx);
+    if (method === 'local') openUpModal(ctx);
     else openPanDrawer(ctx);
   }
 
-  // ========== 本地上传 / 替换（拖拽上传弹窗） ==========
+  // ===================== 上传弹窗（本地 / 网盘统一） =====================
+  var upCtx = null;
+  var upFiles = [];
+  var panCtx = null;
+  var panFiles = [];
+  var panSelected = [];
+
+  function ctxKind(ctx) {
+    if (ctx.mode === 'module') return MODULE_DEF[ctx.key].kind;
+    return ctx.track === 'ovSrt' ? 'srt' : 'video';
+  }
+  function ctxTitle(ctx) {
+    if (ctx.mode === 'module') return MODULE_DEF[ctx.key].title;
+    var t = EP_TABS.filter(function (x) { return x.key === ctx.track; })[0];
+    if (ctx.track === 'ovSrt') return '英文字幕 srt';
+    return t ? t.label : '剧集视频';
+  }
+
   function openUpModal(ctx) {
     upCtx = ctx;
     upFiles = [];
-    var kindName = kindLabel(ctx.kind);
-    var e = ctx.mode === 'cell' ? findEp(ctx.no) : null;
-    var hasFile = e && e[ctx.kind] && e[ctx.kind + 'Status'] !== 'failed';
-    var act = (ctx.mode === 'cell' && !hasFile) ? t('上传') : t('替换');
-    if (ctx.mode === 'batch') act = t('上传');
-    var epText = '';
-    if (ctx.mode === 'cell') epText = ' · ' + (isEnglish() ? 'Ep. ' + ctx.no : '第 ' + ctx.no + ' 集');
-    else if (ctx.mode === 'batchReplace') epText = ' · ' + (isEnglish() ? ctx.eps.length + ' eps' : '已选 ' + ctx.eps.length + ' 集');
-    document.getElementById('upModalTitle').textContent = t('本地') + act + ' · ' + kindName + epText;
+    var act = ctx.mode === 'ep' ? '替换' : '上传';
+    var suffix = ctx.mode === 'ep' ? (' · 第 ' + ctx.no + ' 集') : (ctx.mode === 'epBatch' ? ' · ' + (UP.eps.length) + ' 集' : '');
+    document.getElementById('upModalTitle').textContent = '本地上传 · ' + ctxTitle(ctx) + suffix;
     renderUpFiles();
     openModal('upModal');
   }
-  function closeUpModal() {
-    closeModal('upModal');
-    upFiles = [];
-  }
-  // 演示：模拟「点击上传 / 拖拽文件」后选中文件
+  function closeUpModal() { closeModal('upModal'); upFiles = []; }
+
   function pickDemoFiles() {
-    var kind = upCtx.kind;
-    if (upCtx.mode === 'cell') {
-      upFiles = [{ ep: upCtx.no, name: upCtx.no + kindExt(kind), size: fileSizeText(kind) }];
-    } else if (upCtx.mode === 'batchReplace') {
-      upFiles = upCtx.eps.slice().sort(function (a, b) { return a - b; }).map(function (no) {
-        return { ep: no, name: no + kindExt(kind), size: fileSizeText(kind) };
-      });
+    var kind = ctxKind(upCtx);
+    if (upCtx.mode === 'module') {
+      var exist = upFiles.map(function (f) { return f.name; });
+      var pool = (kind === 'image' ? IMG_POOL : ['花絮_高光cut1.mp4', '预告片_带独家标.mp4', '法务版_全集.mp4', '花絮_高光cut2.mp4'])
+        .filter(function (n) { return exist.indexOf(n) === -1; });
+      if (!pool.length) { showToast('演示文件已全部选中', 'ok'); return; }
+      var take = pool.slice(0, Math.min(2, pool.length));
+      upFiles = upFiles.concat(take.map(function (n) { return { name: n, size: fileSizeOf(kind), type: fileType(n) }; }));
+    } else if (upCtx.mode === 'ep') {
+      var nm = upCtx.no + (kind === 'srt' ? '.srt' : '.mp4');
+      upFiles = [{ ep: upCtx.no, name: nm, size: fileSizeOf(kind), type: fileType(nm) }];
     } else {
-      var exist = upFiles.map(function (f) { return f.ep; });
-      var emptyNos = episodes.filter(function (e) { return !e[kind] && exist.indexOf(e.no) === -1; }).map(function (e) { return e.no; });
-      if (emptyNos.length === 0) { showToast(kindLabel(kind) + t('已选择全部待上传文件'), 'ok'); return; }
-      shuffle(emptyNos);
-      var count = Math.min(Math.floor(Math.random() * 4) + 2, emptyNos.length);
-      var picked = emptyNos.slice(0, count).sort(function (a, b) { return a - b; });
-      upFiles = upFiles.concat(picked.map(function (no) {
-        return { ep: no, name: no + kindExt(kind), size: fileSizeText(kind) };
-      })).sort(function (a, b) { return a.ep - b.ep; });
+      var tr = upCtx.track;
+      var existEp = upFiles.map(function (f) { return f.ep; });
+      var missing = UP.eps.filter(function (e) { return !e[tr] && existEp.indexOf(e.no) === -1; }).map(function (e) { return e.no; });
+      if (!missing.length) { showToast('已选择全部待上传集数', 'ok'); return; }
+      var pick = missing.slice(0, Math.min(3, missing.length));
+      upFiles = upFiles.concat(pick.map(function (no) {
+        var nm2 = no + (kind === 'srt' ? '.srt' : '.mp4');
+        return { ep: no, name: nm2, size: fileSizeOf(kind), type: fileType(nm2) };
+      }));
     }
     renderUpFiles();
   }
   function renderUpFiles() {
     var box = document.getElementById('upFileList');
     if (!box) return;
-    if (upFiles.length === 0) {
-      box.innerHTML = '<div class="up-empty">' + t('尚未选择文件，点击上方区域选择或拖拽文件') + '</div>';
-      return;
-    }
+    if (!upFiles.length) { box.innerHTML = '<div class="up-empty">尚未选择文件，点击上方区域选择或拖拽文件</div>'; return; }
     box.innerHTML = upFiles.map(function (f, i) {
       return '<div class="up-file">' +
-        '<span class="uf-ep">' + (isEnglish() ? 'Ep. ' + f.ep : '第 ' + f.ep + ' 集') + '</span>' +
+        (f.ep ? '<span class="uf-ep">第 ' + f.ep + ' 集</span>' : '') +
         '<span class="uf-name">' + f.name + '</span>' +
         '<span class="uf-size">' + f.size + '</span>' +
-        '<span class="uf-del" onclick="removeUpFile(' + i + ')">' + t('删除') + '</span>' +
+        '<span class="uf-del" onclick="removeUpFile(' + i + ')">删除</span>' +
       '</div>';
     }).join('');
   }
-  function removeUpFile(i) {
-    upFiles.splice(i, 1);
-    renderUpFiles();
-  }
+  function removeUpFile(i) { upFiles.splice(i, 1); renderUpFiles(); }
+
   function confirmUpModal() {
-    if (upFiles.length === 0) { showToast(t('请先选择需要上传的文件'), 'err'); return; }
-    var name = document.getElementById('fName').value.trim() || t('短剧');
-    var kind = upCtx.kind;
-    var ctxMode = upCtx.mode;
+    if (!upFiles.length) { showToast('请先选择需要上传的文件', 'err'); return; }
+    var ctx = upCtx;
     var list = upFiles.slice();
     closeUpModal();
-    if (ctxMode === 'batchReplace') selectedEps = [];
-    list.forEach(function (f) {
-      var e = findEp(f.ep);
-      if (!e) return;
-      fillEpByKind(e, name, kind, f.name);
-    });
-    renderEpisodes();
-    list.forEach(function (f) { simulateProgress(f.ep, kind); });
-    showToast(t('已开始上传 ') + list.length + t(' 个文件'), 'ok');
+    if (ctx.mode === 'module') {
+      list.forEach(function (f) {
+        UP.media[ctx.key].files.push({ name: f.name, size: f.size, type: f.type });
+      });
+      if (ctx.key.indexOf('poster') === 0) renderPosterPanel();
+      else renderModule(ctx.key);
+    } else {
+      list.forEach(function (f) {
+        var ep = UP.eps[f.ep - 1];
+        if (!ep) return;
+        ep[ctx.track] = { name: f.name, size: f.size, dur: '—', status: 'uploading', progress: 0 };
+      });
+      renderEpSection();
+      list.forEach(function (f) { simulateUp(f.ep, ctx.track); });
+    }
+    showToast('已开始上传 ' + list.length + ' 个文件', 'ok');
   }
 
-  // ========== 百度网盘提取（右侧抽屉） ==========
+  function simulateUp(no, track) {
+    var timer = setInterval(function () {
+      var ep = UP.eps[no - 1];
+      if (!ep || !ep[track]) { clearInterval(timer); return; }
+      var f = ep[track];
+      f.progress = (f.progress || 0) + Math.floor(Math.random() * 20) + 10;
+      if (f.progress >= 100) {
+        clearInterval(timer);
+        f.progress = 100;
+        f.status = 'done';
+        f.dur = track === 'ovSrt' ? '—' : ((Math.floor(Math.random() * 60) + 90) + 's');
+        if (UP.eps[no - 1] === ep) renderEpSection();
+      } else {
+        renderEpSection();
+      }
+    }, 220);
+  }
+
+  // ===================== 网盘抽屉 =====================
   function openPanDrawer(ctx) {
     panCtx = ctx;
     panFiles = [];
@@ -3315,7 +2947,7 @@ function __reenter(page) {
     document.getElementById('panTbody').innerHTML = '';
     document.getElementById('panTable').style.display = 'none';
     document.getElementById('panHint').style.display = 'block';
-    updatePanSel();
+    document.getElementById('panSelInfo').textContent = '已选 0 项';
     document.getElementById('panMask').classList.add('show');
     document.getElementById('panDrawer').classList.add('show');
   }
@@ -3323,417 +2955,258 @@ function __reenter(page) {
     document.getElementById('panMask').classList.remove('show');
     document.getElementById('panDrawer').classList.remove('show');
   }
-  // 提交提取：demo 直接演示，无需填写链接/提取码
   function doPanExtract() {
-    var kind = panCtx.kind;
-    var list = panCtx.mode === 'batchReplace'
-      ? panCtx.eps.slice().sort(function (a, b) { return a - b; })
-      : episodes.map(function (e) { return e.no; });
-    panFiles = list.map(function (no) {
-      return { ep: no, name: no + kindExt(kind), type: fileTypeText(kind), size: fileSizeText(kind) };
-    });
+    var kind = ctxKind(panCtx);
+    if (panCtx.mode === 'module') {
+      var pool = kind === 'image' ? IMG_POOL : ['花絮_高光cut1.mp4', '花絮_高光cut2.mp4', '预告片_带独家标.mp4', '预告片_不带独家标.mp4', '法务版_全集.mp4'];
+      panFiles = pool.map(function (n) { return { name: n, type: fileType(n), size: fileSizeOf(kind) }; });
+    } else {
+      var tr = panCtx.track;
+      panFiles = UP.eps.map(function (e) {
+        var nm = e.no + (kind === 'srt' ? '.srt' : '.mp4');
+        return { ep: e.no, name: nm, type: fileType(nm), size: fileSizeOf(kind) };
+      });
+      if (panCtx.mode === 'ep') panFiles = panFiles.filter(function (f) { return f.ep === panCtx.no; });
+    }
     panSelected = [];
     document.getElementById('panHint').style.display = 'none';
     document.getElementById('panTable').style.display = 'table';
     renderPanFiles();
-    showToast(t('已提取到 ') + panFiles.length + t(' 个文件'), 'ok');
+    showToast('已提取到 ' + panFiles.length + ' 个文件', 'ok');
   }
   function renderPanFiles() {
-    document.getElementById('panTbody').innerHTML = panFiles.map(function (f) {
-      var checked = panSelected.indexOf(f.ep) !== -1;
-      return '<tr>' +
-        '<td><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="togglePanPick(' + f.ep + ')"></td>' +
-        '<td class="pan-name">' + f.name + '</td>' +
-        '<td>' + f.type + '</td>' +
-        '<td>' + f.size + '</td>' +
-      '</tr>';
+    document.getElementById('panTbody').innerHTML = panFiles.map(function (f, i) {
+      var checked = panSelected.indexOf(i) !== -1;
+      return '<tr><td><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="togglePanPick(' + i + ')"></td>' +
+        '<td class="pan-name">' + f.name + '</td><td>' + f.type + '</td><td>' + f.size + '</td></tr>';
     }).join('');
-    var all = panFiles.length > 0 && panSelected.length === panFiles.length;
-    document.getElementById('panCheckAll').checked = all;
-    updatePanSel();
+    document.getElementById('panCheckAll').checked = panFiles.length > 0 && panSelected.length === panFiles.length;
+    document.getElementById('panSelInfo').textContent = '已选 ' + panSelected.length + ' 项';
   }
-  function togglePanPick(ep) {
-    var i = panSelected.indexOf(ep);
-    if (i === -1) panSelected.push(ep); else panSelected.splice(i, 1);
-    panSelected.sort(function (a, b) { return a - b; });
+  function togglePanPick(i) {
+    var k = panSelected.indexOf(i);
+    if (k === -1) panSelected.push(i); else panSelected.splice(k, 1);
     renderPanFiles();
   }
   function togglePanAll() {
     var all = document.getElementById('panCheckAll').checked;
-    panSelected = all ? panFiles.map(function (f) { return f.ep; }) : [];
+    panSelected = all ? panFiles.map(function (f, i) { return i; }) : [];
     renderPanFiles();
   }
-  function updatePanSel() {
-    var el = document.getElementById('panSelInfo');
-    if (el) el.textContent = t('已选 ') + panSelected.length + t(' 项');
-  }
   function confirmPanUpload() {
-    if (panSelected.length === 0) { showToast(t('请选择要上传的文件'), 'err'); return; }
-    var kind = panCtx.kind;
-    var ctxMode = panCtx.mode;
-    var name = document.getElementById('fName').value.trim() || t('短剧');
-    var targets = panCtx.mode === 'cell' ? [panCtx.no] : panSelected.slice();
-    var items = targets.map(function (ep) {
-      var f = panFiles.find(function (x) { return x.ep === ep; }) || { name: ep + kindExt(kind) };
-      return { ep: ep, name: f.name };
-    });
+    if (!panSelected.length) { showToast('请选择要上传的文件', 'err'); return; }
+    var ctx = panCtx;
+    var items = panSelected.map(function (i) { return panFiles[i]; });
     closePanDrawer();
-    if (ctxMode === 'batchReplace') selectedEps = [];
-    items.forEach(function (it) {
-      var e = findEp(it.ep);
-      if (!e) return;
-      fillEpByKind(e, name, kind, it.name);
-    });
-    renderEpisodes();
-    items.forEach(function (it) { simulateProgress(it.ep, kind); });
-    showToast(t('已开始上传 ') + items.length + t(' 个文件'), 'ok');
-  }
-
-  // 工具栏入口：本地上传 / 百度网盘提取（批量）
-  function localUploadKind(kind) {
-    openUpModal({ mode: 'batch', kind: kind, no: null });
-  }
-  function openPanModal(kind) {
-    openPanDrawer({ mode: 'batch', kind: kind, no: null });
-  }
-
-  function shuffle(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-    }
-  }
-
-  function simulateProgress(no, kind) {
-    var timer = setInterval(function () {
-      var e = findEp(no);
-      if (!e) { clearInterval(timer); return; }
-      var key = kind + 'Progress';
-      var statusKey = kind + 'Status';
-      e[key] += Math.floor(Math.random() * 18) + 8;
-      if (e[key] >= 100) {
-        clearInterval(timer);
-        var epName = isEnglish() ? ('Ep. ' + no) : ('第 ' + no + ' 集');
-        var kindName = kind === 'videoNoSub' ? t('无字幕视频') : (kind === 'videoSub' ? t('有字幕视频') : t('字幕'));
-        if (Math.random() < 0.15) {
-          e[statusKey] = 'failed';
-          e[key] = 100;
-          renderEpisodes();
-          showToast(epName + ' ' + kindName + t('上传失败，请重试'), 'err');
-        } else {
-          e[statusKey] = 'done';
-          e[key] = 100;
-          if (kind === 'srt') { e.srtInfo = genSrtInfo(e.srt); }
-          else { e[kind + 'Info'] = genVideoInfo(e[kind]); }
-          renderEpisodes();
-          showToast(epName + ' ' + kindName + t('上传完成'), 'ok');
-        }
-      } else {
-        renderEpisodes();
-      }
-    }, 200);
-  }
-
-  // ========== 暂存 / 提交审核 / 取消 ==========
-  function goCancel() {
-    __nav('works.html');
-  }
-
-  // 物料说明字符计数
-  function updateMatDescCount() {
-    var el = document.getElementById('fMatDesc');
-    var cnt = document.getElementById('matDescCount');
-    if (el && cnt) cnt.textContent = el.value.length + ' / 500';
-  }
-
-  // 收集表单数据（基础信息 + 物料），用于暂存与提交
-  // 授权主体（可搜索单选，枚举 = 审核通过 + 已签署的主体）
-  var SUBJECT_SELECTABLE = (ACCOUNT_SUBJECTS || []).filter(function (s) { return s.certStatus === 'certed' && s.contractStatus === 'done'; }).map(function (s) { return s.name; });
-  function filterSubject__upload() {
-    var kw = document.getElementById('__work_upload__subjectInput').value.trim();
-    var opts = SUBJECT_SELECTABLE.filter(function (n) { return !kw || n.indexOf(kw) !== -1; });
-    var panel = document.getElementById('__work_upload__subjectPanel');
-    panel.innerHTML = opts.map(function (n) { return '<div class="ms-opt" onclick="pickSubject__upload(\'' + n + '\')">' + n + '</div>'; }).join('') || '<div class="ac-empty">无匹配主体</div>';
-    panel.classList.add('show');
-  }
-  function pickSubject__upload(n) {
-    document.getElementById('__work_upload__subjectInput').value = n;
-    document.getElementById('__work_upload__subjectPanel').classList.remove('show');
-  }
-  document.addEventListener('click', function (e) {
-    if (!e.target.closest('#__work_upload__subjectWrap')) { document.getElementById('__work_upload__subjectPanel').classList.remove('show'); }
-  });
-
-  function collectForm() {
-    var epVal = document.getElementById('fTotalEp').value.trim();
-    return {
-      name: document.getElementById('fName').value.trim(),
-      alias: document.getElementById('fAlias').value.trim(),
-      srcLang: document.getElementById('fSrcLang').value.trim(),
-      episodeCount: epVal ? parseInt(epVal) : '',
-      desc: document.getElementById('fDesc').value.trim(),
-      authStart: document.getElementById('fCopyrightStart').value,
-      authEnd: document.getElementById('fCopyrightEnd').value,
-      suggestedPay: document.getElementById('fSuggestPay').value,
-      authType: document.getElementById('fAuthType').value,
-      subjectName: document.getElementById('__work_upload__subjectInput').value.trim(),
-      socialMediaDesc: document.getElementById('fSocialMediaDesc').value.trim(),
-      friendInfo: document.getElementById('fFriendInfo').value.trim(),
-      authRegion: document.getElementById('fAuthRegion').value.trim(),
-      equity: selectedEquity.slice(),
-      channel: selectedChannel.slice(),
-      iaaLimitType: document.getElementById('fIaaLimitType').value,
-      iaaOnlineTime: document.getElementById('fIaaOnlineTime').value,
-      onlineTime: document.getElementById('fOnlineTime').value,
-      matPanLink: document.getElementById('fMatPanLink').value,
-      matPanCode: document.getElementById('fMatPanCode').value,
-      matDesc: document.getElementById('fMatDesc').value.trim(),
-      attachments: attachments.map(function (a) { return a.name; }),
-      cover: coverUrl
-    };
-  }
-
-  function applyForm(w0, w) {
-    w0.name = w.name; w0.alias = w.alias; w0.srcLang = w.srcLang;
-    w0.episodeCount = w.episodeCount; w0.desc = w.desc;
-    w0.authStart = w.authStart; w0.authEnd = w.authEnd; w0.suggestedPay = w.suggestedPay;
-    w0.authType = w.authType; w0.subjectName = w.subjectName;
-    w0.socialMediaDesc = w.socialMediaDesc; w0.friendInfo = w.friendInfo; w0.authRegion = w.authRegion;
-    w0.equity = w.equity; w0.channel = w.channel;
-    w0.iaaLimitType = w.iaaLimitType; w0.iaaOnlineTime = w.iaaOnlineTime; w0.onlineTime = w.onlineTime;
-    w0.matPanLink = w.matPanLink; w0.matPanCode = w.matPanCode; w0.attachments = w.attachments;
-    w0.matDesc = w.matDesc;
-    if (w.cover) w0.cover = w.cover;
-  }
-
-  // 生成新短剧 ID（演示：取当前最大值 +1）
-  function genNewId() {
-    var max = 0;
-    (DEMO_WORKS || []).forEach(function (x) { var n = parseInt(x.id, 10); if (n > max) max = n; });
-    return String(max + 1);
-  }
-  function fmtNow() {
-    var d = new Date();
-    function p(n) { return (n < 10 ? '0' : '') + n; }
-    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
-  }
-
-  // 暂存：保存草稿，状态保持「待提交」，可多次编辑（demo 不做必填校验）
-  function doDraft() {
-    var w = collectForm();
-    if (MODE === 'edit') {
-      var w0 = findWorkById(EDIT_ID);
-      if (w0) { applyForm(w0, w); w0.status = 'draft'; }
-    } else if (MODE === 'create') {
-      // 新建暂存：真实新增一条「待提交」草稿，未填字段留空
-      DEMO_WORKS.unshift({
-        id: genNewId(), name: w.name, alias: w.alias, episodeCount: w.episodeCount, status: 'draft',
-        uploadTime: fmtNow(), color: '#ff9a9e', cover: w.cover, type: '',
-        desc: w.desc, srcLang: w.srcLang, authStart: w.authStart, authEnd: w.authEnd, onlineTime: w.onlineTime,
-        suggestedPay: w.suggestedPay,
-        authType: w.authType, subjectName: w.subjectName, socialMediaDesc: w.socialMediaDesc, friendInfo: w.friendInfo, authRegion: w.authRegion,
-        equity: w.equity, channel: w.channel, iaaLimitType: w.iaaLimitType, iaaOnlineTime: w.iaaOnlineTime,
-        matPanLink: w.matPanLink, matPanCode: w.matPanCode, attachments: w.attachments,
-        episodes: w.episodeCount ? makeEpisodes('new' + Date.now(), w.episodeCount) : []
+    if (ctx.mode === 'module') {
+      items.forEach(function (f) { UP.media[ctx.key].files.push({ name: f.name, size: f.size, type: f.type }); });
+      if (ctx.key.indexOf('poster') === 0) renderPosterPanel();
+      else renderModule(ctx.key);
+    } else {
+      items.forEach(function (f) {
+        var ep = UP.eps[(f.ep || ctx.no) - 1];
+        if (!ep) return;
+        ep[ctx.track] = { name: f.name, size: f.size, dur: '—', status: 'uploading', progress: 0 };
       });
+      renderEpSection();
+      items.forEach(function (f) { simulateUp(f.ep || ctx.no, ctx.track); });
     }
-    showToast(t('已暂存'), 'ok');
-    setTimeout(function () { __nav('works.html'); }, 500);
+    showToast('已开始上传 ' + items.length + ' 个文件', 'ok');
   }
 
-  // 提交审核：直接进入审核中（demo 不做必填校验）
-  function doSubmit() {
-    var w = collectForm();
-    if (MODE === 'edit' || MODE === 'resubmit' || MODE === 'revise') {
-      var w0 = findWorkById(EDIT_ID);
-      if (w0) {
-        applyForm(w0, w);
-        w0.status = 'reviewing';
-        w0.reviewStage = 'unclaimed';
+  // ===================== 提交 =====================
+  function saveUp(status) {
+    var name = document.getElementById('upName').value.trim();
+    var count = parseInt(document.getElementById('upCount').value, 10);
+    if (!name) { showToast('请输入短剧名称', 'err'); return; }
+    if (!count || count < 1) { showToast('请输入剧集数', 'err'); return; }
+    // 副标题 A/B 必填（读取数据，避免只在当前 tab 有输入框）
+    for (var k in MODULE_DEF) {
+      if (!MODULE_DEF[k].subtitle) continue;
+      if (!(UP.media[k].subtitle || '').trim()) {
+        showToast('请输入' + MODULE_DEF[k].title, 'err');
+        switchPosterTab(k);
+        return;
       }
-    } else if (MODE === 'create') {
-      // 新建提交审核：新增一条「审核中」记录
-      DEMO_WORKS.unshift({
-        id: genNewId(), name: w.name, alias: w.alias, episodeCount: w.episodeCount, status: 'reviewing',
-        reviewStage: 'unclaimed',
-        uploadTime: fmtNow(), color: '#a6c1ee', cover: w.cover, type: '',
-        desc: w.desc, srcLang: w.srcLang, authStart: w.authStart, authEnd: w.authEnd, onlineTime: w.onlineTime,
-        suggestedPay: w.suggestedPay,
-        authType: w.authType, subjectName: w.subjectName, socialMediaDesc: w.socialMediaDesc, friendInfo: w.friendInfo, authRegion: w.authRegion,
-        equity: w.equity, channel: w.channel, iaaLimitType: w.iaaLimitType, iaaOnlineTime: w.iaaOnlineTime,
-        matPanLink: w.matPanLink, matPanCode: w.matPanCode, attachments: w.attachments,
-        episodes: makeEpisodes('new' + Date.now(), w.episodeCount)
-      });
     }
-    showToast(t('已提交审核'), 'ok');
-    setTimeout(function () { __nav('works.html'); }, 500);
+    var now = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var nowStr = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    var w = MODE === 'edit' ? findWork(EDIT_ID) : null;
+    if (!w) {
+      w = { id: 'W' + now.getTime(), color: 'linear-gradient(135deg,#ff9a9e,#fad0c4)', uploadTime: nowStr, createTime: nowStr };
+      DEMO_WORKS.unshift(w);
+    }
+    w.name = name;
+    w.episodeCount = count;
+    w.media = JSON.parse(JSON.stringify(UP.media));
+    w.eps = JSON.parse(JSON.stringify(UP.eps));
+    w.status = status;
+    w.updateTime = nowStr;
+    if (status === 'reviewing') { w.reviewStage = 'unclaimed'; w.reviewTime = ''; }
+    showToast(status === 'draft' ? '已暂存' : '已提交审核', 'ok');
+    setTimeout(function () { __nav('works.html'); }, 400);
   }
 
   // 初始化
-  initMode();
-  renderEquity__upload();
-  renderChannel__upload();
-  // 暂存按钮置灰联动：输入短剧名称（输入/离焦）时点亮或置灰
-  document.getElementById('fName').addEventListener('input', syncDraftBtn);
-  document.getElementById('fName').addEventListener('blur', syncDraftBtn);
-  gotoStep(1);
-  applyI18n();
-
+  initUpPage();
 </script>
 
 
 <!-- ================= 页面脚本：work-detail ================= -->
 <script>
-
   document.getElementById('__work_detail__topbar-root').innerHTML = renderTopbar({ unread: 2 });
   document.getElementById('__work_detail__sidebar-root').innerHTML = renderSidebar('works');
 
-  function getParam__detail(name) {
-    var m = new RegExp('[?&]' + name + '=([^&]*)').exec(__query());
-    return m ? decodeURIComponent(m[1]) : null;
-  }
-  var WORK_ID = getParam__detail('id');
-  // 独立打开（无 ?id 参数）时，默认展示一条「待审核」状态的短剧，避免落到演示空数据
-  if (!WORK_ID && DEMO_WORKS.length) {
-    var _w = DEMO_WORKS.find(function (x) { return x.status === 'reviewing'; }) || DEMO_WORKS[0];
-    WORK_ID = _w.id;
-  }
-  var epPage = 1;
-  var EP_PER_PAGE = 8;
+  var DT = { posterTab: 'posterMain', epTab: 'hd' };
 
-  function findWork__detail(id) { return DEMO_WORKS.find(function (x) { return x.id === id; }); }
-  function escAttr__detail(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/'/g, '&#39;'); }
-  function fieldRow(label, value, cls) {
-    return '<div class="desc-row"><div class="desc-label">' + label + '</div><div class="desc-value' + (cls ? ' ' + cls : '') + '">' + value + '</div></div>';
-  }
-  function renderTagList__detail(arr) {
-    if (!arr || arr.length === 0) return '<span class="text-3">—</span>';
-    var html = arr.map(function (x) { return '<span class="tag-mini">' + t(x) + '</span>'; }).join('');
-    return '<div class="tag-cell">' + html + '</div>';
-  }
-  function renderCover__detail(w, cls) {
-    if (w.cover) {
-      return '<img class="' + cls + '-img" src="' + escAttr__detail(w.cover) + '" alt="' + escAttr__detail(w.name) + '" loading="lazy" onerror="this.style.display=\'none\'">';
+  var DT_MODULES = [
+    { key: 'posterMain', title: '主标题' },
+    { key: 'posterA', title: '副标题A' },
+    { key: 'posterB', title: '副标题B' }
+  ];
+  var DT_OTHER = [
+    { key: 'bts', title: '花絮' },
+    { key: 'trailer', title: '预告片' },
+    { key: 'legal', title: '法务版视频' }
+  ];
+  var DT_EP_TABS = [
+    { key: 'hd', label: '高清版', srt: false },
+    { key: 'ov', label: '海外版', srt: true },
+    { key: 'cn', label: '中英字幕版', srt: false }
+  ];
+
+  function dtEnsure(w) {
+    if (!w) return;
+    // 媒体为空（新建/编辑后未上传）时也补一份演示数据，保证详情页可看
+    if (w.media) {
+      var total = 0;
+      Object.keys(w.media).forEach(function (k) { total += (w.media[k].files || []).length; });
+      if (total === 0) w.media = null;
     }
-    return '';
+    if (!w.media) {
+      w.media = {};
+      ['posterMain', 'posterA', 'posterB', 'bts', 'trailer', 'legal'].forEach(function (k) {
+        w.media[k] = { subtitle: (k === 'posterA' ? '甜宠逆袭' : (k === 'posterB' ? '豪门复仇' : '')), files: [] };
+      });
+      var imgPool = ['3比4_带独家标.jpg', '16比9_带独家标.png', '9比16_带独家标.jpg', '3比4_不带独家标.png'];
+      w.media.posterMain.files = imgPool.map(function (n) { return { name: n, size: '2.4MB', type: n.split('.').pop().toUpperCase() }; });
+      w.media.posterA.files = [{ name: '3比4_副标题A.png', size: '1.8MB', type: 'PNG' }];
+      w.media.posterB.files = [{ name: '3比4_副标题B.png', size: '1.9MB', type: 'PNG' }];
+      w.media.bts.files = [{ name: '花絮_高光cut1.mp4', size: '86.2MB', type: 'MP4' }, { name: '花絮_高光cut2.mp4', size: '92.5MB', type: 'MP4' }];
+      w.media.trailer.files = [{ name: '预告片_带独家标.mp4', size: '64.8MB', type: 'MP4' }, { name: '预告片_不带独家标.mp4', size: '61.3MB', type: 'MP4' }];
+      w.media.legal.files = [{ name: '法务版_全集.mp4', size: '968.4MB', type: 'MP4' }];
+    }
+    if (!w.eps || !w.eps.length) {
+      var n = w.episodeCount || 10;
+      var arr = [];
+      for (var i = 1; i <= n; i++) {
+        arr.push({
+          no: i,
+          hd: { name: i + '.mp4', size: (Math.random() * 200 + 120).toFixed(1) + 'MB', dur: (Math.floor(Math.random() * 60) + 90) + 's', status: 'done' },
+          ov: { name: i + '.mp4', size: (Math.random() * 200 + 120).toFixed(1) + 'MB', dur: (Math.floor(Math.random() * 60) + 90) + 's', status: 'done' },
+          ovSrt: { name: i + '.srt', size: '42KB', dur: '—', status: 'done' },
+          cn: { name: i + '.mp4', size: (Math.random() * 200 + 120).toFixed(1) + 'MB', dur: (Math.floor(Math.random() * 60) + 90) + 's', status: 'done' }
+        });
+      }
+      w.eps = arr;
+    }
   }
-  function downloadFile__detail(name) { showToast((isEnglish() ? 'Downloading ' : '正在下载 ') + name + (isEnglish() ? ' (demo)' : '（演示）'), 'ok'); }
 
-  function goBack() { __nav('works.html'); }
+  function dtFileTable(files) {
+    if (!files || !files.length) return '<div class="mf-empty">暂无文件</div>';
+    var rows = files.map(function (f) {
+      var thumb = (f.type === 'JPG' || f.type === 'PNG')
+        ? '<span class="mf-thumb" style="background:' + thumbColor2(f.name) + '">' + f.type + '</span>'
+        : '<span class="mf-thumb" style="background:#c8ccd2">' + (f.type || 'FILE') + '</span>';
+      return '<tr><td><div class="mf-name">' + thumb + '<span>' + f.name + '</span></div></td>' +
+        '<td>' + f.size + '</td><td>' + f.type + '</td></tr>';
+    }).join('');
+    return '<table class="mf-table"><thead><tr><th>文件名称</th><th style="width:130px">文件大小</th><th style="width:110px">文件类型</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+  function thumbColor2(name) {
+    var pal = ['#ff9a9e', '#a18cd1', '#84c1ff', '#f6d365', '#96fbc4', '#fbc2eb'];
+    var sum = 0;
+    for (var i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+    return pal[sum % pal.length];
+  }
 
   function renderDetail() {
-    var w = findWork__detail(WORK_ID);
-    if (!w) {
-      document.getElementById('detailBody').innerHTML =
-        '<div class="card" style="padding:48px;text-align:center"><div class="empty-text">' + t('未找到该短剧') + '</div></div>';
-      return;
-    }
-
-    var payCell = (w.suggestedPay !== undefined && w.suggestedPay !== '')
-      ? (isEnglish() ? (w.suggestedPay + ' episodes') : (w.suggestedPay + ' 集'))
-      : '—';
-    var totalCell = w.episodeCount ? (isEnglish() ? (w.episodeCount + ' episodes') : (w.episodeCount + ' 集')) : '—';
-    var iaaOnline = w.iaaLimitType === '按照约定时间上线' ? (w.iaaOnlineTime || '—') : null;
+    var id = window.WORK_ID;
+    var w = findWork(id) || DEMO_WORKS[0];
+    if (!w) return;
+    dtEnsure(w);
+    document.getElementById('__work_detail__pageTitle').textContent = (w.name || '短剧') + ' · 详情';
 
     var html = '';
 
     // 基础信息
-    html += '<div class="detail-card"><div class="card-title">基础信息</div>' +
-      '<div class="dt-basic">' +
-        '<div class="dt-cover" style="background:' + w.color + '">' + renderCover__detail(w, 'dt-cover') + '</div>' +
-        '<div class="dt-fields">' +
-          fieldRow(t('短剧名称'), w.name) +
-          fieldRow(t('短剧别名'), w.alias || '—') +
-          fieldRow(t('短剧 ID'), '<span class="mono">' + w.id + '</span>') +
-          fieldRow(t('源语言'), t(w.srcLang || '—')) +
-          fieldRow(t('短剧简介'), w.desc || '—') +
-          fieldRow(t('总集数'), totalCell) +
-          fieldRow(t('建议付费集数'), payCell) +
-          fieldRow(t('上传时间'), '<span class="mono">' + w.uploadTime + '</span>') +
-        '</div>' +
-      '</div></div>';
+    html += '<div class="detail-card"><div class="card-title">基础信息</div><div>' +
+      '<div class="desc-row"><div class="desc-label">短剧名称</div><div class="desc-value">' + (w.name || '—') + '</div></div>' +
+      '<div class="desc-row"><div class="desc-label">剧集数</div><div class="desc-value">' + (w.episodeCount || '—') + ' 集</div></div>' +
+      '<div class="desc-row"><div class="desc-label">短剧 ID</div><div class="desc-value mono">' + w.id + '</div></div>' +
+      '<div class="desc-row"><div class="desc-label">状态</div><div class="desc-value">' + statusTag(w.status) + '</div></div>' +
+      '<div class="desc-row"><div class="desc-label">授权主体</div><div class="desc-value">' + (w.subjectName || '—') + '</div></div>' +
+      '<div class="desc-row"><div class="desc-label">上传时间</div><div class="desc-value mono">' + (w.uploadTime || '—') + '</div></div>' +
+      '<div class="desc-row"><div class="desc-label">审核时间</div><div class="desc-value mono">' + (w.reviewTime || '—') + '</div></div>' +
+      '<div class="desc-row"><div class="desc-label">上架时间</div><div class="desc-value mono">' + (w.shelfTime || '—') + '</div></div>' +
+    '</div></div>';
 
-    // 授权信息
-    html += '<div class="detail-card"><div class="card-title">授权信息</div>' +
-      fieldRow(t('授权主体'), w.subjectName || '—') +
-      fieldRow(t('授权方式'), t(w.authType || '—')) +
-      fieldRow(t('主权益'), renderTagList__detail(w.equity)) +
-      fieldRow(t('授权渠道'), renderTagList__detail(w.channel)) +
-      fieldRow(t('IAA限制类型'), t(w.iaaLimitType || '—')) +
-      (iaaOnline !== null ? fieldRow(t('IAA约定可上线时间'), iaaOnline) : '') +
-      fieldRow(t('版权授权时间'), '<span class="mono">' + (w.authStart || '—') + '</span>') +
-      fieldRow(t('版权到期时间'), '<span class="mono">' + (w.authEnd || '—') + '</span>') +
-      fieldRow(t('约定上线时间'), w.onlineTime || '—') +
-      fieldRow(t('社媒可发布描述'), w.socialMediaDesc || '—') +
-      (w.friendInfo ? fieldRow(t('友商信息'), w.friendInfo) : '') +
-      fieldRow(t('授权地区'), w.authRegion || '—') +
-    '</div>';
-
-    // 物料信息
-    html += '<div class="detail-card"><div class="card-title">物料信息</div>';
-    if (w.matPanLink) {
-      var linkHtml = '<a class="file-link" href="' + escAttr__detail(w.matPanLink) + '" target="_blank" rel="noopener">' + w.matPanLink + '</a>' +
-        (w.matPanCode ? '（' + t('提取码') + '：' + w.matPanCode + '）' : '');
-      html += fieldRow(t('网盘链接'), linkHtml);
+    // 海报
+    var pt = DT.posterTab;
+    var pdef = DT_MODULES.filter(function (x) { return x.key === pt; })[0];
+    var pm = w.media[pt];
+    html += '<div class="detail-card"><div class="card-title">海报</div>' +
+      '<div class="sec-tabs">' + DT_MODULES.map(function (m) {
+        return '<span class="sec-tab' + (m.key === pt ? ' active' : '') + '" onclick="dtSwitchPoster(\'' + m.key + '\')">' + m.title + '</span>';
+      }).join('') + '</div>';
+    if (pdef.key !== 'posterMain') {
+      html += '<div style="margin-bottom:12px"><div class="desc-row"><div class="desc-label">' + pdef.title + '</div><div class="desc-value">' + (pm.subtitle || '—') + '</div></div></div>';
     }
-    if (w.attachments && w.attachments.length) {
-      var sep = isEnglish() ? ', ' : '、';
-      var attachHtml = w.attachments.map(function (a) {
-        return '<span class="file-link" onclick="downloadFile__detail(\'' + escAttr__detail(a) + '\')">' + a + '</span>';
-      }).join('<span class="text-3">' + sep + '</span>');
-      html += fieldRow(t('附件'), attachHtml);
-    }
-    if (w.matDesc) html += fieldRow(t('物料说明'), w.matDesc);
-    html += '</div>';
+    html += dtFileTable(pm.files) + '</div>';
 
-    // 剧集列表
-    var eps = w.episodes || [];
-    if (eps.length) {
-      var total = eps.length;
-      var start = (epPage - 1) * EP_PER_PAGE;
-      var pageEps = eps.slice(start, start + EP_PER_PAGE);
-      var rows = pageEps.map(function (e) {
-        var noCell = isEnglish() ? ('Ep. ' + e.no) : ('第 ' + e.no + ' 集');
-        var noSubCell = e.videoNoSub
-          ? '<span class="file-link" onclick="downloadFile__detail(\'' + escAttr__detail(e.videoNoSub) + '\')">' + e.videoNoSub + '</span>'
-          : '<span class="text-3">—</span>';
-        var subCell = e.videoSub
-          ? '<span class="file-link" onclick="downloadFile__detail(\'' + escAttr__detail(e.videoSub) + '\')">' + e.videoSub + '</span>'
-          : '<span class="text-3">—</span>';
-        var srtCell = e.srt
-          ? '<span class="file-link" onclick="downloadFile__detail(\'' + escAttr__detail(e.srt) + '\')">' + e.srt + '</span>'
-          : '<span class="text-3">—</span>';
-        return '<tr>' +
-          '<td class="ep-num">' + noCell + '</td>' +
-          '<td>' + noSubCell + '</td>' +
-          '<td>' + subCell + '</td>' +
-          '<td>' + srtCell + '</td>' +
+    // 其他物料
+    DT_OTHER.forEach(function (m) {
+      html += '<div class="detail-card"><div class="card-title">' + m.title + '</div>' + dtFileTable(w.media[m.key].files) + '</div>';
+    });
+
+    // 剧集视频
+    var et = DT.epTab;
+    var etab = DT_EP_TABS.filter(function (x) { return x.key === et; })[0];
+    var rows = w.eps.map(function (ep) {
+      var f = ep[et] || {};
+      var s = etab.srt ? (ep.ovSrt || {}) : null;
+      return '<tr><td><span class="ep-num">' + ep.no + '</span></td>' +
+        '<td>' + (f.name ? '<span class="file-link">' + f.name + '</span>' : '<span class="file-empty">未上传</span>') + '</td>' +
+        '<td class="text-2">' + (f.dur || '—') + '</td>' +
+        '<td class="text-2">' + (f.size || '—') + '</td>' +
+        (etab.srt ? '<td>' + (s.name ? '<span class="file-link">' + s.name + '</span>' : '<span class="file-empty">未上传</span>') + '</td>' : '') +
         '</tr>';
-      }).join('');
-      var totalPages = Math.max(1, Math.ceil(total / EP_PER_PAGE));
-      var pagerInfo = isEnglish()
-        ? (epPage + ' / ' + totalPages + ' · ' + total + ' episodes')
-        : (epPage + ' / ' + totalPages + ' 页 · 共 ' + total + ' 集');
-      html += '<div class="detail-card"><div class="card-title">剧集列表</div>' +
-        '<table class="ep-table"><thead><tr><th style="width:100px">' + t('集数') + '</th><th>' + t('无字幕视频') + '</th><th>' + t('有字幕视频') + '</th><th>' + t('字幕文件') + '</th></tr></thead>' +
-        '<tbody>' + rows + '</tbody></table>' +
-        '<div class="ep-pager">' +
-          '<button class="pg-btn" onclick="epPrev()" ' + (epPage <= 1 ? 'disabled' : '') + '>' + t('上一页') + '</button>' +
-          '<span class="pg-info">' + pagerInfo + '</span>' +
-          '<button class="pg-btn" onclick="epNext(' + totalPages + ')" ' + (epPage >= totalPages ? 'disabled' : '') + '>' + t('下一页') + '</button>' +
+    }).join('');
+    html += '<div class="detail-card"><div class="card-title">剧集视频</div>' +
+      '<div class="sec-tabs">' + DT_EP_TABS.map(function (t) {
+        return '<span class="sec-tab' + (t.key === et ? ' active' : '') + '" onclick="dtSwitchEp(\'' + t.key + '\')">' + t.label + '</span>';
+      }).join('') + '</div>' +
+      '<table class="ep-table"><thead><tr><th style="width:80px">集数</th><th>文件</th><th style="width:120px">时长</th><th style="width:110px">大小</th>' +
+      (etab.srt ? '<th style="width:260px">英文字幕 srt</th>' : '') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+    // 审核信息
+    if (w.rejectReason || w.reviewStage) {
+      html += '<div class="detail-card"><div class="card-title">审核信息</div><div>' +
+        (w.reviewStage ? '<div class="desc-row"><div class="desc-label">审核环节</div><div class="desc-value">' + ((REVIEW_STAGE[w.reviewStage] || {}).label || '—') + '</div></div>' : '') +
+        (w.rejectReason ? '<div class="desc-row"><div class="desc-label">驳回原因</div><div class="desc-value">' + w.rejectReason + '</div></div>' : '') +
         '</div></div>';
     }
 
     document.getElementById('detailBody').innerHTML = html;
   }
 
-  function epPrev() { if (epPage > 1) { epPage--; renderDetail(); } }
-  function epNext(totalPages) { if (epPage < totalPages) { epPage++; renderDetail(); } }
+  function dtSwitchPoster(key) { DT.posterTab = key; renderDetail(); }
+  function dtSwitchEp(key) { DT.epTab = key; renderDetail(); }
+  function goBack() { __nav('works.html'); }
 
-  // 初始化
-  renderDetail();
-  applyI18n();
-
+  // 仅在直接进入详情视图时初始化（避免提前给演示数据灌入物料）
+  if ((location.hash || '').indexOf('work-detail') !== -1) renderDetail();
 </script>
 
 <script>__boot();</script>

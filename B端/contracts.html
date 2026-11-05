@@ -724,6 +724,29 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <div class="form-hint" style="font-size:12px;color:var(--text-3);margin-top:6px">仅可选认证状态为「已认证」的主体</div>
       </div>
 
+      <!-- 甲方信息（随合同一起落库） -->
+      <div class="group-title" style="margin-top:0">甲方信息</div>
+      <div class="form-row">
+        <div class="form-item">
+          <label class="form-label">联系人<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="muPaContact" placeholder="请输入联系人" style="width:100%">
+        </div>
+        <div class="form-item">
+          <label class="form-label">联系电话<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="muPaPhone" placeholder="请输入联系电话" style="width:100%">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <label class="form-label">联系邮箱<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="muPaEmail" placeholder="请输入联系邮箱" style="width:100%">
+        </div>
+        <div class="form-item">
+          <label class="form-label">合作期限<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="muPaTerm" placeholder="如：1 年 / 24 个月" style="width:100%">
+        </div>
+      </div>
+
       <div class="form-item">
         <label class="form-label">合同文件<span class="req">*</span></label>
         <div class="radio-cards">
@@ -1206,15 +1229,6 @@ function pb(company, addr, contact, phone, email, bankName, bankAccount, bankEn)
 
 var DEMO_CONTRACTS = [
   {
-    no: 'HT202609-001', company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', docs: ['framework', 'nda'], status: 'fill', business: '枥文',
-    accountName: '光影工场', accountId: '1001',
-    subjectName: '杭州光影映画文化传媒有限公司', subjectId: 'SUB1001-01', subjectType: 'company', contactName: '张伟', contactPhone: '13812346688',
-    generateTime: '', signTime: '',
-    reviewer: '', reviewStage: '', reviewTime: '',
-    partyB: pb('Hangzhou Guangying Yinghua Culture Media Co., Ltd.', '杭州市西湖区文三路100号', '张伟', '13812346688', 'zhangwei@163.com', 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', '6222000088888888', 'Industrial and Commercial Bank of China, Hangzhou Branch'),
-    refillReason: ''
-  },
-  {
     no: 'HT202609-002', company: 'Hangzhou Xinrui Culture Communication Co., Ltd.', docs: ['framework', 'nda'], status: 'generating', business: '禾呈',
     accountName: '新锐工作室', accountId: '1002',
     subjectName: '杭州新锐文化传播有限公司', subjectId: 'SUB1002-01', subjectType: 'company', contactName: '李婷', contactPhone: '15912342211',
@@ -1238,6 +1252,7 @@ var DEMO_CONTRACTS = [
     subjectName: '杭州光影映画网络科技有限公司', subjectId: 'SUB1001-02', subjectType: 'company', contactName: '刘洋', contactPhone: '13512347766',
     generateTime: '2026-09-10 14:00:00', signTime: '',
     reviewer: '泰瑞', reviewStage: '', reviewTime: '2026-09-10 16:00:00',
+    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', term: '1 年', submitTime: '2026-09-10 15:30:00' },
     partyB: pb('Hangzhou Guangying Yinghua Network Technology Co., Ltd.', '杭州市西湖区文二路88号', '刘洋', '13512347766', 'liuyang@163.com', 'Hangzhou Guangying Yinghua Network Technology Co., Ltd.', '6217000077887788', 'China Merchants Bank, Hangzhou Branch'),
     refillReason: ''
   },
@@ -1247,6 +1262,7 @@ var DEMO_CONTRACTS = [
     subjectName: '杭州追光文化传媒有限公司', subjectId: 'SUB1003-01', subjectType: 'company', contactName: '王小明', contactPhone: '13712343355',
     generateTime: '2026-09-01 09:00:00', signTime: '2026-09-07 10:05:58',
     reviewer: '冰雨', reviewStage: '', reviewTime: '2026-09-01 15:00:00',
+    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', term: '1 年', submitTime: '2026-09-01 14:20:00' },
     partyB: pb('Hangzhou Zhuiguang Culture Media Co., Ltd.', '杭州市拱墅区莫干山路100号', '王小明', '13712343355', 'wangxiaoming@163.com', 'Hangzhou Zhuiguang Culture Media Co., Ltd.', '6217000000000000', 'China Construction Bank, Hangzhou Branch'),
     refillReason: ''
   }
@@ -1295,10 +1311,9 @@ function typeLabel(key) {
   return t(c.label);
 }
 
-// 合同状态映射（5 态）
+// 合同状态映射（4 态；「填写信息」态实际不存在，已删）
 // 注意：generating 对外展示为「审核中」，refill 对外展示为「审核驳回」
 var CONTRACT_STATUS = {
-  fill:       { label: '填写信息', cls: 'tag-gray' },
   generating: { label: '审核中',   cls: 'tag-blue' },
   refill:     { label: '审核驳回', cls: 'tag-pink' },
   pending:    { label: '待签署',   cls: 'tag-orange' },
@@ -1991,9 +2006,8 @@ var DEMO_ACCOUNTS = [
   }
   function viewAccount(id) { var a = DEMO_ACCOUNTS.find(function (x) { return x.id === id; }); if (a) showToast('账号：' + a.nickname + '（' + a.id + '）', 'ok'); }
 
-  // 审核状态枚举（复用完整 5 态，generating 展示「审核中」、refill 展示「审核驳回」）
+  // 审核状态枚举（4 态：generating 审核中 / refill 审核驳回 / pending 待签署 / done 已签署）
   var STATUS_OPTIONS = [
-    { key: 'fill', label: '填写信息' },
     { key: 'generating', label: '审核中' },
     { key: 'refill', label: '审核驳回' },
     { key: 'pending', label: '待签署' },
@@ -2047,7 +2061,7 @@ var DEMO_ACCOUNTS = [
   function openManualUpload() {
     MU_TYPE = 'esign';
     MU_FILES = { framework: '', nda: '' };
-    ['muSubject', 'muFw', 'muNda'].forEach(function (id) {
+    ['muSubject', 'muFw', 'muNda', 'muPaContact', 'muPaPhone', 'muPaEmail', 'muPaTerm'].forEach(function (id) {
       var el = document.getElementById(id); if (el) el.value = '';
     });
     var subjHidden = document.getElementById('muSubjectValue');
@@ -2119,6 +2133,15 @@ var DEMO_ACCOUNTS = [
     MU_SUBJECTS.forEach(function (x) { if (x.company === subjName) subj = x; });
     if (!subj) { showToast('请从下拉列表中选择主体', 'err'); return; }
 
+    var paContact = document.getElementById('muPaContact').value.trim();
+    var paPhone = document.getElementById('muPaPhone').value.trim();
+    var paEmail = document.getElementById('muPaEmail').value.trim();
+    var paTerm = document.getElementById('muPaTerm').value.trim();
+    if (!paContact) { showToast('请输入联系人', 'err'); return; }
+    if (!paPhone) { showToast('请输入联系电话', 'err'); return; }
+    if (!paEmail) { showToast('请输入联系邮箱', 'err'); return; }
+    if (!paTerm) { showToast('请输入合作期限', 'err'); return; }
+
     var docsInfo = null;
     if (MU_TYPE === 'esign') {
       var fw = document.getElementById('muFw').value.trim();
@@ -2144,6 +2167,7 @@ var DEMO_ACCOUNTS = [
       business: subj.business,
       generateTime: now, signTime: now,
       reviewer: CURRENT_OPERATOR, reviewStage: '', reviewTime: now,
+      partyAInfo: { contact: paContact, phone: paPhone, email: paEmail, term: paTerm, submitTime: now },
       partyB: pb(subj.company, subj.contactAddr, subj.contactName, subj.contactPhone, subj.contactEmail, subj.company, subj.bankAccount, subj.bankEn),
       refillReason: '',
       manualDocs: docsInfo
@@ -2293,7 +2317,19 @@ var DEMO_ACCOUNTS = [
     var c = findContract(no);
     currentContractNo = no;
     var html = '';
+
+    // 乙方信息
+    html += '<div class="group-title" style="margin-top:0">乙方信息</div>';
     c.partyB.forEach(function (f) { html += fieldRow(f.label, f.value || '—'); });
+
+    // 甲方信息（审核通过时填写的四项）
+    var pa = c.partyAInfo || {};
+    html += '<div class="group-title">甲方信息</div>';
+    html += fieldRow('联系人', pa.contact || '—');
+    html += fieldRow('联系电话', pa.phone || '—');
+    html += fieldRow('联系邮箱', pa.email || '—');
+    html += fieldRow('合作期限', pa.term || '—');
+
     document.getElementById('detailBody').innerHTML = html;
 
     // footer：generating 通过+驳回；refill 仅通过；其余仅关闭
