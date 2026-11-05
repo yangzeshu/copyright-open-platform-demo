@@ -562,14 +562,14 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   <div class="content">
     <div class="page-head">
       <div class="page-title">工作台</div>
-      <div class="page-desc">完成认证与授权合同签署后，即可上传短剧开启分发合作</div>
+      <div class="page-desc">完成认证与授权合同签署后，即可开始合作</div>
     </div>
 
     <!-- 认证引导 -->
     <div class="cert-hero">
       <div>
         <h2>欢迎，光影工场</h2>
-        <p>当前账号尚未完成认证与授权合同签署。请先完成以下两步，即可上传短剧并参与分发分成。</p>
+        <p>当前账号尚未完成认证与授权合同签署，请先完成以下两步。</p>
       </div>
       <button class="btn btn-lg" id="heroCertBtn" onclick="openCert()">立即认证</button>
     </div>
@@ -587,7 +587,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <div class="lock-badge"><svg viewBox="0 0 20 20" fill="none"><rect x="5" y="8" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.5"/></svg><span id="signLockText">需先完成认证</span></div>
         <div class="step-no">2</div>
         <h3>签署授权合同</h3>
-        <p>认证通过后，签署平台授权合作协议，即可上传短剧。</p>
+        <p>认证通过后，签署平台授权合作协议，即可开始合作。</p>
         <button class="btn btn-plain" id="signBtn" disabled>去签署</button>
       </div>
     </div>
@@ -1514,11 +1514,15 @@ function renderTopbar(opts) {
 }
 
 function renderSidebar(active) {
-  var items = [
-    { key: 'workbench', label: t('工作台'), href: 'workbench.html' },
-    { key: 'contract',  label: t('合同管理'), href: 'contracts.html' },
-    { key: 'earnings',  label: t('收益管理'), href: 'earnings.html' }
-  ];
+  var items = [];
+  // 认证与合同均已完成时不再展示「工作台」
+  var __allDone = false;
+  try {
+    __allDone = localStorage.getItem('cp_cert') === 'done' && localStorage.getItem('cp_contract') === 'done';
+  } catch (e) {}
+  if (!__allDone) items.push({ key: 'workbench', label: t('工作台'), href: 'workbench-cert.html' });
+  items.push({ key: 'earnings', label: t('收益管理'), href: 'earnings.html' });
+  items.push({ key: 'contract', label: t('合同管理'), href: 'contracts.html' });
   var html = '<div class="sidebar">';
   items.forEach(function (it) {
     // 判断该目录是否包含当前 active 的子项

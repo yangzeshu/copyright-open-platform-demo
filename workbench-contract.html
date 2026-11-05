@@ -546,13 +546,13 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   <div class="content">
     <div class="page-head">
       <div class="page-title">工作台</div>
-      <div class="page-desc">认证已完成，签署授权合同后即可上传短剧</div>
+      <div class="page-desc">认证已完成，签署授权合同后即可开始合作</div>
     </div>
 
     <div class="cert-hero">
       <div>
         <h2>欢迎，光影工场</h2>
-        <p>您的认证已通过。签署平台授权合作协议后，即可开始上传短剧、参与分发分成。</p>
+        <p>您的认证已通过。签署平台授权合作协议后，即可开始合作并参与分发分成。</p>
       </div>
       <button class="btn btn-lg" id="heroSignBtn" onclick="openSign()">签署授权合同</button>
     </div>
@@ -567,7 +567,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
       <div class="flow-card current" id="signCard">
         <div class="step-no">2</div>
         <h3 id="signTitle">签署授权合同</h3>
-        <p id="signDesc">签署平台授权合作协议，完成后即可上传短剧。</p>
+        <p id="signDesc">签署平台授权合作协议，完成后即可开始合作。</p>
         <div id="signAction"></div>
       </div>
     </div>
@@ -1507,11 +1507,15 @@ function renderTopbar(opts) {
 }
 
 function renderSidebar(active) {
-  var items = [
-    { key: 'workbench', label: t('工作台'), href: 'workbench.html' },
-    { key: 'contract',  label: t('合同管理'), href: 'contracts.html' },
-    { key: 'earnings',  label: t('收益管理'), href: 'earnings.html' }
-  ];
+  var items = [];
+  // 认证与合同均已完成时不再展示「工作台」
+  var __allDone = false;
+  try {
+    __allDone = localStorage.getItem('cp_cert') === 'done' && localStorage.getItem('cp_contract') === 'done';
+  } catch (e) {}
+  if (!__allDone) items.push({ key: 'workbench', label: t('工作台'), href: 'workbench-contract.html' });
+  items.push({ key: 'earnings', label: t('收益管理'), href: 'earnings.html' });
+  items.push({ key: 'contract', label: t('合同管理'), href: 'contracts.html' });
   var html = '<div class="sidebar">';
   items.forEach(function (it) {
     // 判断该目录是否包含当前 active 的子项
@@ -1814,8 +1818,10 @@ document.addEventListener('click', function (e) {
 
   function signDone() {
     closeModal('signModal');
+    __safeSet('cp_contract', 'done');
     showToast(t('签署成功'), 'ok');
-    setTimeout(function () { location.href = 'workbench.html'; }, 400);
+    // 合同签署完成 → 默认进入收益管理
+    setTimeout(function () { location.href = 'earnings.html'; }, 400);
   }
 
   function signTrouble() {
