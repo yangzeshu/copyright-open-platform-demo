@@ -566,7 +566,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
     <div class="content">
       <div class="page-head">
         <div class="page-title">收益明细</div>
-        <div class="page-desc">按短剧维度查看授权期内的收益情况</div>
+        <div class="page-desc">按短剧维度查看上架以来的收益情况</div>
       </div>
 
       <div class="card">
@@ -595,14 +595,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
                 </div>
               </div>
               <div class="search-item">
-                <label>授权方式</label>
-                <div class="ms-wrap">
-                  <div class="ms-box" id="authTypeBox" onclick="toggleAuthTypePanel(event)">
-                    <div id="authTypeContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>
-                    <span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                  </div>
-                  <div class="ms-panel" id="authTypePanel"></div>
-                </div>
+                <label>上架时间</label>
+                <div class="rp-wrap" id="rpShelfWrap"></div>
               </div>
             </div>
           </div>
@@ -616,14 +610,12 @@ textarea.form-input { resize: vertical; min-height: 90px; }
           <table class="table" style="white-space:nowrap">
             <thead>
               <tr>
-                <th class="sticky-l" style="width:130px">短剧信息</th>
-                <th style="width:110px">版权授权时间</th>
-                <th style="width:140px">授权主体</th>
-                <th style="width:90px">授权方式</th>
-                <th style="width:160px">授权渠道</th>
-                <th style="width:150px">分成比例</th>
-                <th style="width:130px">广告消耗(美元)</th>
-                <th style="width:130px">分成总额(美元)</th>
+                <th class="sticky-l" style="width:150px">短剧信息</th>
+                <th style="width:120px">上架时间</th>
+                <th style="width:300px">授权主体</th>
+                <th style="width:170px">分成比例</th>
+                <th style="width:140px">广告消耗(美元)</th>
+                <th style="width:140px">分成总额(美元)</th>
               </tr>
             </thead>
             <tbody id="earningList"></tbody>
@@ -1417,21 +1409,18 @@ document.addEventListener('click', function (e) {
   // 实际收益金额 = (充值金额 - 退款金额) * 0.7
   // 分成总额 = (实际收益金额 - 广告消耗) * 分成比例（独家 IAP 5% / 非独家 IAP 2%）
   var RATIO = { '独家': 0.05, '非独家': 0.02 };
-  var AUTH_TYPE_OPTIONS = [
-    { key: '独家', label: '独家' },
-    { key: '非独家', label: '非独家' }
-  ];
   var SUBJECTS = [
-    '杭州光影映画文化传媒有限公司',
-    '杭州新锐文化传播有限公司',
-    '杭州追光文化传媒有限公司'
+    'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
+    'Hangzhou Xinrui Culture Communication Co., Ltd.',
+    'Hangzhou Zhuiguang Culture Media Co., Ltd.'
   ];
 
   var EARNING_WORKS = [
     {
       workId: '1000000008', workName: '逆天战神',
+      shelfTime: '2026-08-25',
       authStart: '2026-07-15', authEnd: '2027-07-14',
-      subjectName: '杭州光影映画文化传媒有限公司',
+      subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '独家', channel: ['小程序', '官网'],
       recharge: 129400, refund: 3140, adCost: 15700,
       months: [
@@ -1442,8 +1431,9 @@ document.addEventListener('click', function (e) {
     },
     {
       workId: '1000000005', workName: '甜妻驾到',
+      shelfTime: '2026-08-12',
       authStart: '2026-08-10', authEnd: '2027-08-09',
-      subjectName: '杭州光影映画文化传媒有限公司',
+      subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '非独家', channel: ['官网', '小程序付费'],
       recharge: 74300, refund: 1540, adCost: 8600,
       months: [
@@ -1453,8 +1443,9 @@ document.addEventListener('click', function (e) {
     },
     {
       workId: '1000000007', workName: '重生之豪门千金',
+      shelfTime: '2026-07-30',
       authStart: '2026-07-28', authEnd: '2027-07-27',
-      subjectName: '杭州新锐文化传播有限公司',
+      subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
       authType: '非独家', channel: ['小程序', '官网'],
       recharge: 111300, refund: 2310, adCost: 13000,
       months: [
@@ -1465,8 +1456,9 @@ document.addEventListener('click', function (e) {
     },
     {
       workId: '1000000006', workName: '京都旧事',
+      shelfTime: '2026-08-06',
       authStart: '2026-08-01', authEnd: '2027-07-31',
-      subjectName: '杭州新锐文化传播有限公司',
+      subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
       authType: '独家', channel: ['官网'],
       recharge: 28000, refund: 570, adCost: 3300,
       months: [
@@ -1476,8 +1468,9 @@ document.addEventListener('click', function (e) {
     },
     {
       workId: '1000000003', workName: '逆袭人生',
+      shelfTime: '2026-07-12',
       authStart: '2026-09-03', authEnd: '2027-09-02',
-      subjectName: '杭州追光文化传媒有限公司',
+      subjectName: 'Hangzhou Zhuiguang Culture Media Co., Ltd.',
       authType: '非独家', channel: ['小程序'],
       recharge: 22400, refund: 450, adCost: 2700,
       months: [
@@ -1486,8 +1479,9 @@ document.addEventListener('click', function (e) {
     },
     {
       workId: '1000000004', workName: '错嫁豪门',
+      shelfTime: '2026-07-20',
       authStart: '2026-09-02', authEnd: '2027-09-01',
-      subjectName: '杭州光影映画文化传媒有限公司',
+      subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '独家', channel: ['小程序', '官网'],
       recharge: 31500, refund: 620, adCost: 3800,
       months: [
@@ -1496,7 +1490,7 @@ document.addEventListener('click', function (e) {
     }
   ];
 
-  var selectedAuthType = [];
+  var shelfPicker = createRangePicker('rpShelfWrap', { dateOnly: true });
   var selectedSubject = [];
   var subjectFilter = '';
   var MS_MAX_TAGS = 2;
@@ -1550,12 +1544,6 @@ document.addEventListener('click', function (e) {
   }
   function toggleIn(arr, k) { var i = arr.indexOf(k); if (i === -1) arr.push(k); else arr.splice(i, 1); }
 
-  // 授权方式多选
-  function toggleAuthTypePanel(e) { togglePanel('authTypePanel', 'authTypeBox', e); }
-  function toggleAuthType(k, e) { e.stopPropagation(); toggleIn(selectedAuthType, k); renderAuthType(); }
-  function removeAuthType(k, e) { e.stopPropagation(); var i = selectedAuthType.indexOf(k); if (i !== -1) selectedAuthType.splice(i, 1); renderAuthType(); }
-  function renderAuthType() { renderMs(AUTH_TYPE_OPTIONS, selectedAuthType, 'authTypeContent', 'authTypePanel', 'toggleAuthType', 'removeAuthType'); }
-
   // 授权主体可搜索多选
   function toggleSubjectPanel(e) { togglePanel('subjectPanel', 'subjectBox', e); }
   function toggleSubject(k, e) { e.stopPropagation(); toggleIn(selectedSubject, k); renderSubject(); }
@@ -1579,7 +1567,6 @@ document.addEventListener('click', function (e) {
   // 点击外部关闭
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#subjectBox') && !e.target.closest('#subjectPanel')) { document.getElementById('subjectPanel').classList.remove('show'); document.getElementById('subjectBox').classList.remove('open'); }
-    if (!e.target.closest('#authTypeBox') && !e.target.closest('#authTypePanel')) { document.getElementById('authTypePanel').classList.remove('show'); document.getElementById('authTypeBox').classList.remove('open'); }
   });
 
   // ========== 过滤 ==========
@@ -1590,16 +1577,19 @@ document.addEventListener('click', function (e) {
       if (name && w.workName.indexOf(name) === -1) return false;
       if (id && w.workId.indexOf(id) === -1) return false;
       if (selectedSubject.length > 0 && selectedSubject.indexOf(w.subjectName) === -1) return false;
-      if (selectedAuthType.length > 0 && selectedAuthType.indexOf(w.authType) === -1) return false;
+      var sk = shelfPicker.get();
+      if (sk.start && (!w.shelfTime || w.shelfTime < sk.start)) return false;
+      if (sk.end && (!w.shelfTime || w.shelfTime > sk.end)) return false;
       return true;
     });
   }
   function resetSearch() {
     document.getElementById('searchName').value = '';
     document.getElementById('searchId').value = '';
-    selectedAuthType = []; selectedSubject = [];
+    selectedSubject = [];
     document.getElementById('subjectSearch').value = ''; subjectFilter = '';
-    renderAuthType(); renderSubject();
+    shelfPicker.reset();
+    renderSubject();
     renderList();
   }
 
@@ -1612,17 +1602,15 @@ document.addEventListener('click', function (e) {
     var list = filteredEarnings();
     var tbody = document.getElementById('earningList');
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (w) {
       return '<tr>' +
         '<td class="sticky-l" style="text-align:left"><div class="cell-title">' + w.workName + '</div>' +
           '<div class="contract-no">' + w.workId + '</div></td>' +
-        '<td class="mono text-2"><div>' + w.authStart + '</div><div>' + w.authEnd + '</div></td>' +
+        '<td class="mono text-2">' + (w.shelfTime || '—') + '</td>' +
         '<td style="text-align:left;white-space:normal">' + w.subjectName + '</td>' +
-        '<td><span class="tag ' + (w.authType === '独家' ? 'tag-pink' : 'tag-blue') + '">' + w.authType + '</span></td>' +
-        '<td class="text-2">' + w.channel.join('、') + '</td>' +
         '<td>' + ratioCell(w) + '</td>' +
         '<td class="mono">' + fmtMoney(w.adCost) + '</td>' +
         '<td class="mono">' + fmtMoney(calcShare(w)) + '</td>' +
@@ -1631,7 +1619,6 @@ document.addEventListener('click', function (e) {
   }
 
   // 初始化
-  renderAuthType();
   renderSubject();
   renderList();
   applyI18n();
