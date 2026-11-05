@@ -1425,11 +1425,7 @@ function renderSidebar(active) {
   var items = [
     { key: 'workbench', label: t('工作台'), href: 'workbench.html' },
     { key: 'contract',  label: t('合同管理'), href: 'contracts.html' },
-    { key: 'works',     label: t('作品管理'), sub: [{ key: 'works', label: t('成品剧'), href: 'work.html' }] },
-    { key: 'earnings',  label: t('收益管理'), sub: [
-        { key: 'earnings',   label: t('收益明细'), href: 'earnings.html' },
-        { key: 'settlement', label: t('结算单'),   href: 'settlement.html' }
-      ] }
+    { key: 'earnings',  label: t('收益管理'), href: 'earnings.html' }
   ];
   var html = '<div class="sidebar">';
   items.forEach(function (it) {
