@@ -251,6 +251,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   display: none; align-items: center; justify-content: center;
 }
 .modal-mask.show { display: flex; }
+/* 分渠道弹窗需盖在详情弹窗之上（详情页每行「查看」触发） */
+#chanModal { z-index: 260; }
 .modal {
   background: #fff; border-radius: 14px; width: 460px; max-width: 92vw;
   max-height: 88vh; display: flex; flex-direction: column;
@@ -536,6 +538,10 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .op-mini:hover { text-decoration: underline; }
   /* 列表内「查看」独占一行居中，避免列宽不足被挤断 */
   .table .op-mini { display: block; margin-left: 0; text-align: center; line-height: 1.5; }
+  /* 弹窗明细表内「查看」与金额同行 */
+  .detail-table .op-mini { display: inline-block; margin-left: 6px; text-align: left; }
+  /* 明细数据提示语 */
+  .em-tip { font-size: 12px; color: var(--text-3); margin-top: 6px; line-height: 1.5; }
   .subject-cell { font-size: 12px; line-height: 1.45; color: var(--text-2); }
   .table td.sticky-r { white-space: nowrap; }
   .desc-row { display: flex; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -553,7 +559,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .df-item select { height: 32px; width: 112px; }
   .df-sep { color: var(--text-3); }
   .detail-table th, .detail-table td { padding: 9px 12px; font-size: 13px; }
-  .em-table-scroll { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .em-table-scroll { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
   .em-table-scroll .detail-table th { position: sticky; top: 0; z-index: 2; }
   .sum-row td { font-weight: 600; background: #fafbfc; }
   /* sticky 列在 collapse 下背景会透明，改用 separate */
@@ -1146,12 +1152,12 @@ document.addEventListener('click', function (e) {
     if (!earnState.id) return;
     if (!emDetailRows.length) { showToast('暂无可导出的数据'); return; }
     var w = findEarn(earnState.id);
-    var rows = [['日期', '渠道', '类型', '金额(美元)']];
+    var rows = [['日期', '实际消耗(美元)', '可分成消耗(美元)', '收入(美元)']];
     emDetailRows.forEach(function (r) {
-      rows.push([r.date, r.chan, r.type, r.val.toFixed(2)]);
+      rows.push([r.date, r.cost.toFixed(2), r.share.toFixed(2), r.income.toFixed(2)]);
     });
     downloadCsv('收益明细_' + w.workName + '_' + earnState.start + '_' + earnState.end + '.csv', rows);
-    showToast('已导出 ' + emDetailRows.length + ' 条明细');
+    showToast('已导出 ' + emDetailRows.length + ' 条日明细');
   }
 
   // ===================== 筛选 =====================
@@ -1233,53 +1239,8 @@ document.addEventListener('click', function (e) {
     renderList();
   }
 
-  // ===================== 多选下拉（弹窗筛选用） =====================
-  var MS_MAX_TAGS = 2;
-  function labelOf(options, k) {
-    var o = options.find(function (x) { return x.key === k; });
-    return o ? o.label : k;
-  }
-  function renderMs(options, selected, contentId, panelId, toggleFn, removeFn, maxTags) {
-    var c = document.getElementById(contentId);
-    if (!c) return;
-    var MAX = maxTags || MS_MAX_TAGS;
-    if (selected.length === 0) {
-      c.innerHTML = '<span class="ms-placeholder">全部</span>';
-    } else {
-      var html = '';
-      var shown = selected.slice(0, MAX);
-      shown.forEach(function (k) {
-        html += '<span class="ms-tag">' + labelOf(options, k) +
-          '<span class="ms-x" onclick="' + removeFn + '(\'' + k + '\', event)">×</span></span>';
-      });
-      if (selected.length > MAX) html += '<span class="ms-tag more">+ ' + (selected.length - MAX) + '</span>';
-      c.innerHTML = html;
-    }
-    var panel = document.getElementById(panelId);
-    panel.innerHTML = options.map(function (s) {
-      var checked = selected.indexOf(s.key) !== -1;
-      return '<div class="ms-opt' + (checked ? ' checked' : '') + '" onclick="' + toggleFn + '(\'' + s.key + '\', event)">' +
-        '<span class="opt-check">✓</span>' + s.label + '</div>';
-    }).join('');
-  }
-  function togglePanel(panelId, boxId, e) {
-    if (e) e.stopPropagation();
-    var panel = document.getElementById(panelId);
-    var box = document.getElementById(boxId);
-    var open = panel.classList.contains('show');
-    panel.classList.toggle('show', !open);
-    box.classList.toggle('open', !open);
-  }
-  function toggleIn(arr, k) { var i = arr.indexOf(k); if (i === -1) arr.push(k); else arr.splice(i, 1); }
-
   // ===================== 收益明细弹窗 =====================
-  var TYPE_OPTS = [
-    { key: 'cost', label: '实际消耗' },
-    { key: 'share', label: '可分成消耗' },
-    { key: 'income', label: '收入' }
-  ];
-  var CHAN_OPTS = CH_DEF.map(function (c) { return { key: c.key, label: c.label }; });
-  var earnState = { id: null, start: '', end: '', types: [], chans: [] };
+  var earnState = { id: null, start: '', end: '' };
   var emDatePicker = null;
   var emDetailRows = [];
 
@@ -1298,9 +1259,7 @@ document.addEventListener('click', function (e) {
     earnState = {
       id: workId,
       start: daily[0].date,
-      end: daily[daily.length - 1].date,
-      types: ['cost', 'share', 'income'],
-      chans: CH_DEF.map(function (c) { return c.key; })
+      end: daily[daily.length - 1].date
     };
     document.getElementById('earnModalTitle').textContent = '收益明细 · ' + w.workName;
     renderEarnDetail();
@@ -1339,47 +1298,13 @@ document.addEventListener('click', function (e) {
     // 二、明细数据（以「日」为最小维度）
     html += '<div class="group-title gt-flex"><span>明细数据</span>' +
       '<span class="gt-action" onclick="exportDetail()">导出</span></div>';
+    html += '<div class="em-tip">仅保留近三个月的日明细数据</div>';
     html += '<div class="detail-filter">';
     html += '<div class="df-item"><label>日期</label><div class="rp-wrap" id="emDateWrap"></div></div>';
-    html += '<div class="df-item"><label>类型</label><div class="ms-wrap" style="width:240px">' +
-      '<div class="ms-box" id="emTypeBox" onclick="togglePanel(\'emTypePanel\',\'emTypeBox\',event)">' +
-        '<div id="emTypeContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>' +
-        '<span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
-      '</div><div class="ms-panel" id="emTypePanel"></div></div></div>';
-    html += '<div class="df-item"><label>渠道</label><div class="ms-wrap" style="width:175px">' +
-      '<div class="ms-box" id="emChanBox" onclick="togglePanel(\'emChanPanel\',\'emChanBox\',event)">' +
-        '<div id="emChanContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>' +
-        '<span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
-      '</div><div class="ms-panel" id="emChanPanel"></div></div></div>';
     html += '</div>';
     html += '<div id="emTableWrap"></div>';
 
     document.getElementById('earnModalBody').innerHTML = html;
-    renderMs(TYPE_OPTS, earnState.types, 'emTypeContent', 'emTypePanel', 'toggleEmType', 'removeEmType');
-    renderMs(CHAN_OPTS, earnState.chans, 'emChanContent', 'emChanPanel', 'toggleEmChan', 'removeEmChan', 1);
-    renderEarnTable();
-  }
-
-  function toggleEmType(k, e) {
-    e.stopPropagation(); toggleIn(earnState.types, k);
-    renderMs(TYPE_OPTS, earnState.types, 'emTypeContent', 'emTypePanel', 'toggleEmType', 'removeEmType');
-    renderEarnTable();
-  }
-  function removeEmType(k, e) {
-    e.stopPropagation();
-    var i = earnState.types.indexOf(k); if (i !== -1) earnState.types.splice(i, 1);
-    renderMs(TYPE_OPTS, earnState.types, 'emTypeContent', 'emTypePanel', 'toggleEmType', 'removeEmType');
-    renderEarnTable();
-  }
-  function toggleEmChan(k, e) {
-    e.stopPropagation(); toggleIn(earnState.chans, k);
-    renderMs(CHAN_OPTS, earnState.chans, 'emChanContent', 'emChanPanel', 'toggleEmChan', 'removeEmChan', 1);
-    renderEarnTable();
-  }
-  function removeEmChan(k, e) {
-    e.stopPropagation();
-    var i = earnState.chans.indexOf(k); if (i !== -1) earnState.chans.splice(i, 1);
-    renderMs(CHAN_OPTS, earnState.chans, 'emChanContent', 'emChanPanel', 'toggleEmChan', 'removeEmChan', 1);
     renderEarnTable();
   }
 
@@ -1389,58 +1314,61 @@ document.addEventListener('click', function (e) {
     if (!w || !box) return;
 
     var daily = buildDaily(w).filter(function (d) { return d.date >= earnState.start && d.date <= earnState.end; });
-    var chans = CH_DEF.filter(function (c) { return earnState.chans.indexOf(c.key) !== -1; });
-    var types = TYPE_OPTS.filter(function (x) { return earnState.types.indexOf(x.key) !== -1; });
-
-    if (!chans.length) { emDetailRows = []; box.innerHTML = emEmpty('请至少选择一个渠道'); return; }
-    if (!types.length) { emDetailRows = []; box.innerHTML = emEmpty('请至少选择一个类型'); return; }
     if (!daily.length) { emDetailRows = []; box.innerHTML = emEmpty('所选日期暂无数据'); return; }
 
-    var rows = [];
-    daily.forEach(function (d) {
-      var mCost = costByChan(d.adCost);
-      var mShare = shareCostByChan(d.adCost);
-      var mInc = incomeByChan(dayProfit(d));
-      chans.forEach(function (c) {
-        types.forEach(function (tp) {
-          rows.push({
-            date: d.date, chan: c.label, type: tp.label,
-            val: tp.key === 'cost' ? mCost[c.key] : (tp.key === 'share' ? mShare[c.key] : mInc[c.key])
-          });
-        });
-      });
+    var rows = daily.map(function (d) {
+      return { date: d.date, cost: d.adCost, share: r2(d.adCost * SHARE_COST_RATE), income: dayProfit(d) };
     });
     emDetailRows = rows;
 
+    function cell(v, type, date) {
+      return '<td class="mono" style="text-align:center">' + fmtMoney(v) +
+        '<span class="op-mini" onclick="openChannelDetail(\'' + earnState.id + '\',\'' + type + '\',\'' + date + '\')">查看</span></td>';
+    }
+
     var body = rows.map(function (r) {
       return '<tr><td class="mono">' + r.date + '</td>' +
-        '<td>' + r.chan + '</td>' +
-        '<td>' + r.type + '</td>' +
-        '<td class="mono" style="text-align:right">' + fmtMoney(r.val) + '</td></tr>';
+        cell(r.cost, 'cost', r.date) + cell(r.share, 'share', r.date) + cell(r.income, 'income', r.date) + '</tr>';
     }).join('');
 
     box.innerHTML = '<div class="em-table-scroll"><table class="table detail-table">' +
-      '<thead><tr><th style="width:130px">日期</th><th style="width:120px">渠道</th><th style="width:120px">类型</th><th style="text-align:right">金额(美元)</th></tr></thead>' +
+      '<thead><tr><th style="width:130px">日期</th>' +
+        '<th>实际消耗(美元)</th>' +
+        '<th>可分成消耗(美元)</th>' +
+        '<th>收入(美元)</th></tr></thead>' +
       '<tbody>' + body + '</tbody></table></div>';
   }
 
   // ===================== 分渠道明细（实际消耗 / 可分成消耗 / 收入） =====================
-  function openChannelDetail(workId, type) {
+  // date 为空 = 整部剧汇总（主列表入口）；传日期 = 该日明细（详情页每日「查看」）
+  function openChannelDetail(workId, type, date) {
     var w = findEarn(workId);
     if (!w) return;
     var label = type === 'share' ? '可分成消耗' : (type === 'income' ? '收入' : '实际消耗');
-    var total = type === 'share' ? calcShareCost(w) : (type === 'income' ? calcProfit(w) : w.adCost);
-    var map = type === 'share' ? shareCostByChan(w.adCost)
-      : (type === 'income' ? incomeByChan(total) : costByChan(total));
+    var total, map, title;
 
-    document.getElementById('chanModalTitle').textContent = '分渠道' + label + ' · ' + w.workName;
+    if (date) {
+      var d = buildDaily(w).find(function (x) { return x.date === date; });
+      if (!d) return;
+      if (type === 'share') { map = shareCostByChan(d.adCost); total = r2(d.adCost * SHARE_COST_RATE); }
+      else if (type === 'income') { total = dayProfit(d); map = incomeByChan(total); }
+      else { total = d.adCost; map = costByChan(total); }
+      title = '分渠道' + label + ' · ' + w.workName + ' · ' + date;
+    } else {
+      total = type === 'share' ? calcShareCost(w) : (type === 'income' ? calcProfit(w) : w.adCost);
+      map = type === 'share' ? shareCostByChan(w.adCost)
+        : (type === 'income' ? incomeByChan(total) : costByChan(total));
+      title = '分渠道' + label + ' · ' + w.workName;
+    }
+
+    document.getElementById('chanModalTitle').textContent = title;
     var body = '<table class="table detail-table"><thead><tr>' +
-      '<th>渠道</th><th style="text-align:right">' + label + '(美元)</th>' +
+      '<th>渠道</th><th>' + label + '(美元)</th>' +
       '</tr></thead><tbody>' +
       CH_DEF.map(function (c) {
-        return '<tr><td>' + c.label + '</td><td class="mono" style="text-align:right">' + fmtMoney(map[c.key]) + '</td></tr>';
+        return '<tr><td>' + c.label + '</td><td class="mono">' + fmtMoney(map[c.key]) + '</td></tr>';
       }).join('') +
-      '<tr class="sum-row"><td>合计</td><td class="mono" style="text-align:right">' + fmtMoney(total) + '</td></tr>' +
+      '<tr class="sum-row"><td>合计</td><td class="mono">' + fmtMoney(total) + '</td></tr>' +
       '</tbody></table>';
     document.getElementById('chanModalBody').innerHTML = body;
     openModal('chanModal');
