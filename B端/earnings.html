@@ -642,18 +642,15 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <table class="table">
           <thead>
             <tr>
-              <th class="sticky-l" style="width:131px">短剧信息</th>
-              <th style="width:76px">剧本编号</th>
-              <th style="width:96px">所属账号</th>
-              <th style="width:100px">上架时间</th>
-              <th style="width:146px">授权主体</th>
-              <th style="width:56px">播放量</th>
-              <th style="width:56px">收藏数</th>
-              <th style="width:56px">点赞数</th>
-              <th style="width:104px">实际消耗<br>(美元)</th>
-              <th style="width:104px">可分成消耗<br>(美元)</th>
-              <th style="width:104px"><span class="tip" data-tip="未扣减成本，仅供参考">收入(美元)</span><div class="th-sub">未扣减成本</div></th>
-              <th class="sticky-r" style="width:70px">操作</th>
+              <th class="sticky-l" style="width:150px">短剧信息</th>
+              <th style="width:88px">剧本编号</th>
+              <th style="width:100px">所属账号</th>
+              <th style="width:110px">上架时间</th>
+              <th style="width:200px">授权主体</th>
+              <th style="width:120px">实际消耗<br>(美元)</th>
+              <th style="width:120px">可分成消耗<br>(美元)</th>
+              <th style="width:120px"><span class="tip" data-tip="未扣减成本，仅供参考">收入(美元)</span><div class="th-sub">未扣减成本</div></th>
+              <th class="sticky-r" style="width:76px">操作</th>
             </tr>
           </thead>
           <tbody id="earnList"></tbody>
@@ -1003,37 +1000,31 @@ document.addEventListener('click', function (e) {
     {
       workId: '1000000008', workName: '逆天战神', scriptNo: 'L10234', accountName: '光影工场',
       shelfTime: '2026-08-25', subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
-      playCount: 486200, favCount: 15200, likeCount: 32400,
       recharge: 129400, refund: 3140, adCost: 15700
     },
     {
       workId: '1000000005', workName: '甜妻驾到', scriptNo: 'L10219', accountName: '光影工场',
       shelfTime: '2026-08-12', subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
-      playCount: 372800, favCount: 12400, likeCount: 28600,
       recharge: 74300, refund: 1540, adCost: 8600
     },
     {
       workId: '1000000007', workName: '重生之豪门千金', scriptNo: 'L10188', accountName: '新锐工作室',
       shelfTime: '2026-07-30', subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
-      playCount: 298500, favCount: 9800, likeCount: 21600,
       recharge: 111300, refund: 2310, adCost: 13000
     },
     {
       workId: '1000000006', workName: '京都旧事', scriptNo: 'L10176', accountName: '新锐工作室',
       shelfTime: '2026-08-06', subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
-      playCount: 165300, favCount: 6200, likeCount: 13400,
       recharge: 28000, refund: 570, adCost: 3300
     },
     {
       workId: '1000000003', workName: '逆袭人生', scriptNo: 'L10154', accountName: '追光传媒',
       shelfTime: '2026-07-12', subjectName: 'Hangzhou Zhuiguang Culture Media Co., Ltd.',
-      playCount: 142700, favCount: 5100, likeCount: 11200,
       recharge: 22400, refund: 450, adCost: 2700
     },
     {
       workId: '1000000004', workName: '错嫁豪门', scriptNo: 'L10142', accountName: '追光传媒',
       shelfTime: '2026-07-20', subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
-      playCount: 98600, favCount: 3800, likeCount: 8600,
       recharge: 31500, refund: 620, adCost: 3800
     }
   ];
@@ -1047,11 +1038,6 @@ document.addEventListener('click', function (e) {
     var abs = Math.abs(n);
     var s = abs.toFixed(2).split('.');
     return '$' + neg + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + s[1];
-  }
-  function fmtK(n) {
-    if (n === null || n === undefined) return '—';
-    if (n < 1000) return String(n);
-    return (n / 1000).toFixed(1) + 'k';
   }
   // 实际消耗 = adCost；可分成消耗 = 实际消耗 × 0.9；收入 =（充值-退款）×0.7 - 实际消耗
   var SHARE_COST_RATE = 0.9;
@@ -1143,12 +1129,11 @@ document.addEventListener('click', function (e) {
     if (!list.length) { showToast('暂无可导出的数据'); return; }
     var rows = [[
       '短剧信息', '短剧ID', '剧本编号', '所属账号', '上架时间', '授权主体',
-      '播放量', '收藏数', '点赞数', '实际消耗(美元)', '可分成消耗(美元)', '收入(美元)'
+      '实际消耗(美元)', '可分成消耗(美元)', '收入(美元)'
     ]];
     list.forEach(function (w) {
       rows.push([
         w.workName, w.workId, w.scriptNo, w.accountName, w.shelfTime, w.subjectName,
-        w.playCount, w.favCount, w.likeCount,
         w.adCost.toFixed(2), calcShareCost(w).toFixed(2), calcProfit(w).toFixed(2)
       ]);
     });
@@ -1199,7 +1184,7 @@ document.addEventListener('click', function (e) {
 
     var tbody = document.getElementById('earnList');
     if (pageList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="12"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
     } else {
       tbody.innerHTML = pageList.map(function (w) {
         return '<tr>' +
@@ -1208,9 +1193,6 @@ document.addEventListener('click', function (e) {
           '<td>' + w.accountName + '</td>' +
           '<td class="mono text-2">' + w.shelfTime + '</td>' +
           '<td class="subject-cell" style="white-space:normal">' + w.subjectName + '</td>' +
-          '<td class="mono text-2">' + fmtK(w.playCount) + '</td>' +
-          '<td class="mono text-2">' + fmtK(w.favCount) + '</td>' +
-          '<td class="mono text-2">' + fmtK(w.likeCount) + '</td>' +
           '<td class="mono">' + fmtMoney(w.adCost) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'cost\')">查看</span></td>' +
           '<td class="mono">' + fmtMoney(calcShareCost(w)) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'share\')">查看</span></td>' +
           '<td class="mono">' + fmtMoney(calcProfit(w)) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'income\')">查看</span></td>' +
@@ -1352,9 +1334,6 @@ document.addEventListener('click', function (e) {
     html += detailRow('所属账号', w.accountName);
     html += detailRow('上架时间', w.shelfTime || '—');
     html += detailRow('授权主体', w.subjectName, 'grid-column:span 2');
-    html += detailRow('播放量', fmtK(w.playCount));
-    html += detailRow('收藏数', fmtK(w.favCount));
-    html += detailRow('点赞数', fmtK(w.likeCount));
     html += '</div>';
 
     // 二、明细数据（以「日」为最小维度）

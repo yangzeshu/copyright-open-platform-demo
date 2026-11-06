@@ -647,14 +647,11 @@ textarea.form-input { resize: vertical; min-height: 90px; }
           <table class="table" style="white-space:nowrap">
             <thead>
               <tr>
-                <th class="sticky-l" style="width:140px">短剧信息</th>
-                <th style="width:110px">上架时间</th>
-                <th style="width:200px">授权主体</th>
-                <th style="width:90px">播放量</th>
-                <th style="width:90px">收藏数</th>
-                <th style="width:90px">点赞数</th>
-                <th style="width:170px">消耗(美元)</th>
-                <th class="sticky-r" style="width:80px">操作</th>
+                <th class="sticky-l" style="width:180px">短剧信息</th>
+                <th style="width:130px">上架时间</th>
+                <th style="width:320px">授权主体</th>
+                <th style="width:200px">消耗(美元)</th>
+                <th class="sticky-r" style="width:90px">操作</th>
               </tr>
             </thead>
             <tbody id="earningList"></tbody>
@@ -1486,7 +1483,6 @@ document.addEventListener('click', function (e) {
     {
       workId: '1000000008', workName: '逆天战神',
       shelfTime: '2026-08-25',
-      playCount: 486200, favCount: 15200, likeCount: 32400,
       authStart: '2026-07-15', authEnd: '2027-07-14',
       subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '独家', channel: ['小程序', '官网'],
@@ -1495,7 +1491,6 @@ document.addEventListener('click', function (e) {
     {
       workId: '1000000005', workName: '甜妻驾到',
       shelfTime: '2026-08-12',
-      playCount: 372800, favCount: 12400, likeCount: 28600,
       authStart: '2026-08-10', authEnd: '2027-08-09',
       subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '非独家', channel: ['官网', '小程序付费'],
@@ -1504,7 +1499,6 @@ document.addEventListener('click', function (e) {
     {
       workId: '1000000007', workName: '重生之豪门千金',
       shelfTime: '2026-07-30',
-      playCount: 298500, favCount: 9800, likeCount: 21600,
       authStart: '2026-07-28', authEnd: '2027-07-27',
       subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
       authType: '非独家', channel: ['小程序', '官网'],
@@ -1513,7 +1507,6 @@ document.addEventListener('click', function (e) {
     {
       workId: '1000000006', workName: '京都旧事',
       shelfTime: '2026-08-06',
-      playCount: 165300, favCount: 6200, likeCount: 13400,
       authStart: '2026-08-01', authEnd: '2027-07-31',
       subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
       authType: '独家', channel: ['官网'],
@@ -1522,7 +1515,6 @@ document.addEventListener('click', function (e) {
     {
       workId: '1000000003', workName: '逆袭人生',
       shelfTime: '2026-07-12',
-      playCount: 142700, favCount: 5100, likeCount: 11200,
       authStart: '2026-09-03', authEnd: '2027-09-02',
       subjectName: 'Hangzhou Zhuiguang Culture Media Co., Ltd.',
       authType: '非独家', channel: ['小程序'],
@@ -1531,7 +1523,6 @@ document.addEventListener('click', function (e) {
     {
       workId: '1000000004', workName: '错嫁豪门',
       shelfTime: '2026-07-20',
-      playCount: 98600, favCount: 3800, likeCount: 8600,
       authStart: '2026-09-02', authEnd: '2027-09-01',
       subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '独家', channel: ['小程序', '官网'],
@@ -1578,12 +1569,6 @@ document.addEventListener('click', function (e) {
   }
   // 收益数据统计截止日（演示口径）
   var DATA_END = '2026-09-30';
-  // 数量展示：12.4k
-  function fmtK(n) {
-    if (n === null || n === undefined) return '—';
-    if (n < 1000) return String(n);
-    return (n / 1000).toFixed(1) + 'k';
-  }
   // 按比例拆分到各渠道（最后一档补差，保证合计等于总数）
   function splitBy(total, ratios) {
     var out = {}, acc = 0;
@@ -1710,7 +1695,7 @@ document.addEventListener('click', function (e) {
     var list = filteredEarnings();
     var tbody = document.getElementById('earningList');
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (w) {
@@ -1719,9 +1704,6 @@ document.addEventListener('click', function (e) {
           '<div class="contract-no">' + w.workId + '</div></td>' +
         '<td class="mono text-2">' + (w.shelfTime || '—') + '</td>' +
         '<td style="text-align:left;white-space:normal">' + w.subjectName + '</td>' +
-        '<td class="mono text-2">' + fmtK(w.playCount) + '</td>' +
-        '<td class="mono text-2">' + fmtK(w.favCount) + '</td>' +
-        '<td class="mono text-2">' + fmtK(w.likeCount) + '</td>' +
         '<td><span class="cost-k">' + fmtCostK(w.adCost) + '</span><span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'cost\')">查看</span></td>' +
         '<td class="sticky-r"><span class="op-link" onclick="openEarnDetail(\'' + w.workId + '\')">详情</span></td>' +
       '</tr>';
@@ -1780,9 +1762,6 @@ document.addEventListener('click', function (e) {
     html += '<div class="group-title" style="margin-top:0">基础信息</div>';
     html += detailRow('短剧信息', w.workName + '（' + w.workId + '）');
     html += detailRow('上架时间', w.shelfTime || '—');
-    html += detailRow('播放量', fmtK(w.playCount));
-    html += detailRow('收藏数', fmtK(w.favCount));
-    html += detailRow('点赞数', fmtK(w.likeCount));
 
     // 二、明细数据（以「日」为最小维度）
     html += '<div class="group-title">明细数据</div>';
