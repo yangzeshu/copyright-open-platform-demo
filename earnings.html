@@ -554,12 +554,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   /* 收益明细：sticky 左列阴影（滚动时区分固定列） */
   .table td.sticky-l, .table th.sticky-l { box-shadow: 2px 0 4px rgba(0,0,0,.06); }
 
-  /* 预估分成：品牌色 + 虚线，hover 出提示 */
-  .tip-brand { color: var(--brand); font-weight: 500; border-bottom-color: rgba(255,46,99,.45); }
-  .tip-brand:hover::after { white-space: normal; width: 210px; text-align: center; line-height: 1.6; }
-
-  /* 收益明细弹窗 */
-  .detail-filter { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin: 12px 0 14px; }
+  /* 收益明细弹窗 */  .detail-filter { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin: 12px 0 14px; }
   .df-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-3); }
   .df-item label { white-space: nowrap; }
   .df-item select { height: 32px; width: 118px; }
@@ -578,11 +573,23 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   th .tip { border-bottom-style: dotted; }
   th .tip:hover::after { top: calc(100% + 8px); }
   .em-table-scroll { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .em-table-scroll::-webkit-scrollbar { width: 8px; }
+  .em-table-scroll::-webkit-scrollbar-thumb { background: #d9dee5; border-radius: 4px; }
+  .em-table-scroll::-webkit-scrollbar-thumb:hover { background: #c0c6cf; }
+  .em-table-scroll::-webkit-scrollbar-track { background: #fafbfc; }
   .em-table-scroll .detail-table th { position: sticky; top: 0; z-index: 2; }
   /* 弹窗内紧凑排布 */
   .detail-modal .modal-body .desc-row { padding: 7px 0; }
   .detail-modal .modal-body .group-title { padding: 10px 0 4px; }
   .desc-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 26px; }
+  /* 消耗列：整千显示 + 测试中标记 */
+  .cost-k { font-size: 15px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .test-tag { font-size: 12px; font-weight: 400; color: var(--text-3); margin-left: 2px; }
+  /* 明细数据合计 */
+  .em-sum { margin-top: 10px; font-size: 13px; color: var(--text-2); text-align: right; }
+  .em-sum b { color: var(--text); font-weight: 600; }
+  /* 弹窗内日期控件：窄一点 */
+  #emDateWrap .rp-box { width: 250px; }
   /* 收益明细表格：sticky 列需 separate 避免 collapse 下背景透明 */
   .card table.table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
   .card table.table td { background: #fff; }
@@ -640,16 +647,14 @@ textarea.form-input { resize: vertical; min-height: 90px; }
           <table class="table" style="white-space:nowrap">
             <thead>
               <tr>
-                <th class="sticky-l" style="width:116px">短剧信息</th>
-                <th style="width:92px">上架时间</th>
-                <th style="width:168px">授权主体</th>
-                <th style="width:72px">播放量</th>
-                <th style="width:72px">收藏数</th>
-                <th style="width:72px">点赞数</th>
-                <th style="width:146px">消耗(美元)</th>
-                <th class="th-two" style="width:150px"><span class="tip" data-tip="未扣减成本的纯收入，仅供参考。请以最终结算单为主">收入(美元)</span><div class="th-sub">未扣减成本</div></th>
-                <th style="width:146px"><span class="tip" data-tip="仅预估收益，仅供参考。请以最终结算单为主">预估分成金额(美元)</span></th>
-                <th class="sticky-r" style="width:66px">操作</th>
+                <th class="sticky-l" style="width:140px">短剧信息</th>
+                <th style="width:110px">上架时间</th>
+                <th style="width:200px">授权主体</th>
+                <th style="width:90px">播放量</th>
+                <th style="width:90px">收藏数</th>
+                <th style="width:90px">点赞数</th>
+                <th style="width:170px">消耗(美元)</th>
+                <th class="sticky-r" style="width:80px">操作</th>
               </tr>
             </thead>
             <tbody id="earningList"></tbody>
@@ -1247,6 +1252,7 @@ function createRangePicker(wrapId, opts) {
     self.start = dateOnly ? r[0] : r[0] + ' 00:00:00';
     self.end = dateOnly ? r[1] : r[1] + ' 23:59:59';
     self.sync();
+    if (opts.onChange) opts.onChange(self);
   };
 
   self.togglePanel = function (e) {
@@ -1331,6 +1337,7 @@ function createRangePicker(wrapId, opts) {
       var t2 = self.start; self.start = self.end; self.end = t2;
     }
     self.sync();
+    if (opts.onChange) opts.onChange(self);
   };
 
   self.reset = function () { self.start = null; self.end = null; self.sync(); };
@@ -1468,8 +1475,7 @@ document.addEventListener('click', function (e) {
   document.getElementById('sidebar-root').innerHTML = renderSidebar('earnings');
 
   // ========== 收益明细数据（按短剧汇总，金额单位：美元） ==========
-  // 实际收益 = (充值 - 退款) * 0.7；利润 = 实际收益 - 广告消耗
-  // 预估分成 = 广告消耗 * 4% + 利润 * 30%（未扣减成本，最终以结算单为准）
+  // 消耗 = 各渠道广告消耗之和；数据统计截止 2026-09-30，按日拆分展示
   var SUBJECTS = [
     'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
     'Hangzhou Xinrui Culture Communication Co., Ltd.',
@@ -1484,12 +1490,7 @@ document.addEventListener('click', function (e) {
       authStart: '2026-07-15', authEnd: '2027-07-14',
       subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '独家', channel: ['小程序', '官网'],
-      recharge: 129400, refund: 3140, adCost: 15700,
-      months: [
-        { month: '2026-07', recharge: 18500, refund: 420, adCost: 2200 },
-        { month: '2026-08', recharge: 52300, refund: 1180, adCost: 6400 },
-        { month: '2026-09', recharge: 58600, refund: 1540, adCost: 7100 }
-      ]
+      adCost: 15700
     },
     {
       workId: '1000000005', workName: '甜妻驾到',
@@ -1498,11 +1499,7 @@ document.addEventListener('click', function (e) {
       authStart: '2026-08-10', authEnd: '2027-08-09',
       subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '非独家', channel: ['官网', '小程序付费'],
-      recharge: 74300, refund: 1540, adCost: 8600,
-      months: [
-        { month: '2026-08', recharge: 32800, refund: 660, adCost: 3900 },
-        { month: '2026-09', recharge: 41500, refund: 880, adCost: 4700 }
-      ]
+      adCost: 8600
     },
     {
       workId: '1000000007', workName: '重生之豪门千金',
@@ -1511,12 +1508,7 @@ document.addEventListener('click', function (e) {
       authStart: '2026-07-28', authEnd: '2027-07-27',
       subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
       authType: '非独家', channel: ['小程序', '官网'],
-      recharge: 111300, refund: 2310, adCost: 13000,
-      months: [
-        { month: '2026-07', recharge: 26800, refund: 520, adCost: 3100 },
-        { month: '2026-08', recharge: 44700, refund: 960, adCost: 5300 },
-        { month: '2026-09', recharge: 39800, refund: 830, adCost: 4600 }
-      ]
+      adCost: 13000
     },
     {
       workId: '1000000006', workName: '京都旧事',
@@ -1525,11 +1517,7 @@ document.addEventListener('click', function (e) {
       authStart: '2026-08-01', authEnd: '2027-07-31',
       subjectName: 'Hangzhou Xinrui Culture Communication Co., Ltd.',
       authType: '独家', channel: ['官网'],
-      recharge: 28000, refund: 570, adCost: 3300,
-      months: [
-        { month: '2026-08', recharge: 15400, refund: 310, adCost: 1800 },
-        { month: '2026-09', recharge: 12600, refund: 260, adCost: 1500 }
-      ]
+      adCost: 1580
     },
     {
       workId: '1000000003', workName: '逆袭人生',
@@ -1538,10 +1526,7 @@ document.addEventListener('click', function (e) {
       authStart: '2026-09-03', authEnd: '2027-09-02',
       subjectName: 'Hangzhou Zhuiguang Culture Media Co., Ltd.',
       authType: '非独家', channel: ['小程序'],
-      recharge: 22400, refund: 450, adCost: 2700,
-      months: [
-        { month: '2026-09', recharge: 22400, refund: 450, adCost: 2700 }
-      ]
+      adCost: 860
     },
     {
       workId: '1000000004', workName: '错嫁豪门',
@@ -1550,10 +1535,7 @@ document.addEventListener('click', function (e) {
       authStart: '2026-09-02', authEnd: '2027-09-01',
       subjectName: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.',
       authType: '独家', channel: ['小程序', '官网'],
-      recharge: 31500, refund: 620, adCost: 3800,
-      months: [
-        { month: '2026-09', recharge: 31500, refund: 620, adCost: 3800 }
-      ]
+      adCost: 3800
     }
   ];
 
@@ -1572,32 +1554,29 @@ document.addEventListener('click', function (e) {
     var withSep = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return '$' + neg + withSep + '.' + parts[1];
   }
-  // 分成方式：广告消耗 4% + 利润 30%
-  var RATE_COST = 0.04, RATE_PROFIT = 0.30;
-  // 渠道：app / 社媒 / tt小程序 / h5（每个渠道同时有消耗与收入）
+  // 渠道：仅 app 与其他两个渠道
   var CH_DEF = [
     { key: 'app', label: 'app' },
-    { key: 'social', label: '社媒' },
-    { key: 'tt', label: 'tt小程序' },
-    { key: 'h5', label: 'h5' }
+    { key: 'other', label: '其他' }
   ];
-  // 各渠道占比（合计 1）
-  var COST_SPLIT = { app: 0.34, social: 0.16, tt: 0.38, h5: 0.12 };
-  var INCOME_SPLIT = { app: 0.28, social: 0.24, tt: 0.30, h5: 0.18 };
+  // 渠道占比（合计 1）
+  var COST_SPLIT = { app: 0.68, other: 0.32 };
   function r2(n) { return Math.round(n * 100) / 100; }
-  function calcActual(w) { return r2((w.recharge - w.refund) * 0.7); }
-  function calcProfit(w) { return r2(calcActual(w) - w.adCost); }
-  function calcShare(w) { return r2(w.adCost * RATE_COST + calcProfit(w) * RATE_PROFIT); }
-  function shareModeText() { return '消耗 4%，利润 30%'; }
+  // 消耗展示：1000 以下「<1k(测试中)」，1000 起按整千向下取整（1500→1k，2999→2k）
+  function fmtCostK(n) {
+    if (n === null || n === undefined) return '—';
+    if (n < 1000) return '&lt;1k<span class="test-tag">(测试中)</span>';
+    return Math.floor(n / 1000) + 'k';
+  }
+  // 收益数据统计截止日（演示口径）
+  var DATA_END = '2026-09-30';
   // 数量展示：12.4k
   function fmtK(n) {
     if (n === null || n === undefined) return '—';
     if (n < 1000) return String(n);
     return (n / 1000).toFixed(1) + 'k';
   }
-  // 单月利润
-  function monthProfit(m) { return r2((m.recharge - m.refund) * 0.7 - m.adCost); }
-  // 按比例拆分到 4 个渠道（最后一档补差，保证合计等于总数）
+  // 按比例拆分到各渠道（最后一档补差，保证合计等于总数）
   function splitBy(total, ratios) {
     var out = {}, acc = 0;
     CH_DEF.forEach(function (c, i) {
@@ -1608,7 +1587,31 @@ document.addEventListener('click', function (e) {
     return out;
   }
   function costByChan(total) { return splitBy(total, COST_SPLIT); }
-  function incomeByChan(total) { return splitBy(total, INCOME_SPLIT); }
+
+  // 按日拆分某部剧的消耗总额：上架日 ~ 统计截止日，开播冲高后逐日衰减 + 周期性波动；末档补差保证合计等于总额
+  var __dailyCache = {};
+  function buildDaily(w) {
+    if (__dailyCache[w.workId]) return __dailyCache[w.workId];
+    var days = [];
+    var d = new Date(w.shelfTime + 'T00:00:00');
+    var endD = new Date(DATA_END + 'T00:00:00');
+    while (d <= endD) { days.push(dateStr(d)); d.setDate(d.getDate() + 1); }
+    var seed = parseInt(w.workId.slice(-2), 10) || 7;
+    var weights = days.map(function (_, idx) {
+      var decay = 1 / (1 + idx * 0.06);
+      var wave = 1 + 0.35 * Math.sin((idx + seed) * 1.7);
+      return Math.max(0.25, decay * wave);
+    });
+    var sum = weights.reduce(function (a, b) { return a + b; }, 0);
+    var out = [], acc = 0;
+    days.forEach(function (ds, idx) {
+      var v = (idx === days.length - 1) ? r2(w.adCost - acc) : r2(w.adCost * weights[idx] / sum);
+      acc = r2(acc + v);
+      out.push({ date: ds, adCost: v });
+    });
+    __dailyCache[w.workId] = out;
+    return out;
+  }
   function moneyTip(val, tip) {
     return '<span class="tip" data-tip="' + tip + '">' + fmtMoney(val) + '</span>';
   }
@@ -1699,7 +1702,7 @@ document.addEventListener('click', function (e) {
     var list = filteredEarnings();
     var tbody = document.getElementById('earningList');
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (w) {
@@ -1711,21 +1714,16 @@ document.addEventListener('click', function (e) {
         '<td class="mono text-2">' + fmtK(w.playCount) + '</td>' +
         '<td class="mono text-2">' + fmtK(w.favCount) + '</td>' +
         '<td class="mono text-2">' + fmtK(w.likeCount) + '</td>' +
-        '<td class="mono">' + fmtMoney(w.adCost) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'cost\')">查看</span></td>' +
-        '<td class="mono">' + fmtMoney(calcProfit(w)) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'income\')">查看</span></td>' +
-        '<td class="mono">' + fmtMoney(calcShare(w)) + '</td>' +
+        '<td><span class="cost-k">' + fmtCostK(w.adCost) + '</span><span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'cost\')">查看</span></td>' +
         '<td class="sticky-r"><span class="op-link" onclick="openEarnDetail(\'' + w.workId + '\')">详情</span></td>' +
       '</tr>';
     }).join('');
   }
 
   // ========== 收益明细弹窗 ==========
-  var TYPE_OPTS = [
-    { key: 'cost', label: '消耗' },
-    { key: 'income', label: '收入' }
-  ];
   var CHAN_OPTS = CH_DEF.map(function (c) { return { key: c.key, label: c.label }; });
-  var earnState = { id: null, start: '', end: '', types: [], chans: [] };
+  var earnState = { id: null, start: '', end: '', chans: [] };
+  var emDatePicker = null;
 
   function findEarn(id) { return EARNING_WORKS.find(function (x) { return x.workId === id; }); }
 
@@ -1739,49 +1737,49 @@ document.addEventListener('click', function (e) {
   function openEarnDetail(workId) {
     var w = findEarn(workId);
     if (!w) return;
-    var ms = w.months.map(function (m) { return m.month; });
+    var daily = buildDaily(w);
     earnState = {
       id: workId,
-      start: ms[0],
-      end: ms[ms.length - 1],
-      types: ['cost', 'income'],
+      start: daily[0].date,
+      end: daily[daily.length - 1].date,
       chans: CH_DEF.map(function (c) { return c.key; })
     };
     document.getElementById('earnModalTitle').textContent = '收益明细 · ' + w.workName;
     renderEarnDetail();
+    // 日期范围（精确到日）：默认 = 上架日 ~ 统计截止日
+    emDatePicker = createRangePicker('emDateWrap', {
+      dateOnly: true,
+      onChange: function () {
+        var v = emDatePicker.get();
+        if (v.start) earnState.start = v.start;
+        if (v.end) earnState.end = v.end;
+        renderEarnTable();
+      }
+    });
+    emDatePicker.start = earnState.start;
+    emDatePicker.end = earnState.end;
+    emDatePicker.sync();
     openModal('earnModal');
+    document.getElementById('earnModalBody').scrollTop = 0;
   }
 
   function renderEarnDetail() {
     var w = findEarn(earnState.id);
     if (!w) return;
-    var ms = w.months.map(function (m) { return m.month; });
 
     var html = '';
     // 一、基础信息
     html += '<div class="group-title" style="margin-top:0">基础信息</div>';
     html += detailRow('短剧信息', w.workName + '（' + w.workId + '）');
     html += detailRow('上架时间', w.shelfTime || '—');
-    html += detailRow('分成方式', '<span class="text-brand">' + shareModeText() + '</span>');
     html += detailRow('播放量', fmtK(w.playCount));
     html += detailRow('收藏数', fmtK(w.favCount));
     html += detailRow('点赞数', fmtK(w.likeCount));
 
-    // 二、明细数据
+    // 二、明细数据（以「日」为最小维度）
     html += '<div class="group-title">明细数据</div>';
     html += '<div class="detail-filter">';
-    html += '<div class="df-item"><label>月份</label>' +
-      '<select class="ant-input" id="emStart" onchange="onEarnFilter()">' +
-        ms.map(function (m) { return '<option value="' + m + '"' + (m === earnState.start ? ' selected' : '') + '>' + m + '</option>'; }).join('') +
-      '</select><span class="df-sep">至</span>' +
-      '<select class="ant-input" id="emEnd" onchange="onEarnFilter()">' +
-        ms.map(function (m) { return '<option value="' + m + '"' + (m === earnState.end ? ' selected' : '') + '>' + m + '</option>'; }).join('') +
-      '</select></div>';
-    html += '<div class="df-item"><label>类型</label><div class="ms-wrap" style="width:150px">' +
-      '<div class="ms-box" id="emTypeBox" onclick="togglePanel(\'emTypePanel\',\'emTypeBox\',event)">' +
-        '<div id="emTypeContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>' +
-        '<span class="ms-arrow"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
-      '</div><div class="ms-panel" id="emTypePanel"></div></div></div>';
+    html += '<div class="df-item"><label>日期</label><div class="rp-wrap" id="emDateWrap"></div></div>';
     html += '<div class="df-item"><label>渠道</label><div class="ms-wrap" style="width:190px">' +
       '<div class="ms-box" id="emChanBox" onclick="togglePanel(\'emChanPanel\',\'emChanBox\',event)">' +
         '<div id="emChanContent" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"></div>' +
@@ -1791,29 +1789,10 @@ document.addEventListener('click', function (e) {
     html += '<div id="emTableWrap"></div>';
 
     document.getElementById('earnModalBody').innerHTML = html;
-    renderMs(TYPE_OPTS, earnState.types, 'emTypeContent', 'emTypePanel', 'toggleEmType', 'removeEmType');
     renderMs(CHAN_OPTS, earnState.chans, 'emChanContent', 'emChanPanel', 'toggleEmChan', 'removeEmChan');
     renderEarnTable();
   }
 
-  function onEarnFilter() {
-    earnState.start = document.getElementById('emStart').value;
-    earnState.end = document.getElementById('emEnd').value;
-    renderEarnTable();
-  }
-
-  function toggleEmType(k, e) {
-    e.stopPropagation();
-    toggleIn(earnState.types, k);
-    renderMs(TYPE_OPTS, earnState.types, 'emTypeContent', 'emTypePanel', 'toggleEmType', 'removeEmType');
-    renderEarnTable();
-  }
-  function removeEmType(k, e) {
-    e.stopPropagation();
-    var i = earnState.types.indexOf(k); if (i !== -1) earnState.types.splice(i, 1);
-    renderMs(TYPE_OPTS, earnState.types, 'emTypeContent', 'emTypePanel', 'toggleEmType', 'removeEmType');
-    renderEarnTable();
-  }
   function toggleEmChan(k, e) {
     e.stopPropagation();
     toggleIn(earnState.chans, k);
@@ -1832,53 +1811,43 @@ document.addEventListener('click', function (e) {
     var box = document.getElementById('emTableWrap');
     if (!w || !box) return;
 
-    var months = w.months.filter(function (m) { return m.month >= earnState.start && m.month <= earnState.end; });
+    var daily = buildDaily(w).filter(function (d) { return d.date >= earnState.start && d.date <= earnState.end; });
     var chans = CH_DEF.filter(function (c) { return earnState.chans.indexOf(c.key) !== -1; });
-    var types = TYPE_OPTS.filter(function (t) { return earnState.types.indexOf(t.key) !== -1; });
 
     if (!chans.length) { box.innerHTML = emEmpty('请至少选择一个渠道'); return; }
-    if (!types.length) { box.innerHTML = emEmpty('请至少选择一个类型'); return; }
-    if (!months.length) { box.innerHTML = emEmpty('所选月份暂无数据'); return; }
+    if (!daily.length) { box.innerHTML = emEmpty('所选日期区间暂无数据'); return; }
 
-    var rows = [];
-    months.forEach(function (m) {
-      var mc = costByChan(m.adCost);
-      var mi = incomeByChan(monthProfit(m));
+    var rows = [], total = 0;
+    daily.forEach(function (d) {
+      var mc = costByChan(d.adCost);
       chans.forEach(function (c) {
-        types.forEach(function (t) {
-          rows.push({
-            month: m.month,
-            chan: c.label,
-            type: t.label,
-            val: t.key === 'cost' ? mc[c.key] : mi[c.key]
-          });
-        });
+        rows.push({ date: d.date, chan: c.label, val: mc[c.key] });
+        total = r2(total + mc[c.key]);
       });
     });
 
     var body = rows.map(function (r) {
-      return '<tr><td class="mono">' + r.month + '</td>' +
+      return '<tr><td class="mono">' + r.date + '</td>' +
         '<td>' + r.chan + '</td>' +
-        '<td>' + r.type + '</td>' +
         '<td class="mono" style="text-align:right">' + fmtMoney(r.val) + '</td></tr>';
     }).join('');
 
     box.innerHTML = '<div class="em-table-scroll"><table class="table detail-table">' +
-      '<thead><tr><th style="width:120px">月份</th><th style="width:130px">渠道</th><th style="width:110px">类型</th><th style="text-align:right">金额(美元)</th></tr></thead>' +
-      '<tbody>' + body + '</tbody></table></div>';
+      '<thead><tr><th style="width:150px">日期</th><th style="width:130px">渠道</th><th style="text-align:right">消耗金额(美元)</th></tr></thead>' +
+      '<tbody>' + body + '</tbody></table></div>' +
+      '<div class="em-sum">所选日期合计消耗：<b class="mono">' + fmtMoney(total) + '</b></div>';
   }
 
-  // ========== 分渠道明细弹窗（消耗 / 收入） ==========
-  function openChannelDetail(workId, type) {
+  // ========== 分渠道明细弹窗（仅消耗：app / 其他） ==========
+  function openChannelDetail(workId) {
     var w = findEarn(workId);
     if (!w) return;
-    var isCost = type === 'cost';
-    var total = isCost ? w.adCost : calcProfit(w);
-    var map = isCost ? costByChan(total) : incomeByChan(total);
+    var total = w.adCost;
+    var map = costByChan(total);
 
-    document.getElementById('chanModalTitle').textContent = (isCost ? '分渠道消耗' : '分渠道收入') + ' · ' + w.workName;
+    document.getElementById('chanModalTitle').textContent = '分渠道消耗 · ' + w.workName;
     var body = '<table class="table detail-table"><thead><tr>' +
-      '<th>渠道</th><th style="text-align:right">' + (isCost ? '消耗' : '收入') + '(美元)</th>' +
+      '<th>渠道</th><th style="text-align:right">消耗(美元)</th>' +
       '</tr></thead><tbody>' +
       CH_DEF.map(function (c) {
         return '<tr><td>' + c.label + '</td><td class="mono" style="text-align:right">' + fmtMoney(map[c.key]) + '</td></tr>';
