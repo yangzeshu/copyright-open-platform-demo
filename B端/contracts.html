@@ -520,6 +520,21 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .radio-card:hover { border-color: var(--brand); color: var(--brand); }
   .radio-card.active { border-color: var(--brand); background: var(--brand-weak); color: var(--brand); font-weight: 600; }
   .radio-card input { accent-color: var(--brand); cursor: pointer; }
+  /* 分成标准：竖排单选（标题 + 说明） */
+  .radio-list { display: flex; flex-direction: column; gap: 8px; }
+  .radio-opt {
+    display: flex; align-items: flex-start; gap: 9px; padding: 9px 12px;
+    border: 1px solid var(--border-strong); border-radius: 8px; background: #fff;
+    cursor: pointer; transition: all .15s;
+  }
+  .radio-opt:hover { border-color: var(--brand); }
+  .radio-opt.active { border-color: var(--brand); background: var(--brand-weak); }
+  .radio-opt input { margin: 3px 0 0; accent-color: var(--brand); cursor: pointer; flex-shrink: 0; }
+  .ro-body { display: block; min-width: 0; }
+  .ro-title { display: block; font-size: 13px; color: var(--text); line-height: 1.5; }
+  .radio-opt.active .ro-title { color: var(--brand); font-weight: 600; }
+  .ro-tip { display: block; font-size: 12px; color: var(--text-3); line-height: 1.5; margin-top: 2px; }
+  .pa-split-tip { font-size: 12px; color: var(--text-3); line-height: 1.5; margin-top: 2px; }
   .file-drop {
     display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #fafbfc;
     border: 1px dashed var(--border-strong); border-radius: 8px; font-size: 13px; color: var(--text-3);
@@ -746,6 +761,32 @@ textarea.form-input { resize: vertical; min-height: 90px; }
           <input type="text" class="ant-input" id="muPaTerm" placeholder="如：1 年 / 24 个月" style="width:100%">
         </div>
       </div>
+      <div class="form-item" style="margin-bottom:0">
+        <label class="form-label">分成标准<span class="req">*</span></label>
+        <div class="radio-list" id="muSplitList">
+          <label class="radio-opt" data-key="make" onclick="setMuSplit('make')">
+            <input type="radio" name="muSplit" value="make">
+            <span class="ro-body">
+              <span class="ro-title">制作</span>
+              <span class="ro-tip">app渠道投放消耗4%，非app渠道可分配收益利润30%</span>
+            </span>
+          </label>
+          <label class="radio-opt" data-key="script_make" onclick="setMuSplit('script_make')">
+            <input type="radio" name="muSplit" value="script_make">
+            <span class="ro-body">
+              <span class="ro-title">剧本+制作</span>
+              <span class="ro-tip">app渠道投放消耗6%，非app渠道可分配收益利润60%</span>
+            </span>
+          </label>
+          <label class="radio-opt" data-key="script" onclick="setMuSplit('script')">
+            <input type="radio" name="muSplit" value="script">
+            <span class="ro-body">
+              <span class="ro-title">剧本</span>
+              <span class="ro-tip">app渠道投放消耗2%，非app渠道可分配收益利润30%</span>
+            </span>
+          </label>
+        </div>
+      </div>
 
       <div class="form-item">
         <label class="form-label">合同文件<span class="req">*</span></label>
@@ -844,6 +885,32 @@ textarea.form-input { resize: vertical; min-height: 90px; }
       <div class="form-item">
         <label class="form-label">联系邮箱<span class="req">*</span></label>
         <input type="text" class="ant-input" id="paEmail" placeholder="请输入联系邮箱" style="width:100%">
+      </div>
+      <div class="form-item">
+        <label class="form-label">分成标准<span class="req">*</span></label>
+        <div class="radio-list" id="paSplitList">
+          <label class="radio-opt" data-key="make" onclick="setPaSplit('make')">
+            <input type="radio" name="paSplit" value="make">
+            <span class="ro-body">
+              <span class="ro-title">制作</span>
+              <span class="ro-tip">app渠道投放消耗4%，非app渠道可分配收益利润30%</span>
+            </span>
+          </label>
+          <label class="radio-opt" data-key="script_make" onclick="setPaSplit('script_make')">
+            <input type="radio" name="paSplit" value="script_make">
+            <span class="ro-body">
+              <span class="ro-title">剧本+制作</span>
+              <span class="ro-tip">app渠道投放消耗6%，非app渠道可分配收益利润60%</span>
+            </span>
+          </label>
+          <label class="radio-opt" data-key="script" onclick="setPaSplit('script')">
+            <input type="radio" name="paSplit" value="script">
+            <span class="ro-body">
+              <span class="ro-title">剧本</span>
+              <span class="ro-tip">app渠道投放消耗2%，非app渠道可分配收益利润30%</span>
+            </span>
+          </label>
+        </div>
       </div>
       <div class="form-item" style="margin-bottom:0">
         <label class="form-label">合作期限<span class="req">*</span></label>
@@ -1252,7 +1319,7 @@ var DEMO_CONTRACTS = [
     subjectName: '杭州光影映画网络科技有限公司', subjectId: 'SUB1001-02', subjectType: 'company', contactName: '刘洋', contactPhone: '13512347766',
     generateTime: '2026-09-10 14:00:00', signTime: '',
     reviewer: '泰瑞', reviewStage: '', reviewTime: '2026-09-10 16:00:00',
-    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', term: '1 年', submitTime: '2026-09-10 15:30:00' },
+    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', split: 'make', splitLabel: '制作', splitTip: 'app渠道投放消耗4%，非app渠道可分配收益利润30%', term: '1 年', submitTime: '2026-09-10 15:30:00' },
     partyB: pb('Hangzhou Guangying Yinghua Network Technology Co., Ltd.', '杭州市西湖区文二路88号', '刘洋', '13512347766', 'liuyang@163.com', 'Hangzhou Guangying Yinghua Network Technology Co., Ltd.', '6217000077887788', 'China Merchants Bank, Hangzhou Branch'),
     refillReason: ''
   },
@@ -1262,7 +1329,7 @@ var DEMO_CONTRACTS = [
     subjectName: '杭州追光文化传媒有限公司', subjectId: 'SUB1003-01', subjectType: 'company', contactName: '王小明', contactPhone: '13712343355',
     generateTime: '2026-09-01 09:00:00', signTime: '2026-09-07 10:05:58',
     reviewer: '冰雨', reviewStage: '', reviewTime: '2026-09-01 15:00:00',
-    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', term: '1 年', submitTime: '2026-09-01 14:20:00' },
+    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', split: 'script_make', splitLabel: '剧本+制作', splitTip: 'app渠道投放消耗6%，非app渠道可分配收益利润60%', term: '1 年', submitTime: '2026-09-01 14:20:00' },
     partyB: pb('Hangzhou Zhuiguang Culture Media Co., Ltd.', '杭州市拱墅区莫干山路100号', '王小明', '13712343355', 'wangxiaoming@163.com', 'Hangzhou Zhuiguang Culture Media Co., Ltd.', '6217000000000000', 'China Construction Bank, Hangzhou Branch'),
     refillReason: ''
   }
@@ -2023,6 +2090,7 @@ var DEMO_ACCOUNTS = [
     var subjHidden = document.getElementById('muSubjectValue');
     if (subjHidden) subjHidden.value = '';
     setMuType('esign');
+    resetMuSplit();
     renderMuFiles();
     openModal('manualModal');
   }
@@ -2096,6 +2164,7 @@ var DEMO_ACCOUNTS = [
     if (!paContact) { showToast('请输入联系人', 'err'); return; }
     if (!paPhone) { showToast('请输入联系电话', 'err'); return; }
     if (!paEmail) { showToast('请输入联系邮箱', 'err'); return; }
+    if (!muSplit) { showToast('请选择分成标准', 'err'); return; }
     if (!paTerm) { showToast('请输入合作期限', 'err'); return; }
 
     var docsInfo = null;
@@ -2123,7 +2192,14 @@ var DEMO_ACCOUNTS = [
       business: subj.business,
       generateTime: now, signTime: now,
       reviewer: CURRENT_OPERATOR, reviewStage: '', reviewTime: now,
-      partyAInfo: { contact: paContact, phone: paPhone, email: paEmail, term: paTerm, submitTime: now },
+      partyAInfo: (function () {
+        var opt = PA_SPLIT_OPTS.filter(function (x) { return x.key === muSplit; })[0];
+        return {
+          contact: paContact, phone: paPhone, email: paEmail,
+          split: muSplit, splitLabel: opt.label, splitTip: opt.tip,
+          term: paTerm, submitTime: now
+        };
+      })(),
       partyB: pb(subj.company, subj.contactAddr, subj.contactName, subj.contactPhone, subj.contactEmail, subj.company, subj.bankAccount, subj.bankEn),
       refillReason: '',
       manualDocs: docsInfo
@@ -2285,6 +2361,9 @@ var DEMO_ACCOUNTS = [
     html += fieldRow('联系电话', pa.phone || '—');
     html += fieldRow('联系邮箱', pa.email || '—');
     html += fieldRow('合作期限', pa.term || '—');
+    html += fieldRow('分成标准', pa.splitLabel
+      ? pa.splitLabel + '<div class="pa-split-tip">' + (pa.splitTip || '') + '</div>'
+      : '—');
 
     document.getElementById('detailBody').innerHTML = html;
 
@@ -2309,6 +2388,28 @@ var DEMO_ACCOUNTS = [
     setTimeout(function () { document.getElementById('detailModal').querySelector('.modal-title').textContent = '合同详情'; }, 100);
   }
 
+  // ===== 分成标准（审核通过时必选） =====
+  var PA_SPLIT_OPTS = [
+    { key: 'make', label: '制作', tip: 'app渠道投放消耗4%，非app渠道可分配收益利润30%' },
+    { key: 'script_make', label: '剧本+制作', tip: 'app渠道投放消耗6%，非app渠道可分配收益利润60%' },
+    { key: 'script', label: '剧本', tip: 'app渠道投放消耗2%，非app渠道可分配收益利润30%' }
+  ];
+  var paSplit = '', muSplit = '';
+  function applyRadioState(listId, k) {
+    var list = document.getElementById(listId);
+    if (!list) return;
+    Array.prototype.forEach.call(list.querySelectorAll('.radio-opt'), function (el) {
+      var on = !!k && el.getAttribute('data-key') === k;
+      el.classList.toggle('active', on);
+      var inp = el.querySelector('input');
+      if (inp) inp.checked = on;
+    });
+  }
+  function setPaSplit(k) { paSplit = k; applyRadioState('paSplitList', k); }
+  function resetPaSplit() { paSplit = ''; applyRadioState('paSplitList', ''); }
+  function setMuSplit(k) { muSplit = k; applyRadioState('muSplitList', k); }
+  function resetMuSplit() { muSplit = ''; applyRadioState('muSplitList', ''); }
+
   // 详情弹窗内通过/驳回
   function certPass() {
     currentBizNos = [currentContractNo];
@@ -2320,20 +2421,28 @@ var DEMO_ACCOUNTS = [
       var el = document.getElementById(id);
       if (el) el.value = '';
     });
+    resetPaSplit();
     openModal('bizModal');
   }
   function confirmBiz() {
     var contact = document.getElementById('paContact').value.trim();
     var phone = document.getElementById('paPhone').value.trim();
     var email = document.getElementById('paEmail').value.trim();
+    var split = paSplit;
     var term = document.getElementById('paTerm').value.trim();
     if (!contact) { showToast('请输入联系人', 'err'); return; }
     if (!phone) { showToast('请输入联系电话', 'err'); return; }
     if (!email) { showToast('请输入联系邮箱', 'err'); return; }
+    if (!split) { showToast('请选择分成标准', 'err'); return; }
     if (!term) { showToast('请输入合作期限', 'err'); return; }
 
     // 记录甲方信息到对应合同
-    var info = { contact: contact, phone: phone, email: email, term: term, submitTime: nowStr() };
+    var opt = PA_SPLIT_OPTS.filter(function (x) { return x.key === split; })[0];
+    var info = {
+      contact: contact, phone: phone, email: email,
+      split: split, splitLabel: opt.label, splitTip: opt.tip,
+      term: term, submitTime: nowStr()
+    };
     currentBizNos.forEach(function (no) {
       var c = findContract(no);
       if (c) c.partyAInfo = info;
