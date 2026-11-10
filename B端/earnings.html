@@ -579,6 +579,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   }
   th .tip { border-bottom-style: dotted; }
   th .tip:hover::after { top: calc(100% + 8px); }
+  /* 长提示语：换行显示，避免超宽 */
+  .tip-wrap:hover::after { white-space: normal; width: 250px; line-height: 1.6; }
   /* 明细数据标题行（右侧带导出） */
   .group-title.gt-flex { display: flex; align-items: flex-end; justify-content: space-between; }
   .gt-action { font-size: 13px; font-weight: 400; color: var(--brand); cursor: pointer; }
@@ -655,7 +657,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
               <th style="width:200px">授权主体</th>
               <th style="width:120px">实际消耗<br>(美元)</th>
               <th style="width:120px">可分成消耗<br>(美元)</th>
-              <th style="width:120px"><span class="tip" data-tip="未扣减成本，仅供参考">收入(美元)</span><div class="th-sub">未扣减成本</div></th>
+              <th style="width:130px"><span class="tip tip-wrap" data-tip="统计口径为：(充值金额 - 退款金额) * 0.7；未扣减成本，仅供参考">实际收益金额</span><br>(美元)</th>
               <th class="sticky-r" style="width:76px">操作</th>
             </tr>
           </thead>
@@ -1135,7 +1137,7 @@ document.addEventListener('click', function (e) {
     if (!list.length) { showToast('暂无可导出的数据'); return; }
     var rows = [[
       '短剧信息', '短剧ID', '剧本编号', '所属账号', '上架时间', '授权主体',
-      '实际消耗(美元)', '可分成消耗(美元)', '收入(美元)'
+      '实际消耗(美元)', '可分成消耗(美元)', '实际收益金额(美元)'
     ]];
     list.forEach(function (w) {
       rows.push([
@@ -1152,7 +1154,7 @@ document.addEventListener('click', function (e) {
     if (!earnState.id) return;
     if (!emDetailRows.length) { showToast('暂无可导出的数据'); return; }
     var w = findEarn(earnState.id);
-    var rows = [['日期', '实际消耗(美元)', '可分成消耗(美元)', '收入(美元)']];
+    var rows = [['日期', '实际消耗(美元)', '可分成消耗(美元)', '实际收益金额(美元)']];
     emDetailRows.forEach(function (r) {
       rows.push([r.date, r.cost.toFixed(2), r.share.toFixed(2), r.income.toFixed(2)]);
     });
@@ -1335,7 +1337,7 @@ document.addEventListener('click', function (e) {
       '<thead><tr><th style="width:130px">日期</th>' +
         '<th>实际消耗(美元)</th>' +
         '<th>可分成消耗(美元)</th>' +
-        '<th>收入(美元)</th></tr></thead>' +
+        '<th>实际收益金额(美元)</th></tr></thead>' +
       '<tbody>' + body + '</tbody></table></div>';
   }
 
@@ -1344,7 +1346,7 @@ document.addEventListener('click', function (e) {
   function openChannelDetail(workId, type, date) {
     var w = findEarn(workId);
     if (!w) return;
-    var label = type === 'share' ? '可分成消耗' : (type === 'income' ? '收入' : '实际消耗');
+    var label = type === 'share' ? '可分成消耗' : (type === 'income' ? '实际收益金额' : '实际消耗');
     var total, map, title;
 
     if (date) {
