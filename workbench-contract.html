@@ -1607,7 +1607,6 @@ document.addEventListener('click', function (e) {
         '<div class="status-line ok"><svg viewBox="0 0 20 20" fill="none"><path d="m5 10 3.5 3.5L15 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' + t('合同待签署') + '</div>' +
         '<div class="btn-group" style="margin-top:14px">' +
           '<button class="btn btn-outline" onclick="viewContractInfo()">' + t('信息查看') + '</button>' +
-          '<button class="btn btn-primary" onclick="openSignModal()">' + t('签署完成') + '</button>' +
         '</div>';
     } else if (contractState === 'done') {
       desc.textContent = t('双方已完成合同签署。');
