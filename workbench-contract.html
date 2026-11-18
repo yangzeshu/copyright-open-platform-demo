@@ -181,6 +181,13 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ---------- 表单 ---------- */
+.form-group-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  padding: 0 0 8px; margin: 4px 0 14px;
+  border-bottom: 1px solid var(--border-strong);
+}
+.form-group-title + .form-group-title, .form-group-title:not(:first-child) { margin-top: 18px; }
+select.form-input { height: 40px; cursor: pointer; }
 .form-item { margin-bottom: 18px; }
 .form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
 .form-label .req { color: var(--danger); margin-left: 2px; }
@@ -583,6 +590,19 @@ textarea.form-input { resize: vertical; min-height: 90px; }
     </div>
 
     <div class="modal-body">
+    <div class="form-group-title" style="margin-top:0">合作类型</div>
+    <div class="form-item">
+      <label class="form-label"><span>合作类型</span><span class="req">*</span></label>
+      <select class="form-input" id="signCoopType">
+        <option value="">请选择合作类型</option>
+        <option value="付费独家">付费独家</option>
+        <option value="付费非独家">付费非独家</option>
+        <option value="免费独家">免费独家</option>
+        <option value="免费非独家">免费非独家</option>
+      </select>
+    </div>
+
+    <div class="form-group-title">签约信息</div>
     <div style="font-size:12px;color:var(--text-3);margin:0 0 14px">以下信息同步自认证信息，不支持修改</div>
     <div class="form-item">
       <label class="form-label"><span>乙方公司全称</span></label>
@@ -1619,7 +1639,11 @@ document.addEventListener('click', function (e) {
     }
   }
 
+  // 合作类型：付费独家 / 付费非独家 / 免费独家 / 免费非独家（提交时必填，打回重填可改）
+  var coopType = '';
+
   function openSign() {
+    document.getElementById('signCoopType').value = coopType || '';
     // 默认读取认证信息填充 8 字段（可修改）
     document.getElementById('signCompany').value = DEMO_USER.company;
     document.getElementById('signContactAddr').value = DEMO_USER.contactAddr;
@@ -1634,6 +1658,9 @@ document.addEventListener('click', function (e) {
   }
 
   function submitContract() {
+    var coop = document.getElementById('signCoopType').value;
+    if (!coop) { showToast(t('请选择合作类型'), 'err'); return; }
+    coopType = coop;
     // 收集 8 字段（demo 不校验必填，直接提交）
     SIGN_PARTYB.company = document.getElementById('signCompany').value.trim() || SIGN_PARTYB.company;
     SIGN_PARTYB.contactAddr = document.getElementById('signContactAddr').value.trim() || SIGN_PARTYB.contactAddr;
@@ -1712,6 +1739,7 @@ document.addEventListener('click', function (e) {
   // 信息查看（仅展示乙方信息，不展示模块标题）
   function viewContractInfo() {
     var html = '';
+    html += fieldRow(t('合作类型'), coopType || '—');
     SIGN_FIELDS.forEach(function (f) { html += fieldRow(f.label, SIGN_PARTYB[f.key]); });
     document.getElementById('infoBody').innerHTML = html;
     openModal('infoModal');

@@ -193,6 +193,7 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
 .form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-weak); }
 .form-input::placeholder { color: var(--text-3); }
 textarea.form-input { resize: vertical; min-height: 90px; }
+select.form-input { height: 40px; cursor: pointer; }
 .form-row { display: flex; gap: 12px; }
 .form-row > * { flex: 1; }
 .form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
@@ -1092,7 +1093,7 @@ var DEMO_SETTLEMENTS = [
 ];
 
 // ---------- 合同演示数据（C 端 / B 端共享） ----------
-// status: fill 填写信息 | generating 合同生成 | refill 合同信息重填 | pending 待签署 | done 已签署
+// status: generating 合同生成 | refill 合同信息重填 | pending 待签署 | done 已签署
 // reviewStage（仅 generating 有意义）: unclaimed 待领取 | claimed 审核中
 
 // 乙方 8 字段（两份合同共用）
@@ -1111,15 +1112,7 @@ function pb(company, addr, contact, phone, email, bankName, bankAccount, bankEn)
 
 var DEMO_CONTRACTS = [
   {
-    no: 'HT202609-001', company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', docs: ['framework', 'nda'], status: 'fill',
-    accountName: '光影工场', accountId: '1001',
-    generateTime: '', signTime: '',
-    reviewer: '', reviewStage: '', reviewTime: '',
-    partyB: pb('Hangzhou Guangying Yinghua Culture Media Co., Ltd.', '杭州市西湖区文三路100号', '张伟', '13812346688', 'zhangwei@163.com', 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', '6222000088888888', 'Industrial and Commercial Bank of China, Hangzhou Branch'),
-    exclusiveRate: '30', nonExclusiveRate: '20', refillReason: ''
-  },
-  {
-    no: 'HT202609-002', company: 'Hangzhou Xinrui Culture Communication Co., Ltd.', docs: ['framework', 'nda'], status: 'generating',
+    no: 'HT202609-002', company: 'Hangzhou Xinrui Culture Communication Co., Ltd.', docs: ['framework', 'nda'], status: 'generating', coopType: '付费非独家',
     accountName: '新锐工作室', accountId: '1002',
     generateTime: '2026-09-11 09:00:00', signTime: '',
     reviewer: '', reviewStage: 'unclaimed', reviewTime: '',
@@ -1127,7 +1120,7 @@ var DEMO_CONTRACTS = [
     exclusiveRate: '25', nonExclusiveRate: '15', refillReason: ''
   },
   {
-    no: 'HT202609-003', company: 'Hangzhou Dreamworks Media Co., Ltd.', docs: ['framework', 'nda'], status: 'refill',
+    no: 'HT202609-003', company: 'Hangzhou Dreamworks Media Co., Ltd.', docs: ['framework', 'nda'], status: 'refill', coopType: '免费独家',
     accountName: '梦工厂传媒', accountId: '1004',
     generateTime: '2026-09-05 11:30:00', signTime: '',
     reviewer: '冰雨', reviewStage: '', reviewTime: '2026-09-06 10:00:00',
@@ -1135,7 +1128,7 @@ var DEMO_CONTRACTS = [
     exclusiveRate: '28', nonExclusiveRate: '18', refillReason: '合同信息有误，请核对后重新提交'
   },
   {
-    no: 'HT202609-004', company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', docs: ['framework', 'nda'], status: 'pending',
+    no: 'HT202609-004', company: 'Hangzhou Guangying Yinghua Culture Media Co., Ltd.', docs: ['framework', 'nda'], status: 'pending', coopType: '付费独家',
     accountName: '光影工场', accountId: '1001',
     generateTime: '2026-09-10 14:00:00', signTime: '',
     reviewer: '泰瑞', reviewStage: '', reviewTime: '2026-09-10 16:00:00',
@@ -1143,7 +1136,7 @@ var DEMO_CONTRACTS = [
     exclusiveRate: '30', nonExclusiveRate: '20', refillReason: ''
   },
   {
-    no: 'HT202609-005', company: 'Hangzhou Zhuiguang Culture Media Co., Ltd.', docs: ['framework', 'nda'], status: 'done',
+    no: 'HT202609-005', company: 'Hangzhou Zhuiguang Culture Media Co., Ltd.', docs: ['framework', 'nda'], status: 'done', coopType: '免费非独家',
     accountName: '追光者', accountId: '1003',
     generateTime: '2026-09-01 09:00:00', signTime: '2026-09-07 10:05:58',
     reviewer: '冰雨', reviewStage: '', reviewTime: '2026-09-01 15:00:00',
@@ -1162,10 +1155,9 @@ function typeLabel(key) {
   return t(c.label);
 }
 
-// 合同状态映射（5 态）
+// 合同状态映射（4 态，2026-11-18 移除「填写信息」）
 // 注意：generating 对外展示为「审核中」，refill 对外展示为「审核驳回」
 var CONTRACT_STATUS = {
-  fill:       { label: '填写信息', cls: 'tag-gray' },
   generating: { label: '合同生成',   cls: 'tag-blue' },
   refill:     { label: '合同信息重填', cls: 'tag-pink' },
   pending:    { label: '待签署',   cls: 'tag-orange' },
@@ -1470,7 +1462,6 @@ document.addEventListener('click', function (e) {
     { key: 'all', label: '授权入驻合同' }
   ];
   var STATUS_OPTIONS = [
-    { key: 'fill', label: '填写信息' },
     { key: 'generating', label: '合同生成' },
     { key: 'refill', label: '合同信息重填' },
     { key: 'pending', label: '待签署' },
@@ -1590,13 +1581,10 @@ document.addEventListener('click', function (e) {
     return contractStatusTag(c.status);
   }
 
-  // ========== 操作列（按 5 态） ==========
+  // ========== 操作列（按 4 态） ==========
   function renderOps(c) {
     var ops = [];
-    if (c.status === 'fill') {
-      ops.push('<span class="op-link" onclick="openFill(\'' + c.no + '\')">' + t('合同信息填写') + '</span>');
-      ops.push('<span class="op-link" onclick="previewContract(\'' + c.no + '\')">' + t('模板预览') + '</span>');
-    } else if (c.status === 'generating') {
+    if (c.status === 'generating') {
       ops.push('<span class="op-link" onclick="viewContract(\'' + c.no + '\')">' + t('信息查看') + '</span>');
       ops.push('<span class="op-link" onclick="previewContract(\'' + c.no + '\')">' + t('模板预览') + '</span>');
     } else if (c.status === 'refill') {
@@ -1643,6 +1631,7 @@ document.addEventListener('click', function (e) {
   function viewContract(no) {
     var c = findContract(no);
     var html = '';
+    html += fieldRow(t('合作类型'), c.coopType || '—');
     c.partyB.forEach(function (f) { html += fieldRow(f.label, f.value); });
     document.getElementById('viewModalBody').innerHTML = html;
     openModal('viewModal');
@@ -1668,7 +1657,17 @@ document.addEventListener('click', function (e) {
         '<div>' + t('合同信息重填原因') + '：' + c.refillReason + '</div></div>';
     }
 
-    html += '<div style="font-size:12px;color:var(--text-3);margin:0 0 14px">以下信息同步自认证信息，不支持修改</div>';
+    html += '<div class="form-item">' +
+      '<label class="form-label">' + t('合作类型') + '<span class="req">*</span></label>' +
+      '<select class="form-input" id="fillCoopType">' +
+        '<option value="">' + t('请选择合作类型') + '</option>' +
+        ['付费独家', '付费非独家', '免费独家', '免费非独家'].map(function (v) {
+          return '<option value="' + v + '"' + (c.coopType === v ? ' selected' : '') + '>' + v + '</option>';
+        }).join('') +
+      '</select>' +
+    '</div>';
+
+    html += '<div style="font-size:12px;color:var(--text-3);margin:14px 0 14px">以下信息同步自认证信息，不支持修改</div>';
     c.partyB.forEach(function (f, i) {
       html += '<div class="form-item">' +
         '<label class="form-label">' + t(f.label) + '</label>' +
@@ -1683,6 +1682,9 @@ document.addEventListener('click', function (e) {
   function submitFill() {
     var c = findContract(currentNo);
     if (!c) return;
+    var coop = document.getElementById('fillCoopType').value;
+    if (!coop) { showToast(t('请选择合作类型'), 'err'); return; }
+    c.coopType = coop;
     var fields = document.querySelectorAll('#fillModalBody .fill-field');
     fields.forEach(function (el) {
       var idx = parseInt(el.getAttribute('data-index'), 10);

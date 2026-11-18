@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合作商管理 · 版权开放平台</title>
+<style>/* ============================================================
+   版权开放平台 · 公共样式 common.css
+   品牌主色：粉红 #ff2e63，浅色背景，卡片式布局
+   C 端与 B 端共享
+   ============================================================ */
+
+:root {
+  --brand: #ff2e63;
+  --brand-dark: #e0244f;
+  --brand-light: #fff0f4;
+  --brand-weak: rgba(255, 46, 99, 0.06);
+  --brand-grad: linear-gradient(135deg, #ff5c8a 0%, #ff2e63 100%);
+
+  --bg: #f7f8fa;
+  --fill-1: #f7f8fa;
+  --fill-2: #eef0f3;
+  --card: #ffffff;
+  --border: #eef0f3;
+  --border-strong: #e2e5ea;
+
+  --text: #1f2329;
+  --text-2: #51565d;
+  --text-3: #8a9199;
+  --text-invert: #ffffff;
+
+  --ok: #16b364;
+  --warn: #f0a020;
+  --danger: #e5484d;
+  --info: #3b82f6;
+
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --radius-input: 8px;
+  --shadow-card: 0 2px 12px rgba(20, 24, 30, 0.06);
+  --shadow-pop: 0 8px 30px rgba(20, 24, 30, 0.14);
+
+  --sidebar-w: 220px;
+  --topbar-h: 64px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; font-size: 14px; }
+
+/* ---------- 通用布局 ---------- */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- 顶部栏 ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  max-width: 1440px; margin: 0 auto; padding: 0 24px;
+  height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-logo {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--brand-grad);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 16px;
+}
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-divider { width: 1px; height: 16px; background: var(--border-strong); }
+.topbar-sub { font-size: 13px; color: var(--text-3); }
+.topbar-switch { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; font-size: 13px; color: var(--brand); border: 1px solid var(--brand); border-radius: 4px; cursor: pointer; text-decoration: none; margin-left: 2px; }
+.topbar-switch:hover { background: var(--brand); color: #fff; }
+
+.topbar-right { display: flex; align-items: center; gap: 20px; }
+.topbar-icon {
+  width: 20px; height: 20px; color: var(--text-2);
+  position: relative; display: flex; align-items: center;
+}
+.topbar-icon .dot {
+  position: absolute; top: -2px; right: -2px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--brand);
+  border: 1.5px solid #fff;
+}
+.topbar-user { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.topbar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--brand-grad); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.topbar-name { font-size: 14px; color: var(--text); }
+.topbar-caret { width: 14px; height: 14px; color: var(--text-3); }
+
+/* ---------- 主体框架：侧边菜单 + 内容 ---------- */
+.layout {
+  display: flex; min-height: calc(100vh - var(--topbar-h));
+  max-width: 1440px; margin: 0 auto;
+}
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  padding: 20px 12px;
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; margin-bottom: 4px;
+  border-radius: 8px; color: var(--text-2);
+  font-size: 14px; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.sidebar-item:hover { background: var(--fill-2); color: var(--text); }
+.sidebar-item.active {
+  background: var(--brand-weak); color: var(--brand); font-weight: 600;
+}
+.sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-item .arrow { margin-left: auto; width: 14px; height: 14px; transition: transform .2s; }
+
+/* 目录分组：子菜单默认收起，展开后箭头旋转 */
+.sidebar-group .sidebar-sub { display: none; padding-left: 28px; }
+.sidebar-group.open .sidebar-sub { display: block; }
+.sidebar-group.open .arrow { transform: rotate(180deg); }
+.sidebar-sub .sidebar-item { padding: 9px 14px; font-size: 13px; }
+
+.content {
+  flex: 1; min-width: 0;
+  padding: 24px 32px 48px;
+}
+
+/* ---------- 页面标题 ---------- */
+.page-head { margin-bottom: 20px; }
+.page-title { font-size: 20px; font-weight: 700; }
+.page-desc { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--card); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.card + .card { margin-top: 0; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 20px; border-radius: var(--radius-btn);
+  font-size: 14px; font-weight: 500; line-height: 1;
+  transition: all .15s; white-space: nowrap;
+}
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-dark); }
+.btn-outline { border: 1px solid var(--border-strong); color: var(--text-2); background: #fff; }
+.btn-outline:hover { border-color: var(--brand); color: var(--brand); }
+.btn-text { color: var(--brand); padding: 9px 12px; }
+.btn-text:hover { background: var(--brand-weak); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: .9; }
+.btn-plain { background: var(--fill-2); color: var(--text-2); }
+.btn-plain:hover { background: var(--border-strong); }
+.btn-ghost { color: var(--brand); }
+.btn-block { width: 100%; }
+.btn-lg { padding: 12px 28px; font-size: 15px; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---------- 表单 ---------- */
+.form-item { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+.form-label .req { color: var(--danger); margin-left: 2px; }
+.form-input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  background: #fff; color: var(--text); outline: none;
+  transition: border .15s, box-shadow .15s;
+}
+.form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-weak); }
+.form-input::placeholder { color: var(--text-3); }
+textarea.form-input { resize: vertical; min-height: 90px; }
+.form-row { display: flex; gap: 12px; }
+.form-row > * { flex: 1; }
+.form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+
+/* 验证码输入 */
+.code-wrap { display: flex; gap: 10px; }
+.code-wrap .form-input { flex: 1; }
+.code-btn {
+  flex-shrink: 0; min-width: 110px; padding: 0 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-input);
+  color: var(--brand); font-size: 13px; background: #fff;
+}
+.code-btn:disabled { color: var(--text-3); cursor: not-allowed; }
+
+/* ---------- 状态徽标 ---------- */
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; line-height: 1.5;
+}
+.tag-gray { background: #f0f1f3; color: #6b7280; }
+.tag-blue { background: #e8f1ff; color: #2f6bdc; }
+.tag-red { background: #fdeaea; color: #d13a3f; }
+.tag-orange { background: #fff3e0; color: #e8840a; }
+.tag-green { background: #e6f7ef; color: #149a5a; }
+.tag-pink { background: var(--brand-light); color: var(--brand); }
+.tag-dark { background: #3a3f45; color: #fff; }
+
+/* ---------- 表格 ---------- */
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td {
+  text-align: center; padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.table th { color: var(--text-3); font-weight: 500; background: #fafbfc; white-space: nowrap; }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: #fafbfc; }
+.table .cell-title { color: var(--text); font-weight: 500; }
+
+/* 表格固定列（水平滚动时锁定） */
+.table th.sticky-l, .table td.sticky-l { position: sticky; left: 0; z-index: 2; background: #fff; }
+.table th.sticky-l2, .table td.sticky-l2 { position: sticky; left: 40px; z-index: 2; background: #fff; }
+.table th.sticky-r, .table td.sticky-r { position: sticky; right: 0; z-index: 2; background: #fff; }
+.table th.sticky-l, .table th.sticky-l2, .table th.sticky-r { background: #fafbfc; z-index: 3; }
+.table tbody tr:hover td.sticky-l,
+.table tbody tr:hover td.sticky-l2,
+.table tbody tr:hover td.sticky-r { background: #fafbfc; }
+.table td.sticky-l2 { box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+.table td.sticky-r, .table th.sticky-r { box-shadow: -2px 0 4px rgba(0,0,0,.06); }
+
+/* ---------- 弹窗 ---------- */
+.modal-mask {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20, 24, 30, 0.45);
+  display: none; align-items: center; justify-content: center;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; width: 460px; max-width: 92vw;
+  max-height: 88vh; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-pop);
+  animation: pop .18s ease;
+}
+.modal-head {
+  padding: 24px 24px 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.modal-body {
+  padding: 0 24px; overflow-y: auto; flex: 1;
+}
+.modal-foot {
+  padding: 16px 24px 24px; flex-shrink: 0;
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;
+}
+.modal-lg { width: 620px; }
+@keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { width: 20px; height: 20px; color: var(--text-3); cursor: pointer; }
+
+/* ---------- 空状态 / 提示 ---------- */
+.empty {
+  text-align: center; padding: 48px 20px; color: var(--text-3);
+}
+.empty .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+.empty .empty-text { font-size: 14px; }
+
+/* ---------- 提示条 ---------- */
+.notice {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 16px; border-radius: 10px; font-size: 13px;
+  margin-bottom: 16px;
+}
+.notice-info { background: #e8f1ff; color: #2f6bdc; }
+.notice-warn { background: #fff3e0; color: #e8840a; }
+.notice-success { background: #e6f7ef; color: #149a5a; }
+.notice svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ---------- 步骤条 ---------- */
+.steps { display: flex; align-items: center; margin-bottom: 24px; }
+.step { display: flex; align-items: center; gap: 8px; }
+.step-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  background: var(--fill-2); color: var(--text-3);
+}
+.step.active .step-dot { background: var(--brand); color: #fff; }
+.step.done .step-dot { background: var(--ok); color: #fff; }
+.step-label { font-size: 13px; color: var(--text-3); }
+.step.active .step-label { color: var(--text); font-weight: 600; }
+.step.done .step-label { color: var(--text-2); }
+.step-line { flex: 1; height: 2px; background: var(--border-strong); margin: 0 12px; }
+.step-line.done { background: var(--ok); }
+
+/* ---------- 辅助 ---------- */
+.row { display: flex; align-items: center; gap: 12px; }
+.between { display: flex; align-items: center; justify-content: space-between; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; } .mb-24 { margin-bottom: 24px; }
+.text-3 { color: var(--text-3); } .text-2 { color: var(--text-2); }
+.text-brand { color: var(--brand); } .text-ok { color: var(--ok); } .text-danger { color: var(--danger); }
+.fs-12 { font-size: 12px; } .fs-13 { font-size: 13px; }
+.mono { font-variant-numeric: tabular-nums; }
+
+/* 统计卡 */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 20px 22px; }
+.stat-label { font-size: 13px; color: var(--text-3); }
+.stat-value { font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.stat-value .unit { font-size: 14px; font-weight: 400; color: var(--text-3); margin-left: 2px; }
+.stat-trend { font-size: 12px; margin-top: 4px; }
+
+/* 用户下拉菜单 */
+.user-menu {
+  position: absolute; top: var(--topbar-h); right: 24px; z-index: 150;
+  background: #fff; border-radius: 10px; box-shadow: var(--shadow-pop);
+  min-width: 140px; padding: 6px; overflow: hidden;
+}
+.user-menu a, .user-menu .logout-link {
+  display: block; padding: 9px 14px; border-radius: 6px;
+  font-size: 13px; color: var(--text-2);
+}
+.user-menu a:hover, .user-menu .logout-link:hover { background: var(--brand-weak); color: var(--brand); }
+
+/* toast */
+#toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 300; background: #fff; color: var(--text);
+  padding: 10px 20px; border-radius: 8px; box-shadow: var(--shadow-pop);
+  font-size: 14px; display: none;
+}
+#toast.show { display: block; animation: pop .2s ease; }
+
+/* ===== 时间范围（高仿 antd RangePicker，公共组件） ===== */
+.rp-wrap { position: relative; }
+.rp-box {
+  height: 32px; width: 320px; padding: 4px 11px; border: 1px solid #d9d9d9;
+  border-radius: 6px; background: #fff; display: flex; align-items: center; cursor: pointer; transition: all .2s;
+}
+.rp-box:hover { border-color: var(--brand); }
+.rp-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-val { flex: 1; font-size: 14px; color: var(--text); text-align: center; font-variant-numeric: tabular-nums; }
+.rp-val.ph { color: #bfbfbf; }
+.rp-sep { margin: 0 6px; color: var(--text-3); font-size: 14px; }
+.rp-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  display: none; overflow: hidden; width: 560px;
+}
+.rp-panel.show { display: flex; }
+.rp-presets { width: 130px; border-right: 1px solid var(--border); padding: 8px 0; flex-shrink: 0; }
+.rp-preset { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.rp-preset:hover { background: var(--brand-weak); color: var(--brand); }
+.rp-main { flex: 1; padding: 12px; display: flex; flex-direction: column; }
+.rp-inputs { display: flex; gap: 8px; margin-bottom: 12px; }
+.rp-inputs input { flex: 1; height: 30px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; }
+.rp-inputs input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.rp-cal-wrap { display: flex; gap: 16px; }
+.rp-cal { flex: 1; }
+.rp-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.rp-cal-title { font-size: 13px; font-weight: 600; }
+.rp-nav { display: flex; gap: 4px; }
+.rp-nav button { width: 22px; height: 22px; border: none; background: none; cursor: pointer; color: var(--text-3); border-radius: 4px; font-size: 12px; }
+.rp-nav button:hover { background: #f5f5f5; color: var(--text); }
+.rp-week { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+.rp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.rp-day {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--text); cursor: pointer; border-radius: 4px;
+}
+.rp-day:hover { background: var(--brand-weak); }
+.rp-day.other { color: #bfbfbf; }
+.rp-day.in-range { background: rgba(255,46,99,.1); }
+.rp-day.start, .rp-day.end { background: var(--brand); color: #fff; }
+.rp-day.disabled { color: #d9d9d9; cursor: not-allowed; }
+
+/* ===== 筛选区折叠项 ===== */
+.filter-extra { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ===== 联想输入 ===== */
+.autocomplete { position: relative; }
+.autocomplete .ac-panel {
+  position: fixed; z-index: 400;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  border: 1px solid var(--border); max-height: 220px; overflow-y: auto; display: none;
+}
+.autocomplete .ac-panel.show { display: block; }
+.ac-opt { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.ac-opt:hover { background: var(--brand-weak); color: var(--brand); }
+.ac-opt .hl { color: var(--brand); font-weight: 600; }
+.ac-empty { padding: 12px 14px; font-size: 13px; color: var(--text-3); }
+
+/* ===== 列表多选框 ===== */
+.cb-col { width: 40px; text-align: center; }
+.cb-col input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--brand); }
+
+/* ===== 下拉多选（高仿 antd Select multiple） ===== */
+.ms-wrap { position: relative; }
+.ms-box {
+  min-height: 32px; width: 180px; padding: 2px 28px 2px 6px;
+  border: 1px solid #d9d9d9; border-radius: 6px; background: #fff; cursor: pointer;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 3px; transition: all .2s;
+  position: relative;
+}
+.ms-box:hover { border-color: var(--brand); }
+.ms-box.open { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+.ms-placeholder { color: #bfbfbf; font-size: 14px; padding: 0 5px; }
+.ms-tag {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 6px;
+  background: #fafafa; border: 1px solid #d9d9d9; border-radius: 4px;
+  font-size: 12px; color: var(--text-2); margin: 1px 0;
+}
+.ms-tag .ms-x { margin-left: 4px; color: #999; cursor: pointer; font-size: 12px; line-height: 1; }
+.ms-tag .ms-x:hover { color: var(--brand); }
+.ms-tag.more { background: #fff; border-style: dashed; color: var(--text-3); }
+.ms-arrow { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: #bfbfbf; pointer-events: none; transition: transform .2s; display: flex; }
+.ms-box.open .ms-arrow { transform: translateY(-50%) rotate(180deg); }
+.ms-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; width: 100%;
+  background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  padding: 4px; display: none; max-height: 260px; overflow-y: auto;
+}
+.ms-panel.show { display: block; }
+.ms-opt {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border-radius: 4px; font-size: 14px; cursor: pointer; color: var(--text-2); transition: background .15s;
+}
+.ms-opt:hover { background: #f5f5f5; }
+.ms-opt .opt-check { width: 16px; text-align: center; color: var(--brand); font-weight: 700; visibility: hidden; }
+.ms-opt.checked .opt-check { visibility: visible; }
+.ms-opt.checked { color: var(--brand); font-weight: 600; }
+
+/* 操作列表头居中 */
+.th-op { text-align: center; }
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+  /* ===== 合作商管理 ===== */
+  /* 分成策略详情卡片 */
+  .pm-strategy-detail { margin-top: 10px; }
+  .pm-strategy-detail:empty { margin-top: 0; }
+  .sp-mode-card { background: #f5f7fa; border: 1px solid #e8ebf0; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+  .sp-mode-card:last-child { margin-bottom: 0; }
+  .sp-mode-card.card-iaa { background: var(--brand-light); border-color: #ffe0e8; }
+  .sp-mode-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .sp-mode-name { font-size: 11px; color: var(--text-3); }
+  .sp-way { font-size: 13px; color: var(--text); }
+  .sp-chan { font-size: 12px; padding: 1px 8px; border-radius: 4px; background: #e8f1ff; color: #2f6bdc; }
+  .card-iaa .sp-chan { background: #fff; color: var(--brand); }
+  .sp-ratio { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+  .pm-strategy-name { font-size: 13px; color: var(--text); margin-bottom: 6px; }
+  .pm-strategy-name b { font-weight: 600; }
+
+  /* 15 列固定宽度总和 1752，超出容器时横向滚动而不是压缩列宽 */
+  #pmTable { width: 1752px; }
+  .pm-modal { display: flex; gap: 26px; }
+  .pm-col { flex: 1; min-width: 0; }
+  .pm-col-right { flex: 0 0 400px; }
+  .pm-field { margin-bottom: 16px; }
+  .pm-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+  .pm-label .req { color: var(--danger); margin-left: 2px; }
+  .pm-input {
+    width: 100%; height: 34px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 6px;
+    font-size: 13px; color: var(--text); background: #fff; outline: none; box-sizing: border-box; font-family: inherit;
+  }
+  .pm-input:focus { border-color: var(--brand); }
+  .pm-input:disabled { background: #f4f5f7; color: var(--text-3); }
+  .pm-textarea { height: 84px; padding: 8px 10px; resize: vertical; line-height: 1.6; }
+  .pm-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; line-height: 1.5; }
+  .pm-file-name.danger { color: var(--danger); }
+  .pm-count { text-align: right; font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .pm-radio { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .pm-radio label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+  .pm-radio input, .pm-chk input, .pm-iap input { accent-color: var(--brand); cursor: pointer; }
+  .pm-box { border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .pm-iap-row { border-top: 1px dashed var(--border-strong); margin-top: 14px; padding-top: 12px; }
+  .pm-iap { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+  .pm-chk { display: flex; gap: 16px; flex-wrap: wrap; }
+  .pm-chk label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+  .pm-name { font-size: 13px; line-height: 1.5; }
+  .pm-split { text-align: left; }
+  .pm-modes { display: flex; gap: 4px; }
+  .pm-way { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  #pmTable .sticky-r { border-left: 1px solid var(--border-strong); }
+  .pm-ops .op-link { display: inline-block; margin-left: 8px; }
+  .pm-ops .op-link:first-child { margin-left: 0; }
+  .pm-log { margin-top: 12px; }
+  .pm-log-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .pm-log-item:last-child { border-bottom: none; }
+  .pm-log-time { font-size: 12px; color: var(--text-3); }
+  .pm-log-act { font-size: 13px; color: var(--text); margin-top: 2px; }
+  .tag-green { background: #e8f8ee; color: #16a34a; }
+</style>
+<style>  .page-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .page-tab { padding: 10px 20px; font-size: 14px; color: var(--text-3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
+  .page-tab.active { color: var(--brand); font-weight: 600; border-bottom-color: var(--brand); }
+  .page-tab:hover { color: var(--brand); }
+  .page-tab .tab-count { display: inline-block; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; background: var(--fill-2); border-radius: 9px; font-size: 12px; line-height: 18px; text-align: center; color: var(--text-3); }
+  .page-tab.active .tab-count { background: var(--brand-weak); color: var(--brand); }
+
+  .filter-box { background: #fafbfc; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 4px; margin-bottom: 16px; }
+  .filter-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .search-panel { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .search-item { display: flex; flex-direction: column; gap: 6px; }
+  .search-item label { font-size: 12px; color: var(--text-3); }
+  .ant-input { height: 32px; padding: 4px 11px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; color: var(--text); outline: none; background: #fff; transition: all .2s; }
+  .ant-input:hover { border-color: var(--brand); }
+  .ant-input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(255,46,99,.1); }
+  .ant-input::placeholder { color: #bfbfbf; }
+  textarea.ant-input { height: auto; padding: 8px 11px; resize: vertical; min-height: 80px; width: 100%; }
+  .filter-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-shrink: 0; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); padding-bottom: 12px; }
+
+  .op-link { font-size: 13px; color: var(--brand); cursor: pointer; margin-right: 12px; }
+  .op-link:hover { text-decoration: underline; }
+  .op-link.danger { color: var(--danger); }
+  .op-link.ok { color: var(--ok); }
+  .op-link.gray { color: var(--text-3); }
+  .op-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .op-col .op-link { margin-right: 0; white-space: nowrap; }
+
+  .cell-main { font-size: 14px; font-weight: 500; color: var(--text); }
+  .cell-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .account-cell { cursor: pointer; }
+  .account-cell .cell-main { color: var(--brand); }
+  .account-cell:hover .cell-main { text-decoration: underline; }
+
+  .table-wrap { overflow-x: auto; }
+  .table { min-width: 1180px; }
+
+  .cert-block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .cert-block-body { padding: 14px 16px; }
+  .cert-field { display: flex; padding: 7px 0; font-size: 13px; }
+  .cert-field .f-label { width: 120px; color: var(--text-3); flex-shrink: 0; }
+  .cert-field .f-value { flex: 1; color: var(--text); word-break: break-all; }
+  .cert-empty { padding: 20px; text-align: center; color: var(--text-3); font-size: 13px; }
+  .acct-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; padding: 14px 16px; background: var(--fill-1); border-radius: 10px; margin-bottom: 16px; }
+  .acct-info .ai-item { display: flex; font-size: 13px; }
+  .acct-info .ai-label { width: 80px; color: var(--text-3); flex-shrink: 0; }
+  .acct-info .ai-value { color: var(--text); font-weight: 500; }
+
+  .form-item { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+  .form-label .req { color: var(--danger); margin-left: 2px; }
+  .char-count { text-align: right; font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+  .batch-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .batch-bar .sel-info { font-size: 13px; color: var(--text-2); }
+  .batch-bar .sel-info b { color: var(--brand); }
+
+  /* ===== 人员配置页局部 ===== */
+  .filter-box { padding-bottom: 18px; }
+  .list-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .table { min-width: 0; }
+
+  /* 分页 */
+  .pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  .pager .pg-total { font-size: 13px; color: var(--text-3); }
+  .pager .pg-list { display: flex; align-items: center; gap: 6px; }
+  .pg-btn {
+    min-width: 32px; height: 32px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-strong); border-radius: 6px; background: #fff; color: var(--text-2);
+    font-size: 13px; cursor: pointer; transition: all .15s;
+  }
+  .pg-btn:hover { border-color: var(--brand); color: var(--brand); }
+  .pg-btn.active { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
+  .pg-btn:disabled { color: #c8ccd2; border-color: var(--border); cursor: not-allowed; background: #fafbfc; }
+</style>
+</head>
+<body>
+<div id="topbar-root"></div>
+<div class="layout">
+  <div id="sidebar-root"></div>
+  <div class="content">
+    <div class="page-head">
+      <div class="page-title">合作商管理</div>
+      <div class="page-desc">管理合作商合同配置：保底规则、分成模式与结算方式</div>
+    </div>
+
+    <div class="card">
+      <div class="filter-box">
+        <div class="filter-row">
+          <div class="search-panel">
+            <div class="search-item">
+              <label>合同编号</label>
+              <input type="text" class="ant-input" id="searchNo" placeholder="请输入合同编号" style="width:180px">
+            </div>
+            <div class="search-item">
+              <label>备注</label>
+              <input type="text" class="ant-input" id="searchRemark" placeholder="请输入备注" style="width:220px">
+            </div>
+          </div>
+          <div class="filter-actions" style="margin:0;padding:0;border:none">
+            <button class="btn btn-primary" onclick="search()">查询</button>
+            <button class="btn btn-outline" onclick="resetSearch()">重置</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-bar">
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" onclick="openAdd()">+ 新增</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table" id="pmTable">
+          <thead>
+            <tr>
+              <th style="width:78px">合作ID</th>
+              <th style="width:124px">合同编号</th>
+              <th style="width:150px;white-space:normal">合同名称</th>
+              <th style="width:96px">保底规则</th>
+              <th style="width:110px">保底金额/美元</th>
+              <th style="width:176px">分成渠道及详情</th>
+              <th style="width:96px">是否扣除保底</th>
+              <th style="width:96px">结算方式</th>
+              <th style="width:140px;white-space:normal">对方主体</th>
+              <th style="width:140px;white-space:normal">我方主体</th>
+              <th style="width:96px">结算单语言</th>
+              <th style="width:88px">合同</th>
+              <th style="width:110px;white-space:normal">备注</th>
+              <th style="width:140px">添加时间</th>
+              <th class="sticky-r" style="width:112px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="pmList"></tbody>
+        </table>
+      </div>
+
+      <div class="pager" id="pager"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 新增 / 编辑合同 -->
+<div class="modal-mask" id="pmModal">
+  <div class="modal" style="width:960px;max-width:95vw;max-height:92vh">
+    <div class="modal-head">
+      <div class="modal-title" id="pmTitle">新增合同</div>
+      <span class="modal-close" onclick="closeModal('pmModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body">
+      <div class="pm-modal">
+        <!-- 左列 -->
+        <div class="pm-col">
+          <div class="pm-field">
+            <label class="pm-label">合同编号<span class="req">*</span></label>
+            <input type="text" class="pm-input" id="pmNo" placeholder="请输入合同编号">
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">合同名称<span class="req">*</span></label>
+            <input type="text" class="pm-input" id="pmName" placeholder="请输入合同名称">
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">对方主体<span class="req">*</span></label>
+            <select class="pm-input" id="pmPartner">
+              <option value="">请选择合同商主体</option>
+            </select>
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">我方主体</label>
+            <input type="text" class="pm-input" id="pmOurs" value="杭州织光映画科技有限公司" disabled>
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">结算方式<span class="req">*</span></label>
+            <select class="pm-input" id="pmSettle">
+              <option value="">请选择结算方式</option>
+              <option>按月结算</option>
+              <option>按季结算</option>
+              <option>按年结算</option>
+            </select>
+            <div class="pm-hint">分成周期已不在合同配置中填写，由剧本短剧关联决定。</div>
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">结算单语种</label>
+            <input type="text" class="pm-input" id="pmLang" value="中文" disabled>
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">上传合同<span class="req">*</span></label>
+            <button class="btn btn-primary btn-sm" onclick="pickFile()">点击上传</button>
+            <input type="file" id="pmFile" accept=".pdf" style="display:none" onchange="onFilePicked(event)">
+            <div class="pm-hint pm-file-name danger" id="pmFileName">请上传 pdf 格式</div>
+          </div>
+          <div class="pm-field" style="margin-bottom:0">
+            <label class="pm-label">备注</label>
+            <textarea class="pm-input pm-textarea" id="pmRemark" maxlength="200" placeholder="请输入备注" oninput="updateRemarkCount()"></textarea>
+            <div class="pm-count" id="pmRemarkCount">0 / 200</div>
+          </div>
+        </div>
+
+        <!-- 右列 -->
+        <div class="pm-col pm-col-right">
+          <div class="pm-field">
+            <label class="pm-label">保底规则<span class="req">*</span></label>
+            <div class="pm-radio" id="pmDepositRule">
+              <label><input type="radio" name="pmDeposit" value="无保底" onchange="onDepositChange()">无保底</label>
+              <label><input type="radio" name="pmDeposit" value="共用保底" onchange="onDepositChange()">共用保底</label>
+              <label><input type="radio" name="pmDeposit" value="独立保底" onchange="onDepositChange()">独立保底</label>
+            </div>
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">保底金额(美元)</label>
+            <input type="text" class="pm-input" id="pmDepositAmount" placeholder="请输入保底金额" disabled>
+          </div>
+
+          <div class="pm-field" style="margin-bottom:0">
+            <label class="pm-label">分成策略<span class="req">*</span></label>
+            <select class="pm-input" id="pmStrategy" onchange="onStrategyChange()">
+              <option value="">请选择分成策略</option>
+            </select>
+            <div class="pm-strategy-detail" id="pmStrategyDetail"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('pmModal')">取消</button>
+      <button class="btn btn-primary" onclick="savePartner()">确定保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 操作记录 -->
+<div class="modal-mask" id="logModal">
+  <div class="modal" style="width:520px">
+    <div class="modal-head">
+      <div class="modal-title">操作记录</div>
+      <span class="modal-close" onclick="closeModal('logModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </div>
+    <div class="modal-body" id="logBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('logModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>var ICONS = {
+  accounts: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 8.5h4M15 6.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
+  contracts: '<svg viewBox="0 0 20 20" fill="none"><path d="M6 3h6l3 3v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v3h3M8 10h4M8 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  works: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 3 14.5v-9Z" stroke="currentColor" stroke-width="1.5"/><path d="m7 12 2.5-2.5L12 12l1.5-1.5L15 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  settlement: '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  config: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 3.5v2M10 14.5v2M3.5 10h2M14.5 10h2M5.4 5.4l1.4 1.4M13.2 13.2l1.4 1.4M14.6 5.4l-1.4 1.4M6.8 13.2l-1.4 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  personnel: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  earnings: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 16.5V9M8 16.5V4M13 16.5v-5M18 16.5v-9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  partners: '<svg viewBox="0 0 20 20" fill="none"><path d="M3 17V6.5L10 3l7 3.5V17" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 17v-4.5h5V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 8.5h.01M10 8.5h.01M13.5 8.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  strategies: '<svg viewBox="0 0 20 20" fill="none"><path d="M10.5 3H4a1 1 0 0 0-1 1v6.5L10.3 18l7.5-7.5L10.5 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6.6" cy="6.6" r="1.2" fill="currentColor"/></svg>',
+  down: '<svg viewBox="0 0 20 20" fill="none"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+function icon(name) { return ICONS[name] || ''; }
+
+function renderTopbar(opts) {
+  opts = opts || {};
+  var userName = opts.userName || '运营管理员';
+  var avatar = opts.avatar || '运';
+  return '' +
+  '<div class="topbar">' +
+    '<div class="topbar-inner">' +
+      '<div class="topbar-left">' +
+        '<a href="javascript:void(0)" class="row" style="gap:12px">' +
+          '<div class="topbar-logo">短</div>' +
+          '<span class="topbar-title">版权开放平台</span>' +
+        '</a>' +
+        '<div class="topbar-divider"></div>' +
+        '<span class="topbar-sub">运营后台</span>' +
+        '<a class="topbar-switch" href="../workbench.html">内容合作方</a>' +
+      '</div>' +
+      '<div class="topbar-right">' +
+        '<div class="topbar-user">' +
+          '<div class="topbar-avatar">' + avatar + '</div>' +
+          '<span class="topbar-name">' + userName + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderSidebar(active) {
+  var items = [
+    { key: 'accounts', label: '主体认证', href: 'accounts.html' },
+    { key: 'contracts', label: '合同列表', href: 'contracts.html' },
+    { key: 'partners', label: '合作商管理', href: 'partners.html' },
+    { key: 'strategies', label: '分成策略', href: 'strategies.html' },
+    { key: 'earnings', label: '收益明细', href: 'earnings.html' },
+    { key: 'config', label: '系统配置', sub: [
+        { key: 'personnel', label: '人员配置', href: 'personnel.html' }
+      ] }
+  ];
+  var html = '<div class="sidebar">';
+  items.forEach(function (it) {
+    var childActiveKey = null;
+    if (it.sub) {
+      it.sub.forEach(function (s) { if (s.key === active) childActiveKey = s.key; });
+    }
+    var isGroup = !!it.sub && it.sub.length;
+    var isGroupOpen = childActiveKey !== null;
+    if (isGroup) {
+      html += '<div class="sidebar-group' + (isGroupOpen ? ' open' : '') + '">' +
+        '<div class="sidebar-item' + (childActiveKey !== null ? ' active' : '') + '" onclick="toggleSidebarGroup(this)">' +
+          icon(it.key) + '<span>' + it.label + '</span>' +
+          '<span class="arrow">' + icon('down') + '</span>' +
+        '</div>' +
+        '<div class="sidebar-sub">' + it.sub.map(function (s) {
+          return '<a class="sidebar-item' + (s.key === active ? ' active' : '') + '" href="' + s.href + '">' + s.label + '</a>';
+        }).join('') + '</div>' +
+      '</div>';
+    } else {
+      html += '<a class="sidebar-item' + (it.key === active ? ' active' : '') + '" href="' + it.href + '">' +
+        icon(it.key) + '<span>' + it.label + '</span>' +
+      '</a>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleSidebarGroup(el) {
+  var group = el.parentElement;
+  group.classList.toggle('open');
+}
+
+// ---------- Toast ----------
+function showToast(msg, type) {
+  var el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.className = 'toast show' + (type === 'err' ? ' toast-err' : '');
+  clearTimeout(el._tm);
+  el._tm = setTimeout(function () { el.className = 'toast'; }, 2000);
+}
+
+// ---------- 弹窗 ----------
+function openModal(id) { var m = document.getElementById(id); if (m) m.classList.add('show'); }
+function closeModal(id) { var m = document.getElementById(id); if (m) m.classList.remove('show'); }
+
+// 联想输入单选：acInput(inputId, panelId, hiddenId, options, emptyText)
+function acInput(inputId, panelId, hiddenId, options, emptyText) {
+  var input = document.getElementById(inputId);
+  var panel = document.getElementById(panelId);
+  var kw = input.value.trim();
+  var matches = options.filter(function (o) { return o.indexOf(kw) !== -1; });
+
+  if (matches.length === 0) {
+    panel.innerHTML = '<div class="ac-empty">' + (emptyText || '无匹配项') + '</div>';
+  } else {
+    panel.innerHTML = matches.map(function (o) {
+      var idx = o.indexOf(kw);
+      var label = kw ? o.slice(0, idx) + '<span class="hl">' + o.slice(idx, idx + kw.length) + '</span>' + o.slice(idx + kw.length) : o;
+      return '<div class="ac-opt" onclick="acSelect(\'' + inputId + '\',\'' + panelId + '\',\'' + hiddenId + '\',\'' + o + '\')">' + label + '</div>';
+    }).join('');
+  }
+
+  var rect = input.getBoundingClientRect();
+  panel.style.left = rect.left + 'px';
+  panel.style.top = (rect.bottom + 4) + 'px';
+  panel.style.width = rect.width + 'px';
+  panel.classList.add('show');
+}
+function acSelect(inputId, panelId, hiddenId, value) {
+  document.getElementById(inputId).value = value;
+  if (hiddenId) document.getElementById(hiddenId).value = value;
+  document.getElementById(panelId).classList.remove('show');
+}
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('.autocomplete')) document.querySelectorAll('.ac-panel').forEach(function (p) { p.classList.remove('show'); });
+});</script>
+<script>
+  // ===================== 演示数据 =====================
+  var PAGE_SIZE = 10;
+  var currentPage = 1;
+  var MY_COMPANY = '杭州织光映画科技有限公司';
+  var PARTNERS = ['河南松快传网络科技有限公司', '杭州光影映华文化传媒有限公司', '北京星野影视文化有限公司'];
+
+  var DEMO_PM = [
+    {
+      id: '636', no: 'HW-20260426-083DN',
+      name: '动态漫作品许可、发行及译制合作协议',
+      depositRule: '共用保底', depositAmount: '3646.330',
+      strategyId: 'SP1001', strategyName: '制作分成标准A',
+      deduct: '是', settle: '按季结算',
+      partner: '河南松快传网络科技有限公司', ours: MY_COMPANY,
+      lang: '中文', contract: '动态漫作品许可、发行及译制合作协议.pdf',
+      remark: '首季保底结算', addTime: '2026-04-26 10:20:00'
+    },
+    {
+      id: '635', no: 'HW-20260426-082DN',
+      name: '短剧作品许可、发行及译制合作协议',
+      depositRule: '独立保底', depositAmount: '5200.000',
+      strategyId: 'SP1002', strategyName: '剧本分成标准B',
+      deduct: '是', settle: '按月结算',
+      partner: '杭州光影映华文化传媒有限公司', ours: MY_COMPANY,
+      lang: '中文', contract: '短剧作品许可协议_光影.pdf',
+      remark: '', addTime: '2026-04-26 10:18:00'
+    },
+    {
+      id: '634', no: 'HW-20260420-076DN',
+      name: '微短剧承制合作协议',
+      depositRule: '无保底', depositAmount: '0.000',
+      strategyId: 'SP1001', strategyName: '制作分成标准A',
+      deduct: '否', settle: '按季结算',
+      partner: '北京星野影视文化有限公司', ours: MY_COMPANY,
+      lang: '中文', contract: '微短剧承制合作协议_星野.pdf',
+      remark: '无保底，按实际分账', addTime: '2026-04-20 16:42:00'
+    }
+  ];
+
+  var PM_LOGS = {
+    '636': [
+      { time: '2026-04-26 10:20:00', user: '春明', action: '新增合同配置' },
+      { time: '2026-04-28 09:15:00', user: '春明', action: '修改保底金额：3000.000 → 3646.330' }
+    ],
+    '635': [
+      { time: '2026-04-26 10:18:00', user: '春明', action: '新增合同配置' }
+    ],
+    '634': [
+      { time: '2026-04-20 16:42:00', user: '春明', action: '新增合同配置' },
+      { time: '2026-04-21 11:03:00', user: '禾呈', action: '修改结算方式：按月结算 → 按季结算' }
+    ]
+  };
+
+  // ===================== 分成策略数据源（与「分成策略」页共用 localStorage） =====================
+  var SP_LS_KEY = 'cp_split_strategies';
+  var SP_SEED = [
+    {
+      id: 'SP1001', name: '制作分成标准A',
+      modes: {
+        IAP: { way: '保底+净利润分成', ratio: 4, chans: ['APP'], subs: ['NetShort', 'FreeShort', 'HopReel', 'NetToon', 'FavorDrama'] },
+        IAA: { way: '保底+流水分成', ratio: 5, chans: ['APP'], subs: ['NetShort'] }
+      }
+    },
+    {
+      id: 'SP1002', name: '剧本分成标准B',
+      modes: {
+        IAP: { way: '保底+消耗分成', ratio: 8, chans: ['TT小程序'], subs: [] },
+        IAA: { way: '保底+热度值分成', ratio: 12, chans: ['APP', 'H5'], subs: ['HopReel', 'NetToon'] }
+      }
+    }
+  ];
+  function loadStrategyList() {
+    try {
+      var raw = localStorage.getItem(SP_LS_KEY);
+      if (raw) {
+        var arr = JSON.parse(raw);
+        if (arr && arr.length) return arr;
+      }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(SP_SEED));
+  }
+  var STRATEGIES = loadStrategyList();
+  function findStrategy(id) {
+    return STRATEGIES.filter(function (x) { return x.id === id; })[0];
+  }
+  function fmtWay(w) { return (w || '').replace('+', ' + '); }
+  function chanLabel(c) {
+    if (c === 'APP') return 'app';
+    if (c === 'TT小程序') return 'tt小程序';
+    if (c === 'H5') return 'h5';
+    return c;
+  }
+  function modeCards(modes) {
+    if (!modes) return '<div class="pm-way">策略已删除</div>';
+    var out = '';
+    ['IAP', 'IAA'].forEach(function (m) {
+      var x = modes[m];
+      if (!x) return;
+      var tags = (x.chans || []).map(function (c) { return '<span class="sp-chan">' + chanLabel(c) + '</span>'; }).join('');
+      out += '<div class="sp-mode-card ' + (m === 'IAP' ? 'card-iap' : 'card-iaa') + '">' +
+        '<div class="sp-mode-top"><span class="sp-mode-name">' + m + '</span><span class="sp-way">' + fmtWay(x.way) + '</span>' + tags + '</div>' +
+        '<div class="sp-ratio">' + x.ratio + '%</div>' +
+      '</div>';
+    });
+    return out;
+  }
+
+  var pmState = { id: null, file: '' };
+
+  // ===================== 列表 =====================
+  function filteredList() {
+    var no = document.getElementById('searchNo').value.trim();
+    var rk = document.getElementById('searchRemark').value.trim();
+    return DEMO_PM.filter(function (p) {
+      if (no && p.no.indexOf(no) === -1) return false;
+      if (rk && (p.remark || '').indexOf(rk) === -1) return false;
+      return true;
+    });
+  }
+
+  function depositTag(rule) {
+    if (rule === '无保底') return '<span class="tag tag-gray">无保底</span>';
+    if (rule === '独立保底') return '<span class="tag tag-pink">独立保底</span>';
+    return '<span class="tag tag-orange">共用保底</span>';
+  }
+
+  function renderList() {
+    var list = filteredList();
+    var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    if (currentPage > pages) currentPage = pages;
+    var start = (currentPage - 1) * PAGE_SIZE;
+    var pageList = list.slice(start, start + PAGE_SIZE);
+
+    var tbody = document.getElementById('pmList');
+    if (pageList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="15"><div class="empty"><div class="empty-text">暂无合作商合同</div></div></td></tr>';
+    } else {
+      tbody.innerHTML = pageList.map(function (p) {
+        return '<tr>' +
+          '<td class="mono">' + p.id + '</td>' +
+          '<td class="mono">' + p.no + '</td>' +
+          '<td class="pm-name">' + p.name + '</td>' +
+          '<td>' + depositTag(p.depositRule) + '</td>' +
+          '<td class="mono">' + (p.depositRule === '无保底' ? '—' : p.depositAmount) + '</td>' +
+          '<td class="pm-split">' +
+            '<div class="pm-strategy-name"><b>' + (p.strategyName || '—') + '</b></div>' +
+            modeCards((findStrategy(p.strategyId) || {}).modes) +
+          '</td>' +
+          '<td>' + (p.deduct === '是' ? '<span class="tag tag-green">是</span>' : '<span class="tag tag-gray">否</span>') + '</td>' +
+          '<td>' + p.settle + '</td>' +
+          '<td class="pm-name">' + p.partner + '</td>' +
+          '<td class="pm-name">' + p.ours + '</td>' +
+          '<td>' + p.lang + '</td>' +
+          '<td><span class="op-link" onclick="viewContractFile(\'' + p.id + '\')">查看合同</span></td>' +
+          '<td class="pm-name text-2">' + (p.remark || '—') + '</td>' +
+          '<td class="mono text-2">' + p.addTime + '</td>' +
+          '<td class="sticky-r pm-ops">' +
+            '<span class="op-link" onclick="openEdit(\'' + p.id + '\')">编辑</span>' +
+            '<span class="op-link" onclick="viewLogs(\'' + p.id + '\')">操作记录</span>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+    renderPager(list.length, pages);
+  }
+
+  function renderPager(total, pages) {
+    var html = '<div class="pg-total">共 ' + total + ' 条</div><div class="pg-list">';
+    html += '<button class="pg-btn" ' + (currentPage === 1 ? 'disabled' : '') + ' onclick="goPage(' + (currentPage - 1) + ')">上一页</button>';
+    for (var i = 1; i <= pages; i++) {
+      html += '<button class="pg-btn' + (i === currentPage ? ' active' : '') + '" onclick="goPage(' + i + ')">' + i + '</button>';
+    }
+    html += '<button class="pg-btn" ' + (currentPage === pages ? 'disabled' : '') + ' onclick="goPage(' + (currentPage + 1) + ')">下一页</button>';
+    html += '</div>';
+    document.getElementById('pager').innerHTML = html;
+  }
+
+  function goPage(n) {
+    var total = filteredList().length;
+    var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (n < 1 || n > pages) return;
+    currentPage = n;
+    renderList();
+  }
+
+  function search() { currentPage = 1; renderList(); }
+  function resetSearch() {
+    document.getElementById('searchNo').value = '';
+    document.getElementById('searchRemark').value = '';
+    currentPage = 1;
+    renderList();
+  }
+
+  // ===================== 新增 / 编辑 =====================
+  function fillOptions() {
+    var sel = document.getElementById('pmPartner');
+    sel.innerHTML = '<option value="">请选择合同商主体</option>' +
+      PARTNERS.map(function (p) { return '<option>' + p + '</option>'; }).join('');
+    var sp = document.getElementById('pmStrategy');
+    sp.innerHTML = '<option value="">请选择分成策略</option>' +
+      STRATEGIES.map(function (x) { return '<option value="' + x.id + '">' + x.name + '</option>'; }).join('');
+  }
+
+  // 选择策略后展示其分成模式详情
+  function onStrategyChange() {
+    var id = document.getElementById('pmStrategy').value;
+    var box = document.getElementById('pmStrategyDetail');
+    var p = findStrategy(id);
+    box.innerHTML = p ? modeCards(p.modes) : '';
+  }
+
+  function setRule(rule) {
+    var list = document.querySelectorAll('#pmDepositRule input');
+    Array.prototype.forEach.call(list, function (r) { r.checked = (r.value === rule); });
+    onDepositChange();
+  }
+
+  function onDepositChange() {
+    var v = currentRule();
+    var amt = document.getElementById('pmDepositAmount');
+    amt.disabled = !v || v === '无保底';
+    if (amt.disabled) amt.value = '';
+  }
+
+  function currentRule() {
+    var el = document.querySelector('#pmDepositRule input:checked');
+    return el ? el.value : '';
+  }
+
+  function updateRemarkCount() {
+    var v = document.getElementById('pmRemark').value;
+    document.getElementById('pmRemarkCount').textContent = v.length + ' / 200';
+  }
+
+  function openAdd() {
+    pmState = { id: null, file: '' };
+    document.getElementById('pmTitle').textContent = '新增合同';
+    ['pmNo', 'pmName', 'pmPartner', 'pmSettle', 'pmDepositAmount', 'pmRemark'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el.tagName === 'SELECT') el.value = ''; else el.value = '';
+    });
+    document.getElementById('pmLang').value = '中文';
+    document.getElementById('pmOurs').value = MY_COMPANY;
+    document.getElementById('pmStrategy').value = '';
+    document.getElementById('pmStrategyDetail').innerHTML = '';
+    setRule('');
+    document.getElementById('pmFile').value = '';
+    document.getElementById('pmFileName').textContent = '请上传 pdf 格式';
+    document.getElementById('pmFileName').className = 'pm-hint pm-file-name danger';
+    document.getElementById('pmRemark').value = '';
+    updateRemarkCount();
+    openModal('pmModal');
+  }
+
+  function openEdit(id) {
+    var p = DEMO_PM.filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    pmState = { id: id, file: p.contract };
+    document.getElementById('pmTitle').textContent = '编辑合同';
+    document.getElementById('pmNo').value = p.no;
+    document.getElementById('pmName').value = p.name;
+    document.getElementById('pmPartner').value = p.partner;
+    document.getElementById('pmOurs').value = p.ours || MY_COMPANY;
+    document.getElementById('pmSettle').value = p.settle;
+    document.getElementById('pmLang').value = p.lang || '中文';
+    document.getElementById('pmDepositAmount').value = p.depositAmount || '';
+    document.getElementById('pmRemark').value = p.remark || '';
+    setRule(p.depositRule);
+    document.getElementById('pmStrategy').value = p.strategyId || '';
+    onStrategyChange();
+    document.getElementById('pmFileName').textContent = p.contract || '请上传 pdf 格式';
+    document.getElementById('pmFileName').className = 'pm-hint pm-file-name' + (p.contract ? '' : ' danger');
+    updateRemarkCount();
+    openModal('pmModal');
+  }
+
+  function pickFile() { document.getElementById('pmFile').click(); }
+
+  function onFilePicked(e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    if (!/\.pdf$/i.test(f.name)) {
+      showToast('仅支持 pdf 格式', 'err');
+      e.target.value = '';
+      return;
+    }
+    pmState.file = f.name;
+    document.getElementById('pmFileName').textContent = f.name;
+    document.getElementById('pmFileName').className = 'pm-hint pm-file-name';
+  }
+
+  function savePartner() {
+    var no = document.getElementById('pmNo').value.trim();
+    var name = document.getElementById('pmName').value.trim();
+    var partner = document.getElementById('pmPartner').value;
+    var settle = document.getElementById('pmSettle').value;
+    var rule = currentRule();
+    var amount = document.getElementById('pmDepositAmount').value.trim();
+    var strategyId = document.getElementById('pmStrategy').value;
+    var remark = document.getElementById('pmRemark').value.trim();
+
+    if (!no) { showToast('请输入合同编号', 'err'); return; }
+    if (!name) { showToast('请输入合同名称', 'err'); return; }
+    if (!partner) { showToast('请选择对方主体', 'err'); return; }
+    if (!settle) { showToast('请选择结算方式', 'err'); return; }
+    if (!rule) { showToast('请选择保底规则', 'err'); return; }
+    if (rule !== '无保底' && !amount) { showToast('请输入保底金额', 'err'); return; }
+    if (!strategyId) { showToast('请选择分成策略', 'err'); return; }
+    if (!pmState.file) { showToast('请上传合同', 'err'); return; }
+
+    var sp = findStrategy(strategyId);
+    var rec = {
+      no: no, name: name,
+      depositRule: rule,
+      depositAmount: rule === '无保底' ? '0.000' : amount,
+      strategyId: strategyId,
+      strategyName: sp ? sp.name : '',
+      deduct: rule === '无保底' ? '否' : '是',
+      settle: settle,
+      partner: partner, ours: MY_COMPANY,
+      lang: '中文', contract: pmState.file,
+      remark: remark,
+      addTime: nowStr()
+    };
+
+    if (pmState.id) {
+      var idx = -1;
+      DEMO_PM.forEach(function (x, i) { if (x.id === pmState.id) idx = i; });
+      rec.id = pmState.id;
+      rec.addTime = DEMO_PM[idx].addTime;
+      DEMO_PM[idx] = rec;
+      pushLog(rec.id, '修改合同配置');
+      showToast('已保存修改', 'ok');
+    } else {
+      var maxId = 0;
+      DEMO_PM.forEach(function (x) { maxId = Math.max(maxId, parseInt(x.id, 10) || 0); });
+      rec.id = String(maxId + 1);
+      DEMO_PM.unshift(rec);
+      pushLog(rec.id, '新增合同配置');
+      showToast('已新增合同配置', 'ok');
+    }
+    closeModal('pmModal');
+    renderList();
+  }
+
+  function pushLog(id, action) {
+    if (!PM_LOGS[id]) PM_LOGS[id] = [];
+    PM_LOGS[id].push({ time: nowStr(), user: '春明', action: action });
+  }
+
+  function nowStr() {
+    var d = new Date();
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+      p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+
+  // ===================== 查看合同 / 操作记录 =====================
+  function viewContractFile(id) {
+    var p = DEMO_PM.filter(function (x) { return x.id === id; })[0];
+    showToast('演示环境：' + (p ? p.contract : '合同文件'), 'ok');
+  }
+
+  function viewLogs(id) {
+    var p = DEMO_PM.filter(function (x) { return x.id === id; })[0];
+    var logs = PM_LOGS[id] || [];
+    var html = '<div class="desc-row"><div class="desc-label">合同编号</div><div class="desc-value">' + (p ? p.no : '—') + '</div></div>';
+    if (!logs.length) {
+      html += '<div class="empty" style="padding:24px 0"><div class="empty-text">暂无操作记录</div></div>';
+    } else {
+      html += '<div class="pm-log">' + logs.slice().reverse().map(function (l) {
+        return '<div class="pm-log-item"><div class="pm-log-time">' + l.time + ' · ' + l.user + '</div><div class="pm-log-act">' + l.action + '</div></div>';
+      }).join('') + '</div>';
+    }
+    document.getElementById('logBody').innerHTML = html;
+    openModal('logModal');
+  }
+
+  // ===================== 初始化 =====================
+  document.getElementById('topbar-root').innerHTML = renderTopbar({});
+  document.getElementById('sidebar-root').innerHTML = renderSidebar('partners');
+  fillOptions();
+  renderList();
+</script>
+</body>
+</html>
