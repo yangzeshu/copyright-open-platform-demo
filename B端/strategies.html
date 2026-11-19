@@ -457,6 +457,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 
   /* ===== 分成策略 ===== */
   #spTable { width: 100%; }
+  /* 12 列偏挤：本页单元格内边距收窄，给内容让出空间 */
+  #spTable th, #spTable td { padding-left: 9px; padding-right: 9px; }
 
   .sp-field { margin-bottom: 16px; }
   .sp-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
@@ -614,7 +616,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   <div class="content">
     <div class="page-head">
       <div class="page-title">分成策略</div>
-      <div class="page-desc">统一维护分成策略：适用合作类型、商务团队与各模式的分成方式、比例、渠道</div>
+      <div class="page-desc">统一维护分成策略：适用内容类型、合作类型、商务团队与各模式的分成方式、比例、渠道</div>
     </div>
 
     <div class="card">
@@ -628,6 +630,12 @@ textarea.form-input { resize: vertical; min-height: 90px; }
             <div class="search-item">
               <label>策略名称</label>
               <input type="text" class="ant-input" id="searchName" placeholder="请输入策略名称" style="width:170px">
+            </div>
+            <div class="search-item">
+              <label>适用内容类型</label>
+              <select class="ant-input" id="searchContent" style="width:130px">
+                <option value="">全部</option>
+              </select>
             </div>
             <div class="search-item">
               <label>适用合作类型</label>
@@ -665,17 +673,18 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <table class="table" id="spTable">
           <thead>
             <tr>
-              <th style="width:72px">策略ID</th>
-              <th style="width:96px;white-space:normal">策略名称</th>
-              <th style="width:92px;white-space:normal">适用合作类型</th>
-              <th style="width:92px;white-space:normal">适用商务团队</th>
-              <th style="width:200px">分成模式</th>
-              <th style="width:52px">创建人</th>
-              <th style="width:110px;white-space:normal">创建时间</th>
-              <th style="width:52px">修改人</th>
-              <th style="width:110px;white-space:normal">修改时间</th>
-              <th style="width:76px">状态</th>
-              <th style="width:156px">操作</th>
+              <th style="width:66px">策略ID</th>
+              <th style="width:88px;white-space:normal">策略名称</th>
+              <th style="width:90px;white-space:normal">适用内容类型</th>
+              <th style="width:100px;white-space:normal">适用合作类型</th>
+              <th style="width:84px;white-space:normal">适用商务团队</th>
+              <th style="width:190px">分成模式</th>
+              <th style="width:48px">创建人</th>
+              <th style="width:102px;white-space:normal">创建时间</th>
+              <th style="width:48px">修改人</th>
+              <th style="width:102px;white-space:normal">修改时间</th>
+              <th style="width:66px">状态</th>
+              <th style="width:148px">操作</th>
             </tr>
           </thead>
           <tbody id="spList"></tbody>
@@ -699,6 +708,16 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <label class="sp-label">策略名称<span class="req">*</span></label>
         <input type="text" class="sp-input" id="spName" maxlength="100" placeholder="请输入策略名称，最多 100 个字符">
         <div class="sp-count"><span id="spNameCount">0</span>/100</div>
+      </div>
+
+      <div class="sp-field">
+        <label class="sp-label">适用内容类型<span class="req">*</span></label>
+        <div class="ms-wrap" id="spContentWrap">
+          <div class="ms-box" id="spContentBox" onclick="toggleMs('content', event)">
+            <span class="ms-ph" id="spContentText">请选择内容类型</span>
+          </div>
+          <div class="ms-panel" id="spContentPanel"></div>
+        </div>
       </div>
 
       <div class="sp-field">
@@ -942,7 +961,8 @@ document.addEventListener('click', function (e) {
   // ===================== 常量与数据层 =====================
   var PAGE_SIZE = 10;
   var currentPage = 1;
-  var LS_KEY = 'cp_split_strategies';
+  var LS_KEY = 'cp_split_strategies_v2';
+  var CONTENT_TYPES = ['成品剧', '承制剧'];
   var COOP_TYPES = ['付费独家', '付费非独家', '免费独家', '免费非独家'];
   var TEAMS = ['冠军团队', '九天团队'];
   var WAYS = ['保底+净利润分成', '保底+流水分成', '保底+消耗分成', '保底+热度值分成'];
@@ -952,6 +972,7 @@ document.addEventListener('click', function (e) {
   var SEED = [
     {
       id: 'SP1001', name: '制作分成标准A',
+      contentTypes: ['成品剧'],
       coopTypes: ['付费独家', '付费非独家'], teams: ['冠军团队'],
       modes: {
         IAP: { way: '保底+净利润分成', ratio: 4, chans: ['APP'], subs: ['NetShort', 'FreeShort', 'HopReel', 'NetToon', 'FavorDrama'] },
@@ -963,6 +984,7 @@ document.addEventListener('click', function (e) {
     },
     {
       id: 'SP1002', name: '剧本分成标准B',
+      contentTypes: ['成品剧', '承制剧'],
       coopTypes: ['免费独家', '免费非独家'], teams: ['九天团队'],
       modes: {
         IAP: { way: '保底+消耗分成', ratio: 8, chans: ['TT小程序'], subs: [] },
@@ -1018,12 +1040,14 @@ document.addEventListener('click', function (e) {
   function filteredList() {
     var id = document.getElementById('searchId').value.trim();
     var name = document.getElementById('searchName').value.trim();
+    var content = document.getElementById('searchContent').value;
     var coop = document.getElementById('searchCoop').value;
     var team = document.getElementById('searchTeam').value;
     var st = document.getElementById('searchStatus').value;
     return DEMO_SP.filter(function (p) {
       if (id && p.id !== id) return false;
       if (name && p.name.indexOf(name) === -1) return false;
+      if (content && (p.contentTypes || []).indexOf(content) === -1) return false;
       if (coop && (p.coopTypes || []).indexOf(coop) === -1) return false;
       if (team && (p.teams || []).indexOf(team) === -1) return false;
       if (st && p.status !== st) return false;
@@ -1040,12 +1064,13 @@ document.addEventListener('click', function (e) {
 
     var tbody = document.getElementById('spList');
     if (pageList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="empty-text">暂无分成策略</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12"><div class="empty"><div class="empty-text">暂无分成策略</div></div></td></tr>';
     } else {
       tbody.innerHTML = pageList.map(function (p) {
         return '<tr>' +
           '<td class="mono">' + p.id + '</td>' +
           '<td>' + p.name + '</td>' +
+          '<td>' + ((p.contentTypes || []).join('、') || '—') + '</td>' +
           '<td>' + (p.coopTypes || []).join('、') + '</td>' +
           '<td>' + (p.teams || []).join('、') + '</td>' +
           '<td class="sp-modes-cell">' + modeCards(p.modes) + '</td>' +
@@ -1088,7 +1113,7 @@ document.addEventListener('click', function (e) {
   function search() { currentPage = 1; renderList(); }
   function resetSearch() {
     ['searchId', 'searchName'].forEach(function (id) { document.getElementById(id).value = ''; });
-    ['searchCoop', 'searchTeam', 'searchStatus'].forEach(function (id) { document.getElementById(id).value = ''; });
+    ['searchContent', 'searchCoop', 'searchTeam', 'searchStatus'].forEach(function (id) { document.getElementById(id).value = ''; });
     currentPage = 1;
     renderList();
   }
@@ -1109,16 +1134,23 @@ document.addEventListener('click', function (e) {
   }
 
   // ===================== 多选下拉 =====================
-  var msState = { coop: [], team: [] };
+  var msState = { content: [], coop: [], team: [] };
+  var MS_CFG = {
+    content: { box: 'spContentBox', panel: 'spContentPanel', opts: CONTENT_TYPES, ph: '请选择内容类型' },
+    coop: { box: 'spCoopBox', panel: 'spCoopPanel', opts: COOP_TYPES, ph: '请选择合作类型' },
+    team: { box: 'spTeamBox', panel: 'spTeamPanel', opts: TEAMS, ph: '请选择商务团队' }
+  };
 
   function renderMs(kind) {
+    var cfg = MS_CFG[kind];
     var sel = msState[kind];
-    var box = document.getElementById(kind === 'coop' ? 'spCoopBox' : 'spTeamBox');
-    var panel = document.getElementById(kind === 'coop' ? 'spCoopPanel' : 'spTeamPanel');
-    var options = kind === 'coop' ? COOP_TYPES : TEAMS;
+    var box = document.getElementById(cfg.box);
+    var panel = document.getElementById(cfg.panel);
+    if (!box || !panel) return;
+    var options = cfg.opts;
 
     if (!sel.length) {
-      box.innerHTML = '<span class="ms-ph">' + (kind === 'coop' ? '请选择合作类型' : '请选择商务团队') + '</span>';
+      box.innerHTML = '<span class="ms-ph">' + cfg.ph + '</span>';
     } else {
       box.innerHTML = sel.map(function (v) {
         return '<span class="ms-tag">' + v + '<span class="ms-x" onclick="removeMs(\'' + kind + '\',\'' + v + '\',event)">×</span></span>';
@@ -1134,15 +1166,15 @@ document.addEventListener('click', function (e) {
   function toggleMs(kind, e) {
     e.stopPropagation();
     if (spState.readonly) return;
-    var panel = document.getElementById(kind === 'coop' ? 'spCoopPanel' : 'spTeamPanel');
+    var panel = document.getElementById(MS_CFG[kind].panel);
     var open = panel.classList.contains('show');
     closeAllMs();
     if (!open) panel.classList.add('show');
   }
 
   function closeAllMs() {
-    ['spCoopPanel', 'spTeamPanel'].forEach(function (id) {
-      var el = document.getElementById(id);
+    Object.keys(MS_CFG).forEach(function (k) {
+      var el = document.getElementById(MS_CFG[k].panel);
       if (el) el.classList.remove('show');
     });
   }
@@ -1197,8 +1229,8 @@ document.addEventListener('click', function (e) {
   function resetForm() {
     document.getElementById('spName').value = '';
     document.getElementById('spNameCount').textContent = '0';
-    msState = { coop: [], team: [] };
-    renderMs('coop'); renderMs('team');
+    msState = { content: [], coop: [], team: [] };
+    renderMs('content'); renderMs('coop'); renderMs('team');
     ['spIapCheck', 'spIaaCheck'].forEach(function (id) { document.getElementById(id).checked = false; });
     document.getElementById('spIapWay').value = '';
     document.getElementById('spIaaWay').value = '';
@@ -1213,8 +1245,8 @@ document.addEventListener('click', function (e) {
   function fillForm(p) {
     document.getElementById('spName').value = p.name;
     document.getElementById('spNameCount').textContent = p.name.length;
-    msState = { coop: (p.coopTypes || []).slice(), team: (p.teams || []).slice() };
-    renderMs('coop'); renderMs('team');
+    msState = { content: (p.contentTypes || []).slice(), coop: (p.coopTypes || []).slice(), team: (p.teams || []).slice() };
+    renderMs('content'); renderMs('coop'); renderMs('team');
     var iap = (p.modes || {}).IAP, iaa = (p.modes || {}).IAA;
     document.getElementById('spIapCheck').checked = !!iap;
     document.getElementById('spIaaCheck').checked = !!iaa;
@@ -1246,7 +1278,7 @@ document.addEventListener('click', function (e) {
     spState.readonly = on;
     var box = document.getElementById('spModal');
     Array.prototype.forEach.call(box.querySelectorAll('input, select, textarea'), function (el) { el.disabled = on; });
-    box.querySelector('.ms-box').style.pointerEvents = on ? 'none' : '';
+    Array.prototype.forEach.call(box.querySelectorAll('.ms-box'), function (el) { el.style.pointerEvents = on ? 'none' : ''; });
     document.getElementById('spSaveBtn').style.display = on ? 'none' : '';
     box.querySelector('.modal').classList.toggle('sp-readonly', on);
   }
@@ -1305,6 +1337,7 @@ document.addEventListener('click', function (e) {
     var name = document.getElementById('spName').value.trim();
     if (!name) { showToast('请输入策略名称', 'err'); return; }
     if (name.length > 100) { showToast('策略名称最多 100 个字符', 'err'); return; }
+    if (!msState.content.length) { showToast('请选择适用内容类型', 'err'); return; }
     if (!msState.coop.length) { showToast('请选择适用合作类型', 'err'); return; }
     if (!msState.team.length) { showToast('请选择适用商务团队', 'err'); return; }
 
@@ -1332,6 +1365,7 @@ document.addEventListener('click', function (e) {
     if (spState.id) {
       var p = DEMO_SP.filter(function (x) { return x.id === spState.id; })[0];
       p.name = name;
+      p.contentTypes = msState.content.slice();
       p.coopTypes = msState.coop.slice();
       p.teams = msState.team.slice();
       p.modes = modes;
@@ -1344,6 +1378,7 @@ document.addEventListener('click', function (e) {
       DEMO_SP.unshift({
         id: 'SP' + (maxId + 1),
         name: name,
+        contentTypes: msState.content.slice(),
         coopTypes: msState.coop.slice(),
         teams: msState.team.slice(),
         modes: modes,
@@ -1371,6 +1406,8 @@ document.addEventListener('click', function (e) {
   document.getElementById('sidebar-root').innerHTML = renderSidebar('strategies');
 
   // 下拉枚举
+  document.getElementById('searchContent').innerHTML = '<option value="">全部</option>' +
+    CONTENT_TYPES.map(function (c) { return '<option>' + c + '</option>'; }).join('');
   document.getElementById('searchCoop').innerHTML = '<option value="">全部</option>' +
     COOP_TYPES.map(function (c) { return '<option>' + c + '</option>'; }).join('');
   document.getElementById('searchTeam').innerHTML = '<option value="">全部</option>' +
@@ -1385,7 +1422,7 @@ document.addEventListener('click', function (e) {
   });
 
   persist(DEMO_SP);
-  renderMs('coop'); renderMs('team');
+  renderMs('content'); renderMs('coop'); renderMs('team');
   renderList();
 </script>
 </body>

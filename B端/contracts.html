@@ -2382,7 +2382,7 @@ var DEMO_ACCOUNTS = [
   // 分成策略枚举：读取「分成策略」页维护的数据（localStorage 同源共享），无数据时用内置种子
   var SPLIT_POLICIES = (function () {
     try {
-      var raw = localStorage.getItem('cp_split_strategies');
+      var raw = localStorage.getItem('cp_split_strategies_v2');
       if (raw) {
         var arr = JSON.parse(raw);
         if (arr && arr.length) return arr.map(function (x) { return x.name; });
