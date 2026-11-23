@@ -251,8 +251,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   display: none; align-items: center; justify-content: center;
 }
 .modal-mask.show { display: flex; }
-/* 分渠道弹窗需盖在详情弹窗之上（详情页每行「查看」触发） */
-#chanModal { z-index: 260; }
 .modal {
   background: #fff; border-radius: 14px; width: 460px; max-width: 92vw;
   max-height: 88vh; display: flex; flex-direction: column;
@@ -569,8 +567,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .th-two { line-height: 1.5; }
   .th-sub { font-size: 11px; font-weight: 400; color: var(--text-3); }
   /* 单元格内「查看」 */
-  .op-mini { font-size: 12px; color: var(--brand); cursor: pointer; margin-left: 8px; white-space: nowrap; }
-  .op-mini:hover { text-decoration: underline; }
   /* 表头提示：气泡向下、不被裁切 */
   th .tip { border-bottom-style: dotted; }
   th .tip:hover::after { top: calc(100% + 8px); }
@@ -665,20 +661,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
     </div>
   </div>
 </div>
-<!-- 分渠道明细弹窗 -->
-<div class="modal-mask" id="chanModal">
-  <div class="modal" style="width:480px">
-    <div class="modal-head">
-      <div class="modal-title" id="chanModalTitle">分渠道数据</div>
-      <span class="modal-close" onclick="closeModal('chanModal')"><svg viewBox="0 0 20 20" fill="none" width="20" height="20"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    </div>
-    <div class="modal-body" id="chanModalBody"></div>
-    <div class="modal-foot">
-      <button class="btn btn-outline" onclick="closeModal('chanModal')">关闭</button>
-    </div>
-  </div>
-</div>
-
 <!-- 收益明细弹窗 -->
 <div class="modal-mask" id="earnModal">
   <div class="modal detail-modal" style="width:880px;max-width:94vw;max-height:92vh">
@@ -1548,13 +1530,6 @@ document.addEventListener('click', function (e) {
     var withSep = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return '$' + neg + withSep + '.' + parts[1];
   }
-  // 渠道：仅 app 与其他两个渠道
-  var CH_DEF = [
-    { key: 'app', label: 'app' },
-    { key: 'other', label: '其他' }
-  ];
-  // 渠道占比（合计 1）
-  var COST_SPLIT = { app: 0.68, other: 0.32 };
   function r2(n) { return Math.round(n * 100) / 100; }
   // 列表数值展示：1000 以下「<1k(测试中)」，1000 起按整千向下取整（1500→1k，2999→2k）
   function fmtCostK(n) {
@@ -1572,20 +1547,9 @@ document.addEventListener('click', function (e) {
   }
   // 收益数据统计截止日（演示口径）
   var DATA_END = '2026-09-30';
-  // 按比例拆分到各渠道（最后一档补差，保证合计等于总数）
-  function splitBy(total, ratios) {
-    var out = {}, acc = 0;
-    CH_DEF.forEach(function (c, i) {
-      var v = (i === CH_DEF.length - 1) ? r2(total - acc) : r2(total * ratios[c.key]);
-      out[c.key] = v;
-      acc = r2(acc + v);
-    });
-    return out;
-  }
-  // 热度值：按消耗的固定倍数换算（演示口径），展示与分渠道逻辑同消耗
+  // 热度值：按消耗的固定倍数换算（演示口径）
   var HEAT_RATE = 12.5;
   function heatOf(amount) { return r2(amount * HEAT_RATE); }
-  function heatByChan(total) { return splitBy(total, COST_SPLIT); }
 
   // 按日拆分某部剧的消耗总额：上架日 ~ 统计截止日，开播冲高后逐日衰减 + 周期性波动；末档补差保证合计等于总额
   var __dailyCache = {};
@@ -1688,7 +1652,7 @@ document.addEventListener('click', function (e) {
           '<div class="contract-no">' + w.workId + '</div></td>' +
         '<td class="mono text-2">' + (w.shelfTime || '—') + '</td>' +
         '<td style="text-align:left;white-space:normal">' + w.subjectName + '</td>' +
-        '<td><span class="cost-k">' + fmtCostK(heatOf(w.adCost)) + '</span><span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\')">查看</span></td>' +
+        '<td><span class="cost-k">' + fmtCostK(heatOf(w.adCost)) + '</span></td>' +
         '<td class="sticky-r"><span class="op-link" onclick="openEarnDetail(\'' + w.workId + '\')">详情</span></td>' +
       '</tr>';
     }).join('');
@@ -1769,42 +1733,13 @@ document.addEventListener('click', function (e) {
     var body = daily.map(function (d) {
       heatTotal = r2(heatTotal + heatOf(d.adCost));
       return '<tr><td class="mono">' + d.date + '</td>' +
-        '<td class="mono">' + fmtCostK1(heatOf(d.adCost)) +
-        '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'' + d.date + '\')">查看</span></td></tr>';
+        '<td class="mono">' + fmtCostK1(heatOf(d.adCost)) + '</td></tr>';
     }).join('');
 
     box.innerHTML = '<div class="em-table-scroll"><table class="table detail-table">' +
       '<thead><tr><th style="width:50%">日期</th><th>热度值</th></tr></thead>' +
       '<tbody>' + body + '</tbody></table></div>' +
       '<div class="em-sum">所选日期合计热度值：<b class="mono">' + fmtCostK1(heatTotal) + '</b></div>';
-  }
-
-  // ========== 分渠道明细弹窗（仅热度值：app / 其他） ==========
-  // date 为空 = 整部剧汇总（主列表入口，与列表同口径）；传日期 = 该日分渠道（详情每行「查看」，用明细口径）
-  function openChannelDetail(workId, date) {
-    var w = findEarn(workId);
-    if (!w) return;
-    var total = heatOf(w.adCost);
-    if (date) {
-      var d = buildDaily(w).find(function (x) { return x.date === date; });
-      if (!d) return;
-      total = heatOf(d.adCost);
-    }
-    var map = heatByChan(total);
-    var fmt = date ? fmtCostK1 : fmtCostK;
-
-    document.getElementById('chanModalTitle').textContent =
-      '分渠道热度值 · ' + w.workName + (date ? ' · ' + date : '');
-    var body = '<table class="table detail-table"><thead><tr>' +
-      '<th>渠道</th><th>热度值</th>' +
-      '</tr></thead><tbody>' +
-      CH_DEF.map(function (c) {
-        return '<tr><td>' + c.label + '</td><td class="mono">' + fmt(map[c.key]) + '</td></tr>';
-      }).join('') +
-      '<tr class="sum-row"><td>合计</td><td class="mono">' + fmt(total) + '</td></tr>' +
-      '</tbody></table>';
-    document.getElementById('chanModalBody').innerHTML = body;
-    openModal('chanModal');
   }
 
   // 初始化

@@ -965,7 +965,8 @@ document.addEventListener('click', function (e) {
   var CONTENT_TYPES = ['成品剧', '承制剧'];
   var COOP_TYPES = ['付费独家', '付费非独家', '免费独家', '免费非独家'];
   var TEAMS = ['冠军团队', '九天团队'];
-  var WAYS = ['保底+净利润分成', '保底+流水分成', '保底+消耗分成', '保底+热度值分成'];
+  // 分成方式目前只支持一种（2026-11-23 收敛）
+  var WAYS = ['保底+热度值分成'];
   var CHANNELS = ['APP', 'TT小程序', 'H5'];
   var APP_SUBS = ['NetShort', 'FreeShort', 'HopReel', 'NetToon', 'FavorDrama'];
 
@@ -975,8 +976,8 @@ document.addEventListener('click', function (e) {
       contentTypes: ['成品剧'],
       coopTypes: ['付费独家', '付费非独家'], teams: ['冠军团队'],
       modes: {
-        IAP: { way: '保底+净利润分成', ratio: 4, chans: ['APP'], subs: ['NetShort', 'FreeShort', 'HopReel', 'NetToon', 'FavorDrama'] },
-        IAA: { way: '保底+流水分成', ratio: 5, chans: ['APP'], subs: ['NetShort'] }
+        IAP: { way: '保底+热度值分成', ratio: 4, chans: ['APP'], subs: ['NetShort', 'FreeShort', 'HopReel', 'NetToon', 'FavorDrama'] },
+        IAA: { way: '保底+热度值分成', ratio: 5, chans: ['APP'], subs: ['NetShort'] }
       },
       status: '开启',
       creator: '春明', createTime: '2026-11-10 10:20:00',
@@ -987,7 +988,7 @@ document.addEventListener('click', function (e) {
       contentTypes: ['成品剧', '承制剧'],
       coopTypes: ['免费独家', '免费非独家'], teams: ['九天团队'],
       modes: {
-        IAP: { way: '保底+消耗分成', ratio: 8, chans: ['TT小程序'], subs: [] },
+        IAP: { way: '保底+热度值分成', ratio: 8, chans: ['TT小程序'], subs: [] },
         IAA: { way: '保底+热度值分成', ratio: 12, chans: ['APP', 'H5'], subs: ['HopReel', 'NetToon'] }
       },
       status: '关闭',
@@ -997,12 +998,21 @@ document.addEventListener('click', function (e) {
   ];
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function normalize(list) {
+    // 分成方式只剩「保底+热度值分成」，把历史数据里的旧方式一并纠正
+    list.forEach(function (x) {
+      Object.keys(x.modes || {}).forEach(function (m) {
+        if (x.modes[m] && WAYS.indexOf(x.modes[m].way) === -1) x.modes[m].way = WAYS[0];
+      });
+    });
+    return list;
+  }
   function loadStrategies() {
     try {
       var raw = localStorage.getItem(LS_KEY);
       if (raw) {
         var arr = JSON.parse(raw);
-        if (arr && arr.length) return arr;
+        if (arr && arr.length) return normalize(arr);
       }
     } catch (e) {}
     return clone(SEED);

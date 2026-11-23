@@ -946,27 +946,35 @@ document.addEventListener('click', function (e) {
     {
       id: 'SP1001', name: '制作分成标准A',
       modes: {
-        IAP: { way: '保底+净利润分成', ratio: 4, chans: ['APP'], subs: ['NetShort', 'FreeShort', 'HopReel', 'NetToon', 'FavorDrama'] },
-        IAA: { way: '保底+流水分成', ratio: 5, chans: ['APP'], subs: ['NetShort'] }
+        IAP: { way: '保底+热度值分成', ratio: 4, chans: ['APP'], subs: ['NetShort', 'FreeShort', 'HopReel', 'NetToon', 'FavorDrama'] },
+        IAA: { way: '保底+热度值分成', ratio: 5, chans: ['APP'], subs: ['NetShort'] }
       }
     },
     {
       id: 'SP1002', name: '剧本分成标准B',
       modes: {
-        IAP: { way: '保底+消耗分成', ratio: 8, chans: ['TT小程序'], subs: [] },
+        IAP: { way: '保底+热度值分成', ratio: 8, chans: ['TT小程序'], subs: [] },
         IAA: { way: '保底+热度值分成', ratio: 12, chans: ['APP', 'H5'], subs: ['HopReel', 'NetToon'] }
       }
     }
   ];
   function loadStrategyList() {
+    var list;
     try {
       var raw = localStorage.getItem(SP_LS_KEY);
       if (raw) {
         var arr = JSON.parse(raw);
-        if (arr && arr.length) return arr;
+        if (arr && arr.length) list = arr;
       }
     } catch (e) {}
-    return JSON.parse(JSON.stringify(SP_SEED));
+    if (!list) list = JSON.parse(JSON.stringify(SP_SEED));
+    // 分成方式只剩「保底+热度值分成」，历史数据统一纠正
+    list.forEach(function (x) {
+      Object.keys(x.modes || {}).forEach(function (m) {
+        if (x.modes[m]) x.modes[m].way = '保底+热度值分成';
+      });
+    });
+    return list;
   }
   var STRATEGIES = loadStrategyList();
   function findStrategy(id) {
