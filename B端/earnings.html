@@ -568,6 +568,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .card table.table tbody tr:hover td { background: #fafbfc; }
   .table td.sticky-l, .table th.sticky-l { box-shadow: 2px 0 4px rgba(0,0,0,.06); }
   .detail-modal .modal-body { padding-top: 2px; }
+  /* 10 列偏挤：本页单元格内边距收窄 */
+  #earnTable th, #earnTable td { padding-left: 9px; padding-right: 9px; }
   /* 列表工具条（导出） */
   .table-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
   /* 表头 hover 提示 */
@@ -647,18 +649,19 @@ textarea.form-input { resize: vertical; min-height: 90px; }
       </div>
 
       <div class="table-wrap">
-        <table class="table">
+        <table class="table" id="earnTable">
           <thead>
             <tr>
-              <th class="sticky-l" style="width:150px">短剧信息</th>
-              <th style="width:88px">剧本编号</th>
-              <th style="width:100px">所属账号</th>
-              <th style="width:110px">上架时间</th>
-              <th style="width:200px">授权主体</th>
-              <th style="width:120px">实际消耗<br>(美元)</th>
-              <th style="width:120px">可分成消耗<br>(美元)</th>
-              <th style="width:130px"><span class="tip tip-wrap" data-tip="统计口径为：(充值金额 - 退款金额) * 0.7；未扣减成本，仅供参考">实际收益金额</span><br>(美元)</th>
-              <th class="sticky-r" style="width:76px">操作</th>
+              <th class="sticky-l" style="width:140px">短剧信息</th>
+              <th style="width:82px">剧本编号</th>
+              <th style="width:94px">所属账号</th>
+              <th style="width:100px">上架时间</th>
+              <th style="width:178px">授权主体</th>
+              <th style="width:104px">实际消耗<br>(美元)</th>
+              <th style="width:104px">热度值</th>
+              <th style="width:110px">可分成消耗<br>(美元)</th>
+              <th style="width:118px"><span class="tip tip-wrap" data-tip="统计口径为：(充值金额 - 退款金额) * 0.7；未扣减成本，仅供参考">实际收益金额</span><br>(美元)</th>
+              <th class="sticky-r" style="width:72px">操作</th>
             </tr>
           </thead>
           <tbody id="earnList"></tbody>
@@ -1079,6 +1082,10 @@ document.addEventListener('click', function (e) {
   function costByChan(total) { return splitBy(total, COST_SPLIT); }
   function incomeByChan(total) { return splitBy(total, INCOME_SPLIT); }
   function shareCostByChan(total) { return splitBy(r2(total * SHARE_COST_RATE), COST_SPLIT); }
+  // 热度值：按消耗的固定倍数换算（演示口径），展示与分渠道逻辑同消耗
+  var HEAT_RATE = 12.5;
+  function heatOf(amount) { return r2(amount * HEAT_RATE); }
+  function heatByChan(total) { return splitBy(total, COST_SPLIT); }
   function dayProfit(d) { return r2((d.recharge - d.refund) * 0.7 - d.adCost); }
 
   // 日维度数据：上架日 ~ 数据截止日，权重 = 开播衰减 × 周期波动；三项各自末档补差，保证合计等于总额
@@ -1141,12 +1148,12 @@ document.addEventListener('click', function (e) {
     if (!list.length) { showToast('暂无可导出的数据'); return; }
     var rows = [[
       '短剧信息', '短剧ID', '剧本编号', '所属账号', '上架时间', '授权主体',
-      '实际消耗(美元)', '可分成消耗(美元)', '实际收益金额(美元)'
+      '实际消耗(美元)', '热度值', '可分成消耗(美元)', '实际收益金额(美元)'
     ]];
     list.forEach(function (w) {
       rows.push([
         w.workName, w.workId, w.scriptNo, w.accountName, w.shelfTime, w.subjectName,
-        w.adCost.toFixed(2), calcShareCost(w).toFixed(2), calcProfit(w).toFixed(2)
+        w.adCost.toFixed(2), heatOf(w.adCost).toFixed(2), calcShareCost(w).toFixed(2), calcProfit(w).toFixed(2)
       ]);
     });
     downloadCsv('收益明细_' + todayStr() + '.csv', rows);
@@ -1158,9 +1165,9 @@ document.addEventListener('click', function (e) {
     if (!earnState.id) return;
     if (!emDetailRows.length) { showToast('暂无可导出的数据'); return; }
     var w = findEarn(earnState.id);
-    var rows = [['日期', '实际消耗(美元)', '可分成消耗(美元)', '实际收益金额(美元)']];
+    var rows = [['日期', '实际消耗(美元)', '热度值', '可分成消耗(美元)', '实际收益金额(美元)']];
     emDetailRows.forEach(function (r) {
-      rows.push([r.date, r.cost.toFixed(2), r.share.toFixed(2), r.income.toFixed(2)]);
+      rows.push([r.date, r.cost.toFixed(2), r.heat.toFixed(2), r.share.toFixed(2), r.income.toFixed(2)]);
     });
     downloadCsv('收益明细_' + w.workName + '_' + earnState.start + '_' + earnState.end + '.csv', rows);
     showToast('已导出 ' + emDetailRows.length + ' 条日明细');
@@ -1196,7 +1203,7 @@ document.addEventListener('click', function (e) {
 
     var tbody = document.getElementById('earnList');
     if (pageList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
     } else {
       tbody.innerHTML = pageList.map(function (w) {
         return '<tr>' +
@@ -1206,6 +1213,7 @@ document.addEventListener('click', function (e) {
           '<td class="mono text-2">' + w.shelfTime + '</td>' +
           '<td class="subject-cell" style="white-space:normal">' + w.subjectName + '</td>' +
           '<td class="mono">' + fmtMoney(w.adCost) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'cost\')">查看</span></td>' +
+          '<td class="mono">' + fmtMoney(heatOf(w.adCost)) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'heat\')">查看</span></td>' +
           '<td class="mono">' + fmtMoney(calcShareCost(w)) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'share\')">查看</span></td>' +
           '<td class="mono">' + fmtMoney(calcProfit(w)) + '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'income\')">查看</span></td>' +
           '<td class="sticky-r"><span class="op-link" onclick="openEarnDetail(\'' + w.workId + '\')">详情</span></td>' +
@@ -1323,7 +1331,7 @@ document.addEventListener('click', function (e) {
     if (!daily.length) { emDetailRows = []; box.innerHTML = emEmpty('所选日期暂无数据'); return; }
 
     var rows = daily.map(function (d) {
-      return { date: d.date, cost: d.adCost, share: r2(d.adCost * SHARE_COST_RATE), income: dayProfit(d) };
+      return { date: d.date, cost: d.adCost, heat: heatOf(d.adCost), share: r2(d.adCost * SHARE_COST_RATE), income: dayProfit(d) };
     });
     emDetailRows = rows;
 
@@ -1334,23 +1342,25 @@ document.addEventListener('click', function (e) {
 
     var body = rows.map(function (r) {
       return '<tr><td class="mono">' + r.date + '</td>' +
-        cell(r.cost, 'cost', r.date) + cell(r.share, 'share', r.date) + cell(r.income, 'income', r.date) + '</tr>';
+        cell(r.cost, 'cost', r.date) + cell(r.heat, 'heat', r.date) + cell(r.share, 'share', r.date) + cell(r.income, 'income', r.date) + '</tr>';
     }).join('');
 
     box.innerHTML = '<div class="em-table-scroll"><table class="table detail-table">' +
-      '<thead><tr><th style="width:130px">日期</th>' +
+      '<thead><tr><th style="width:120px">日期</th>' +
         '<th>实际消耗(美元)</th>' +
+        '<th>热度值</th>' +
         '<th>可分成消耗(美元)</th>' +
         '<th>实际收益金额(美元)</th></tr></thead>' +
       '<tbody>' + body + '</tbody></table></div>';
   }
 
-  // ===================== 分渠道明细（实际消耗 / 可分成消耗 / 收入） =====================
+  // ===================== 分渠道明细（实际消耗 / 热度值 / 可分成消耗 / 收入） =====================
   // date 为空 = 整部剧汇总（主列表入口）；传日期 = 该日明细（详情页每日「查看」）
   function openChannelDetail(workId, type, date) {
     var w = findEarn(workId);
     if (!w) return;
-    var label = type === 'share' ? '可分成消耗' : (type === 'income' ? '实际收益金额' : '实际消耗');
+    var label = type === 'share' ? '可分成消耗' : (type === 'income' ? '实际收益金额' : (type === 'heat' ? '热度值' : '实际消耗'));
+    var unit = (type === 'share' || type === 'income' || type === 'cost') ? '(美元)' : '';
     var total, map, title;
 
     if (date) {
@@ -1358,18 +1368,20 @@ document.addEventListener('click', function (e) {
       if (!d) return;
       if (type === 'share') { map = shareCostByChan(d.adCost); total = r2(d.adCost * SHARE_COST_RATE); }
       else if (type === 'income') { total = dayProfit(d); map = incomeByChan(total); }
+      else if (type === 'heat') { total = heatOf(d.adCost); map = heatByChan(total); }
       else { total = d.adCost; map = costByChan(total); }
       title = '分渠道' + label + ' · ' + w.workName + ' · ' + date;
     } else {
-      total = type === 'share' ? calcShareCost(w) : (type === 'income' ? calcProfit(w) : w.adCost);
+      total = type === 'share' ? calcShareCost(w)
+        : (type === 'income' ? calcProfit(w) : (type === 'heat' ? heatOf(w.adCost) : w.adCost));
       map = type === 'share' ? shareCostByChan(w.adCost)
-        : (type === 'income' ? incomeByChan(total) : costByChan(total));
+        : (type === 'income' ? incomeByChan(total) : (type === 'heat' ? heatByChan(total) : costByChan(total)));
       title = '分渠道' + label + ' · ' + w.workName;
     }
 
     document.getElementById('chanModalTitle').textContent = title;
     var body = '<table class="table detail-table"><thead><tr>' +
-      '<th>渠道</th><th>' + label + '(美元)</th>' +
+      '<th>渠道</th><th>' + label + unit + '</th>' +
       '</tr></thead><tbody>' +
       CH_DEF.map(function (c) {
         return '<tr><td>' + c.label + '</td><td class="mono">' + fmtMoney(map[c.key]) + '</td></tr>';
