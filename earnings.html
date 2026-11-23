@@ -653,9 +653,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
               <tr>
                 <th class="sticky-l" style="width:176px">短剧信息</th>
                 <th style="width:124px">上架时间</th>
-                <th style="width:290px">授权主体</th>
-                <th style="width:170px">消耗(美元)</th>
-                <th style="width:160px">热度值</th>
+                <th style="width:300px">授权主体</th>
+                <th style="width:180px">热度值</th>
                 <th class="sticky-r" style="width:88px">操作</th>
               </tr>
             </thead>
@@ -1557,7 +1556,7 @@ document.addEventListener('click', function (e) {
   // 渠道占比（合计 1）
   var COST_SPLIT = { app: 0.68, other: 0.32 };
   function r2(n) { return Math.round(n * 100) / 100; }
-  // 列表消耗展示：1000 以下「<1k(测试中)」，1000 起按整千向下取整（1500→1k，2999→2k）
+  // 列表数值展示：1000 以下「<1k(测试中)」，1000 起按整千向下取整（1500→1k，2999→2k）
   function fmtCostK(n) {
     if (n === null || n === undefined) return '—';
     if (n < 1000) return '&lt;1k<span class="test-tag">(测试中)</span>';
@@ -1583,7 +1582,6 @@ document.addEventListener('click', function (e) {
     });
     return out;
   }
-  function costByChan(total) { return splitBy(total, COST_SPLIT); }
   // 热度值：按消耗的固定倍数换算（演示口径），展示与分渠道逻辑同消耗
   var HEAT_RATE = 12.5;
   function heatOf(amount) { return r2(amount * HEAT_RATE); }
@@ -1681,7 +1679,7 @@ document.addEventListener('click', function (e) {
     var list = filteredEarnings();
     var tbody = document.getElementById('earningList');
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-text">暂无收益数据</div></div></td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (w) {
@@ -1690,8 +1688,7 @@ document.addEventListener('click', function (e) {
           '<div class="contract-no">' + w.workId + '</div></td>' +
         '<td class="mono text-2">' + (w.shelfTime || '—') + '</td>' +
         '<td style="text-align:left;white-space:normal">' + w.subjectName + '</td>' +
-        '<td><span class="cost-k">' + fmtCostK(w.adCost) + '</span><span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\')">查看</span></td>' +
-        '<td><span class="cost-k">' + fmtCostK(heatOf(w.adCost)) + '</span><span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'\',\'heat\')">查看</span></td>' +
+        '<td><span class="cost-k">' + fmtCostK(heatOf(w.adCost)) + '</span><span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\')">查看</span></td>' +
         '<td class="sticky-r"><span class="op-link" onclick="openEarnDetail(\'' + w.workId + '\')">详情</span></td>' +
       '</tr>';
     }).join('');
@@ -1768,42 +1765,38 @@ document.addEventListener('click', function (e) {
     var daily = buildDaily(w).filter(function (d) { return d.date >= earnState.start && d.date <= earnState.end; });
     if (!daily.length) { box.innerHTML = emEmpty('所选日期区间暂无数据'); return; }
 
-    var total = 0, heatTotal = 0;
+    var heatTotal = 0;
     var body = daily.map(function (d) {
-      total = r2(total + d.adCost);
       heatTotal = r2(heatTotal + heatOf(d.adCost));
       return '<tr><td class="mono">' + d.date + '</td>' +
-        '<td class="mono">' + fmtCostK1(d.adCost) +
-        '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'' + d.date + '\')">查看</span></td>' +
         '<td class="mono">' + fmtCostK1(heatOf(d.adCost)) +
-        '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'' + d.date + '\',\'heat\')">查看</span></td></tr>';
+        '<span class="op-mini" onclick="openChannelDetail(\'' + w.workId + '\',\'' + d.date + '\')">查看</span></td></tr>';
     }).join('');
 
     box.innerHTML = '<div class="em-table-scroll"><table class="table detail-table">' +
-      '<thead><tr><th style="width:30%">日期</th><th>消耗金额(美元)</th><th>热度值</th></tr></thead>' +
+      '<thead><tr><th style="width:50%">日期</th><th>热度值</th></tr></thead>' +
       '<tbody>' + body + '</tbody></table></div>' +
-      '<div class="em-sum">所选日期合计消耗：<b class="mono">' + fmtCostK1(total) + '</b>　|　合计热度值：<b class="mono">' + fmtCostK1(heatTotal) + '</b></div>';
+      '<div class="em-sum">所选日期合计热度值：<b class="mono">' + fmtCostK1(heatTotal) + '</b></div>';
   }
 
-  // ========== 分渠道明细弹窗（仅消耗：app / 其他） ==========
+  // ========== 分渠道明细弹窗（仅热度值：app / 其他） ==========
   // date 为空 = 整部剧汇总（主列表入口，与列表同口径）；传日期 = 该日分渠道（详情每行「查看」，用明细口径）
-  function openChannelDetail(workId, date, kind) {
+  function openChannelDetail(workId, date) {
     var w = findEarn(workId);
     if (!w) return;
-    var isHeat = kind === 'heat';
-    var total = isHeat ? heatOf(w.adCost) : w.adCost;
+    var total = heatOf(w.adCost);
     if (date) {
       var d = buildDaily(w).find(function (x) { return x.date === date; });
       if (!d) return;
-      total = isHeat ? heatOf(d.adCost) : d.adCost;
+      total = heatOf(d.adCost);
     }
-    var map = isHeat ? heatByChan(total) : costByChan(total);
+    var map = heatByChan(total);
     var fmt = date ? fmtCostK1 : fmtCostK;
 
     document.getElementById('chanModalTitle').textContent =
-      (isHeat ? '分渠道热度值' : '分渠道消耗') + ' · ' + w.workName + (date ? ' · ' + date : '');
+      '分渠道热度值 · ' + w.workName + (date ? ' · ' + date : '');
     var body = '<table class="table detail-table"><thead><tr>' +
-      '<th>渠道</th><th>' + (isHeat ? '热度值' : '消耗(美元)') + '</th>' +
+      '<th>渠道</th><th>热度值</th>' +
       '</tr></thead><tbody>' +
       CH_DEF.map(function (c) {
         return '<tr><td>' + c.label + '</td><td class="mono">' + fmt(map[c.key]) + '</td></tr>';
