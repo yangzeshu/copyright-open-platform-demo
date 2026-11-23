@@ -511,6 +511,18 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 
   /* 手动上传合同 */
   .list-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  /* 保底规则 */
+  .dp-radios { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .dp-radios label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); cursor: pointer; }
+  .dp-radios input { margin: 0; accent-color: #2f6bdc; cursor: pointer; }
+  .dp-amount-row { display: flex; gap: 8px; align-items: center; }
+  .dp-amount-row .ant-input { height: 32px; }
+  .dp-converted { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+  .dp-converted span { color: var(--text-2); }
+  /* 甲方信息弹窗加了保底规则后略超出可视高度，单独收紧行距 */
+  #bizModal .form-item { margin-bottom: 12px; }
+  #bizModal .modal-foot { margin-top: 12px; }
+
   .radio-cards { display: flex; gap: 10px; flex-wrap: wrap; }
   .radio-card {
     display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px;
@@ -773,6 +785,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
           <input type="text" class="ant-input" id="muPaTerm" placeholder="如：1 年 / 24 个月" style="width:100%">
         </div>
       </div>
+      <div id="muDepositWrap"></div>
+
       <div class="form-item" style="margin-bottom:0">
         <label class="form-label">分成策略<span class="req">*</span></label>
         <div class="autocomplete">
@@ -882,6 +896,8 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         <label class="form-label">联系邮箱<span class="req">*</span></label>
         <input type="text" class="ant-input" id="paEmail" placeholder="请输入联系邮箱" style="width:100%">
       </div>
+      <div id="paDepositWrap"></div>
+
       <div class="form-item">
         <label class="form-label">分成策略<span class="req">*</span></label>
         <div class="autocomplete">
@@ -2000,6 +2016,7 @@ var DEMO_ACCOUNTS = [
   document.getElementById('topbar-root').innerHTML = renderTopbar({});
   document.getElementById('sidebar-root').innerHTML = renderSidebar('contracts');
 
+
   var VIEW = 'all';
   var selected = []; // 多选（存合同编号 no）
   var currentRejectIds = []; // 当前驳回操作的合同编号列表
@@ -2075,6 +2092,7 @@ var DEMO_ACCOUNTS = [
     if (subjHidden) subjHidden.value = '';
     setMuType('esign');
     resetSplitInput('muSplit', 'muSplitValue');
+    resetDeposit('mu');
     var muCoop = document.getElementById('muCoopType');
     if (muCoop) muCoop.value = '';
     renderMuFiles();
@@ -2152,6 +2170,8 @@ var DEMO_ACCOUNTS = [
     if (!paEmail) { showToast('请输入联系邮箱', 'err'); return; }
     var coopType = document.getElementById('muCoopType').value;
     if (!coopType) { showToast('请选择合作类型', 'err'); return; }
+    var depErr = validateDeposit('mu');
+    if (depErr) { showToast(depErr, 'err'); return; }
     var strategy = document.getElementById('muSplitValue').value.trim();
     if (!strategy) { showToast('请选择分成策略', 'err'); return; }
     if (SPLIT_POLICIES.indexOf(strategy) === -1) { showToast('请从下拉列表中选择分成策略', 'err'); return; }
@@ -2185,6 +2205,7 @@ var DEMO_ACCOUNTS = [
       coopType: coopType,
       partyAInfo: {
         contact: paContact, phone: paPhone, email: paEmail,
+        deposit: collectDeposit('mu'),
         strategy: strategy,
         term: paTerm, submitTime: now
       },
@@ -2397,6 +2418,155 @@ var DEMO_ACCOUNTS = [
     var h = document.getElementById(hiddenId); if (h) h.value = '';
   }
 
+  // ===== 保底规则（无保底 / 共用保底 / 独立保底） =====
+  // 系统已配置的按月汇率（演示数据）
+  var DEPOSIT_RATES = [
+    { month: '2026-11', rate: 7.2350 },
+    { month: '2026-10', rate: 7.2280 },
+    { month: '2026-09', rate: 7.2123 },
+    { month: '2026-08', rate: 7.1980 }
+  ];
+
+  function depositBlockHtml(p) {
+    var rates = DEPOSIT_RATES.map(function (r) {
+      return '<option value="' + r.rate + '" data-month="' + r.month + '">' + r.month + ': ' + r.rate.toFixed(4) + '</option>';
+    }).join('');
+    return '' +
+      '<div class="form-item">' +
+        '<label class="form-label">保底规则<span class="req">*</span></label>' +
+        '<div class="dp-radios">' +
+          '<label onclick="setDepositRule(\'' + p + '\',\'none\')"><input type="radio" name="' + p + 'DepositRule" value="none">无保底</label>' +
+          '<label onclick="setDepositRule(\'' + p + '\',\'shared\')"><input type="radio" name="' + p + 'DepositRule" value="shared">共用保底</label>' +
+          '<label onclick="setDepositRule(\'' + p + '\',\'independent\')"><input type="radio" name="' + p + 'DepositRule" value="independent">独立保底</label>' +
+        '</div>' +
+      '</div>' +
+      '<div id="' + p + 'DepositBody" style="display:none">' +
+        '<div class="form-item" id="' + p + 'AmountBlock">' +
+          '<label class="form-label">保底金额<span class="req">*</span></label>' +
+          '<div class="dp-radios" style="margin-bottom:8px">' +
+            '<label onclick="setDepositCur(\'' + p + '\',\'USD\')"><input type="radio" name="' + p + 'DepositCur" value="USD" checked>美元</label>' +
+            '<label onclick="setDepositCur(\'' + p + '\',\'CNY\')"><input type="radio" name="' + p + 'DepositCur" value="CNY">人民币</label>' +
+          '</div>' +
+          '<div class="dp-amount-row">' +
+            '<input type="text" class="ant-input" id="' + p + 'DepositAmount" placeholder="请输入保底金额/美元" oninput="calcDeposit(\'' + p + '\')" style="flex:1;min-width:0">' +
+            '<select class="ant-input" id="' + p + 'Rate" onchange="calcDeposit(\'' + p + '\')" style="width:152px;display:none">' + rates + '</select>' +
+          '</div>' +
+          '<div class="dp-converted">换算后金额/美元：<span class="mono" id="' + p + 'Converted">0.000</span></div>' +
+        '</div>' +
+        '<div class="form-item">' +
+          '<label class="form-label">扣除保底<span class="req">*</span></label>' +
+          '<div class="dp-radios">' +
+            '<label onclick="setDeduct(\'' + p + '\',\'yes\')"><input type="radio" name="' + p + 'Deduct" value="yes" checked>是</label>' +
+            '<label onclick="setDeduct(\'' + p + '\',\'no\')"><input type="radio" name="' + p + 'Deduct" value="no">否</label>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function initDeposit(p, wrapId) {
+    var wrap = document.getElementById(wrapId);
+    if (wrap) wrap.innerHTML = depositBlockHtml(p);
+    resetDeposit(p);
+  }
+
+  function setDepositRule(p, rule) {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="' + p + 'DepositRule"]'), function (i) {
+      i.checked = (i.value === rule);
+    });
+    var body = document.getElementById(p + 'DepositBody');
+    if (body) body.style.display = (rule === 'none' || !rule) ? 'none' : 'block';
+    // 独立保底无需填写保底金额，只保留「是否扣除保底」
+    var amountBlock = document.getElementById(p + 'AmountBlock');
+    if (amountBlock) amountBlock.style.display = rule === 'independent' ? 'none' : 'block';
+    calcDeposit(p);
+  }
+
+  function setDepositCur(p, cur) {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="' + p + 'DepositCur"]'), function (i) {
+      i.checked = (i.value === cur);
+    });
+    var amt = document.getElementById(p + 'DepositAmount');
+    var rate = document.getElementById(p + 'Rate');
+    if (amt) amt.placeholder = cur === 'CNY' ? '请输入保底金额/元' : '请输入保底金额/美元';
+    if (rate) rate.style.display = cur === 'CNY' ? 'block' : 'none';
+    calcDeposit(p);
+  }
+
+  function setDeduct(p, v) {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="' + p + 'Deduct"]'), function (i) {
+      i.checked = (i.value === v);
+    });
+  }
+
+  function depositVal(p) {
+    var r = document.querySelector('input[name="' + p + 'DepositRule"]:checked');
+    var c = document.querySelector('input[name="' + p + 'DepositCur"]:checked');
+    var d = document.querySelector('input[name="' + p + 'Deduct"]:checked');
+    var amtEl = document.getElementById(p + 'DepositAmount');
+    var rateEl = document.getElementById(p + 'Rate');
+    var opt = rateEl ? rateEl.options[rateEl.selectedIndex] : null;
+    return {
+      rule: r ? r.value : '',
+      cur: c ? c.value : 'USD',
+      deduct: d ? d.value : 'yes',
+      amount: amtEl ? amtEl.value.trim() : '',
+      rateMonth: opt ? (opt.getAttribute('data-month') || '') : '',
+      rate: opt ? parseFloat(opt.value) : 0
+    };
+  }
+
+  function calcDeposit(p) {
+    var v = depositVal(p);
+    var out = document.getElementById(p + 'Converted');
+    if (!out) return;
+    var n = parseFloat(v.amount);
+    var usd = 0;
+    if (isFinite(n) && n > 0) usd = v.cur === 'CNY' ? (v.rate ? n / v.rate : 0) : n;
+    out.textContent = usd.toFixed(3);
+  }
+
+  function resetDeposit(p) {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="' + p + 'DepositRule"]'), function (i) { i.checked = false; });
+    var amt = document.getElementById(p + 'DepositAmount');
+    if (amt) amt.value = '';
+    var rate = document.getElementById(p + 'Rate');
+    if (rate) rate.selectedIndex = 0;
+    var body = document.getElementById(p + 'DepositBody');
+    if (body) body.style.display = 'none';
+    setDepositCur(p, 'USD');
+    setDeduct(p, 'yes');
+    calcDeposit(p);
+  }
+
+  function validateDeposit(p) {
+    var v = depositVal(p);
+    if (!v.rule) return '请选择保底规则';
+    if (v.rule === 'none' || v.rule === 'independent') return '';
+    if (!v.amount) return '请输入保底金额';
+    var n = parseFloat(v.amount);
+    if (!isFinite(n) || n <= 0) return '保底金额需为大于 0 的数字';
+    if (v.cur === 'CNY' && !v.rate) return '请选择按月汇率';
+    return '';
+  }
+
+  function collectDeposit(p) {
+    var v = depositVal(p);
+    if (v.rule === 'none') return { rule: 'none', label: '无保底' };
+    if (v.rule === 'independent') return { rule: 'independent', label: '独立保底', deduct: v.deduct };
+    var n = parseFloat(v.amount);
+    var usd = v.cur === 'CNY' ? n / v.rate : n;
+    return {
+      rule: v.rule,
+      label: v.rule === 'shared' ? '共用保底' : '独立保底',
+      currency: v.cur === 'CNY' ? '人民币' : '美元',
+      amount: n,
+      rateMonth: v.cur === 'CNY' ? v.rateMonth : '',
+      rate: v.cur === 'CNY' ? v.rate : 1,
+      convertedUsd: Math.round(usd * 1000) / 1000,
+      deduct: v.deduct
+    };
+  }
+
   // 详情弹窗内通过/驳回
   function certPass() {
     currentBizNos = [currentContractNo];
@@ -2409,6 +2579,7 @@ var DEMO_ACCOUNTS = [
       if (el) el.value = '';
     });
     resetSplitInput('paSplit', 'paSplitValue');
+    resetDeposit('pa');
     openModal('bizModal');
   }
   function confirmBiz() {
@@ -2420,6 +2591,8 @@ var DEMO_ACCOUNTS = [
     if (!contact) { showToast('请输入联系人', 'err'); return; }
     if (!phone) { showToast('请输入联系电话', 'err'); return; }
     if (!email) { showToast('请输入联系邮箱', 'err'); return; }
+    var depErr = validateDeposit('pa');
+    if (depErr) { showToast(depErr, 'err'); return; }
     if (!strategy) { showToast('请选择分成策略', 'err'); return; }
     if (SPLIT_POLICIES.indexOf(strategy) === -1) { showToast('请从下拉列表中选择分成策略', 'err'); return; }
     if (!term) { showToast('请输入合作期限', 'err'); return; }
@@ -2427,6 +2600,7 @@ var DEMO_ACCOUNTS = [
     // 记录甲方信息到对应合同
     var info = {
       contact: contact, phone: phone, email: email,
+      deposit: collectDeposit('pa'),
       strategy: strategy,
       term: term, submitTime: nowStr()
     };
@@ -2630,6 +2804,10 @@ var DEMO_ACCOUNTS = [
   renderType();
   renderStatus();
   renderList();
+
+  // 保底规则（审核通过 / 手动上传两个弹窗共用一套逻辑，前缀区分）
+  initDeposit('pa', 'paDepositWrap');
+  initDeposit('mu', 'muDepositWrap');
 
 </script>
 </body>
