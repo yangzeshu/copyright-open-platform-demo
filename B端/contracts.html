@@ -765,6 +765,10 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 
       <!-- 甲方信息（随合同一起落库） -->
       <div class="group-title" style="margin-top:0">甲方信息</div>
+      <div class="form-item">
+        <label class="form-label">合同编号<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="muContractNo" placeholder="请输入合同编号" maxlength="50" style="width:100%">
+      </div>
       <div class="form-row">
         <div class="form-item">
           <label class="form-label">联系人<span class="req">*</span></label>
@@ -885,12 +889,18 @@ textarea.form-input { resize: vertical; min-height: 90px; }
     <div class="modal-body">
       <div style="font-size:12px;color:var(--text-3);margin:0 0 16px">审核通过前，请补全甲方（平台方）信息，填写完成后提交进入下一环节。</div>
       <div class="form-item">
-        <label class="form-label">联系人<span class="req">*</span></label>
-        <input type="text" class="ant-input" id="paContact" placeholder="请输入联系人" style="width:100%">
+        <label class="form-label">合同编号<span class="req">*</span></label>
+        <input type="text" class="ant-input" id="paContractNo" placeholder="请输入合同编号" maxlength="50" style="width:100%">
       </div>
-      <div class="form-item">
-        <label class="form-label">联系电话<span class="req">*</span></label>
-        <input type="text" class="ant-input" id="paPhone" placeholder="请输入联系电话" maxlength="11" style="width:100%">
+      <div class="form-row">
+        <div class="form-item">
+          <label class="form-label">联系人<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="paContact" placeholder="请输入联系人" style="width:100%">
+        </div>
+        <div class="form-item">
+          <label class="form-label">联系电话<span class="req">*</span></label>
+          <input type="text" class="ant-input" id="paPhone" placeholder="请输入联系电话" maxlength="11" style="width:100%">
+        </div>
       </div>
       <div class="form-item">
         <label class="form-label">联系邮箱<span class="req">*</span></label>
@@ -1315,7 +1325,7 @@ var DEMO_CONTRACTS = [
     subjectName: '杭州光影映画网络科技有限公司', subjectId: 'SUB1001-02', subjectType: 'company', contactName: '刘洋', contactPhone: '13512347766',
     generateTime: '2026-09-10 14:00:00', signTime: '',
     reviewer: '泰瑞', reviewStage: '', reviewTime: '2026-09-10 16:00:00',
-    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', strategy: '分成策略1', term: '1 年', submitTime: '2026-09-10 15:30:00' },
+    partyAInfo: { contractNo: 'FW-2026-0891', contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', strategy: '分成策略1', term: '1 年', submitTime: '2026-09-10 15:30:00' },
     partyB: pb('Hangzhou Guangying Yinghua Network Technology Co., Ltd.', '杭州市西湖区文二路88号', '刘洋', '13512347766', 'liuyang@163.com', 'Hangzhou Guangying Yinghua Network Technology Co., Ltd.', '6217000077887788', 'China Merchants Bank, Hangzhou Branch'),
     refillReason: ''
   },
@@ -1325,7 +1335,7 @@ var DEMO_CONTRACTS = [
     subjectName: '杭州追光文化传媒有限公司', subjectId: 'SUB1003-01', subjectType: 'company', contactName: '王小明', contactPhone: '13712343355',
     generateTime: '2026-09-01 09:00:00', signTime: '2026-09-07 10:05:58',
     reviewer: '冰雨', reviewStage: '', reviewTime: '2026-09-01 15:00:00',
-    partyAInfo: { contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', strategy: '分成策略2', term: '1 年', submitTime: '2026-09-01 14:20:00' },
+    partyAInfo: { contractNo: 'FW-2026-0902', contact: '陈思远', phone: '0571-88886666', email: 'contract@netshort.com', strategy: '分成策略2', term: '1 年', submitTime: '2026-09-01 14:20:00' },
     partyB: pb('Hangzhou Zhuiguang Culture Media Co., Ltd.', '杭州市拱墅区莫干山路100号', '王小明', '13712343355', 'wangxiaoming@163.com', 'Hangzhou Zhuiguang Culture Media Co., Ltd.', '6217000000000000', 'China Construction Bank, Hangzhou Branch'),
     refillReason: ''
   }
@@ -2085,7 +2095,7 @@ var DEMO_ACCOUNTS = [
   function openManualUpload() {
     MU_TYPE = 'esign';
     MU_FILES = { framework: '', nda: '' };
-    ['muSubject', 'muFw', 'muNda', 'muPaContact', 'muPaPhone', 'muPaEmail', 'muPaTerm'].forEach(function (id) {
+    ['muSubject', 'muFw', 'muNda', 'muContractNo', 'muPaContact', 'muPaPhone', 'muPaEmail', 'muPaTerm'].forEach(function (id) {
       var el = document.getElementById(id); if (el) el.value = '';
     });
     var subjHidden = document.getElementById('muSubjectValue');
@@ -2161,10 +2171,12 @@ var DEMO_ACCOUNTS = [
     MU_SUBJECTS.forEach(function (x) { if (x.company === subjName) subj = x; });
     if (!subj) { showToast('请从下拉列表中选择主体', 'err'); return; }
 
+    var paContractNo = document.getElementById('muContractNo').value.trim();
     var paContact = document.getElementById('muPaContact').value.trim();
     var paPhone = document.getElementById('muPaPhone').value.trim();
     var paEmail = document.getElementById('muPaEmail').value.trim();
     var paTerm = document.getElementById('muPaTerm').value.trim();
+    if (!paContractNo) { showToast('请输入合同编号', 'err'); return; }
     if (!paContact) { showToast('请输入联系人', 'err'); return; }
     if (!paPhone) { showToast('请输入联系电话', 'err'); return; }
     if (!paEmail) { showToast('请输入联系邮箱', 'err'); return; }
@@ -2204,6 +2216,7 @@ var DEMO_ACCOUNTS = [
       reviewer: CURRENT_OPERATOR, reviewStage: '', reviewTime: now,
       coopType: coopType,
       partyAInfo: {
+        contractNo: paContractNo,
         contact: paContact, phone: paPhone, email: paEmail,
         deposit: collectDeposit('mu'),
         strategy: strategy,
@@ -2370,6 +2383,7 @@ var DEMO_ACCOUNTS = [
     // 甲方信息（审核通过时填写的四项）
     var pa = c.partyAInfo || {};
     html += '<div class="group-title">甲方信息</div>';
+    html += fieldRow('合同编号', pa.contractNo || '—');
     html += fieldRow('联系人', pa.contact || '—');
     html += fieldRow('联系电话', pa.phone || '—');
     html += fieldRow('联系邮箱', pa.email || '—');
@@ -2574,7 +2588,7 @@ var DEMO_ACCOUNTS = [
   }
   // 打开「甲方信息」表单（通过前必填）
   function openPassForm() {
-    ['paContact', 'paPhone', 'paEmail', 'paTerm'].forEach(function (id) {
+    ['paContractNo', 'paContact', 'paPhone', 'paEmail', 'paTerm'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.value = '';
     });
@@ -2583,11 +2597,13 @@ var DEMO_ACCOUNTS = [
     openModal('bizModal');
   }
   function confirmBiz() {
+    var contractNo = document.getElementById('paContractNo').value.trim();
     var contact = document.getElementById('paContact').value.trim();
     var phone = document.getElementById('paPhone').value.trim();
     var email = document.getElementById('paEmail').value.trim();
     var strategy = document.getElementById('paSplitValue').value.trim();
     var term = document.getElementById('paTerm').value.trim();
+    if (!contractNo) { showToast('请输入合同编号', 'err'); return; }
     if (!contact) { showToast('请输入联系人', 'err'); return; }
     if (!phone) { showToast('请输入联系电话', 'err'); return; }
     if (!email) { showToast('请输入联系邮箱', 'err'); return; }
@@ -2599,6 +2615,7 @@ var DEMO_ACCOUNTS = [
 
     // 记录甲方信息到对应合同
     var info = {
+      contractNo: contractNo,
       contact: contact, phone: phone, email: email,
       deposit: collectDeposit('pa'),
       strategy: strategy,
