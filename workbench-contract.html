@@ -202,6 +202,10 @@ select.form-input { height: 40px; cursor: pointer; }
 textarea.form-input { resize: vertical; min-height: 90px; }
 .form-row { display: flex; gap: 12px; }
 .form-row > * { flex: 1; }
+/* 制作团队：角色名 + 姓名 + 身份证件 同一行 */
+.crew-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.crew-label { width: 84px; flex-shrink: 0; font-size: 13px; color: var(--text-2); }
+.crew-row .form-input, .crew-row .ant-input { flex: 1; min-width: 0; }
 .form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
 
 /* 验证码输入 */
@@ -636,6 +640,9 @@ textarea.form-input { resize: vertical; min-height: 90px; }
       <label class="form-label"><span>开户行</span></label>
       <input class="form-input" id="signBank" disabled>
     </div>
+
+    <div class="form-group-title">制作团队</div>
+    <div id="signCrewBlock"></div>
 
     <label class="agree-check">
       <input type="checkbox" id="signAgree"> <span id="signAgreeText">我已阅读并同意本次授权入驻合同（含合作框架协议、保密协议）的全部条款</span>
@@ -1653,6 +1660,7 @@ document.addEventListener('click', function (e) {
     document.getElementById('signBankName').value = DEMO_USER.bankName;
     document.getElementById('signBankAccount').value = DEMO_USER.bankAccount;
     document.getElementById('signBank').value = DEMO_USER.bankEn;
+    renderCrewForm();
     document.getElementById('signAgree').checked = false;
     openModal('fillModal');
   }
@@ -1670,6 +1678,7 @@ document.addEventListener('click', function (e) {
     SIGN_PARTYB.bankName = document.getElementById('signBankName').value.trim() || SIGN_PARTYB.bankName;
     SIGN_PARTYB.bankAccount = document.getElementById('signBankAccount').value.trim() || SIGN_PARTYB.bankAccount;
     SIGN_PARTYB.bankEn = document.getElementById('signBank').value.trim() || SIGN_PARTYB.bankEn;
+    collectCrew();
     closeModal('fillModal');
     contractState = 'generating';
     document.getElementById('heroSignBtn').style.display = 'none';
@@ -1705,6 +1714,45 @@ document.addEventListener('click', function (e) {
   ];
 
   // ========== 乙方信息（8 字段，两份合同共用） ==========
+  // 制作团队（6 个角色，每个含姓名 + 身份证件，均非必填）
+  var CREW_DEF = [
+    { key: 'producer', label: '总制片/统筹' },
+    { key: 'director', label: '导演' },
+    { key: 'illustrator', label: '核心原画师' },
+    { key: 'asset', label: '资产师' },
+    { key: 'gacha', label: '抽卡师' },
+    { key: 'voice', label: '声优负责人' }
+  ];
+  var SIGN_CREW = {
+    producer: { name: '陈立', idNo: '330106198805124512' },
+    director: { name: '周遥', idNo: '330102199001083321' },
+    illustrator: { name: '许南', idNo: '330105199611204417' },
+    asset: { name: '', idNo: '' },
+    gacha: { name: '', idNo: '' },
+    voice: { name: '林可', idNo: '330108199209075526' }
+  };
+
+  function renderCrewForm() {
+    var box = document.getElementById('signCrewBlock');
+    if (!box) return;
+    box.innerHTML = CREW_DEF.map(function (c) {
+      var v = SIGN_CREW[c.key] || {};
+      return '<div class="crew-row">' +
+        '<div class="crew-label">' + c.label + '</div>' +
+        '<input class="form-input" id="crew_' + c.key + '_name" placeholder="姓名" value="' + (v.name || '') + '">' +
+        '<input class="form-input" id="crew_' + c.key + '_id" placeholder="身份证件" value="' + (v.idNo || '') + '">' +
+      '</div>';
+    }).join('');
+  }
+
+  function collectCrew() {
+    CREW_DEF.forEach(function (c) {
+      var n = document.getElementById('crew_' + c.key + '_name');
+      var i = document.getElementById('crew_' + c.key + '_id');
+      SIGN_CREW[c.key] = { name: n ? n.value.trim() : '', idNo: i ? i.value.trim() : '' };
+    });
+  }
+
   var SIGN_FIELDS = [
     { key: 'company', label: '乙方公司全称' },
     { key: 'contactAddr', label: '联系地址' },
@@ -1741,6 +1789,11 @@ document.addEventListener('click', function (e) {
     var html = '';
     html += fieldRow(t('合作类型'), coopType || '—');
     SIGN_FIELDS.forEach(function (f) { html += fieldRow(f.label, SIGN_PARTYB[f.key]); });
+    CREW_DEF.forEach(function (c) {
+      var v = SIGN_CREW[c.key] || {};
+      var txt = (v.name || v.idNo) ? ((v.name || '—') + (v.idNo ? '　证件：' + v.idNo : '')) : '—';
+      html += fieldRow(c.label, txt);
+    });
     document.getElementById('infoBody').innerHTML = html;
     openModal('infoModal');
   }

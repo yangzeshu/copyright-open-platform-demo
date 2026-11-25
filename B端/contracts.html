@@ -195,6 +195,10 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
 textarea.form-input { resize: vertical; min-height: 90px; }
 .form-row { display: flex; gap: 12px; }
 .form-row > * { flex: 1; }
+/* 制作团队：角色名 + 姓名 + 身份证件 同一行 */
+.crew-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.crew-label { width: 84px; flex-shrink: 0; font-size: 13px; color: var(--text-2); }
+.crew-row .form-input, .crew-row .ant-input { flex: 1; min-width: 0; }
 .form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
 
 /* 验证码输入 */
@@ -763,8 +767,12 @@ textarea.form-input { resize: vertical; min-height: 90px; }
         </select>
       </div>
 
+      <!-- 制作团队（随合同一起落库） -->
+      <div class="group-title" style="margin-top:6px">制作团队</div>
+      <div id="muCrewBlock"></div>
+
       <!-- 甲方信息（随合同一起落库） -->
-      <div class="group-title" style="margin-top:0">甲方信息</div>
+      <div class="group-title">甲方信息</div>
       <div class="form-item">
         <label class="form-label">合同编号<span class="req">*</span></label>
         <input type="text" class="ant-input" id="muContractNo" placeholder="请输入合同编号" maxlength="50" style="width:100%">
@@ -2105,6 +2113,7 @@ var DEMO_ACCOUNTS = [
     resetDeposit('mu');
     var muCoop = document.getElementById('muCoopType');
     if (muCoop) muCoop.value = '';
+    renderMuCrew(null);
     renderMuFiles();
     openModal('manualModal');
   }
@@ -2215,6 +2224,7 @@ var DEMO_ACCOUNTS = [
       generateTime: now, signTime: now,
       reviewer: CURRENT_OPERATOR, reviewStage: '', reviewTime: now,
       coopType: coopType,
+      crew: collectMuCrew(),
       partyAInfo: {
         contractNo: paContractNo,
         contact: paContact, phone: paPhone, email: paEmail,
@@ -2379,6 +2389,12 @@ var DEMO_ACCOUNTS = [
     // 乙方信息
     html += '<div class="group-title">乙方信息</div>';
     c.partyB.forEach(function (f) { html += fieldRow(f.label, f.value || '—'); });
+    var crew = c.crew || {};
+    CREW_DEF.forEach(function (k) {
+      var v = crew[k.key] || {};
+      var txt = (v.name || v.idNo) ? ((v.name || '—') + (v.idNo ? '　证件：' + v.idNo : '')) : '—';
+      html += fieldRow(k.label, txt);
+    });
 
     // 甲方信息（审核通过时填写的四项）
     var pa = c.partyAInfo || {};
@@ -2430,6 +2446,43 @@ var DEMO_ACCOUNTS = [
   function resetSplitInput(inputId, hiddenId) {
     var i = document.getElementById(inputId); if (i) i.value = '';
     var h = document.getElementById(hiddenId); if (h) h.value = '';
+  }
+
+  // ===== 制作团队（6 个角色，每个含姓名 + 身份证件，均非必填） =====
+  var CREW_DEF = [
+    { key: 'producer', label: '总制片/统筹' },
+    { key: 'director', label: '导演' },
+    { key: 'illustrator', label: '核心原画师' },
+    { key: 'asset', label: '资产师' },
+    { key: 'gacha', label: '抽卡师' },
+    { key: 'voice', label: '声优负责人' }
+  ];
+  function emptyCrew() {
+    var o = {};
+    CREW_DEF.forEach(function (c) { o[c.key] = { name: '', idNo: '' }; });
+    return o;
+  }
+  function renderMuCrew(crew) {
+    var box = document.getElementById('muCrewBlock');
+    if (!box) return;
+    var v0 = crew || emptyCrew();
+    box.innerHTML = CREW_DEF.map(function (c) {
+      var v = v0[c.key] || {};
+      return '<div class="crew-row">' +
+        '<div class="crew-label">' + c.label + '</div>' +
+        '<input type="text" class="ant-input" id="muCrew_' + c.key + '_name" placeholder="姓名" value="' + (v.name || '') + '">' +
+        '<input type="text" class="ant-input" id="muCrew_' + c.key + '_id" placeholder="身份证件" value="' + (v.idNo || '') + '">' +
+      '</div>';
+    }).join('');
+  }
+  function collectMuCrew() {
+    var o = {};
+    CREW_DEF.forEach(function (c) {
+      var n = document.getElementById('muCrew_' + c.key + '_name');
+      var i = document.getElementById('muCrew_' + c.key + '_id');
+      o[c.key] = { name: n ? n.value.trim() : '', idNo: i ? i.value.trim() : '' };
+    });
+    return o;
   }
 
   // ===== 保底规则（无保底 / 共用保底 / 独立保底） =====
@@ -2821,6 +2874,19 @@ var DEMO_ACCOUNTS = [
   renderType();
   renderStatus();
   renderList();
+
+  // 制作团队：历史合同补空结构，前两份给演示值
+  DEMO_CONTRACTS.forEach(function (c) { if (!c.crew) c.crew = emptyCrew(); });
+  (function () {
+    var a = DEMO_CONTRACTS[0].crew;
+    a.producer = { name: '陈立', idNo: '330106198805124512' };
+    a.director = { name: '周遥', idNo: '330102199001083321' };
+    a.illustrator = { name: '许南', idNo: '330105199611204417' };
+    a.voice = { name: '林可', idNo: '330108199209075526' };
+    var b = DEMO_CONTRACTS[1].crew;
+    b.producer = { name: '钱多', idNo: '330110198702031119' };
+    b.asset = { name: '吴凯', idNo: '330104199409276613' };
+  })();
 
   // 保底规则（审核通过 / 手动上传两个弹窗共用一套逻辑，前缀区分）
   initDeposit('pa', 'paDepositWrap');

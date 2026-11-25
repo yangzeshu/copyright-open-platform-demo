@@ -196,6 +196,10 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 select.form-input { height: 40px; cursor: pointer; }
 .form-row { display: flex; gap: 12px; }
 .form-row > * { flex: 1; }
+/* 制作团队：角色名 + 姓名 + 身份证件 同一行 */
+.crew-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.crew-label { width: 84px; flex-shrink: 0; font-size: 13px; color: var(--text-2); }
+.crew-row .form-input, .crew-row .ant-input { flex: 1; min-width: 0; }
 .form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
 
 /* 验证码输入 */
@@ -1097,6 +1101,21 @@ var DEMO_SETTLEMENTS = [
 // reviewStage（仅 generating 有意义）: unclaimed 待领取 | claimed 审核中
 
 // 乙方 8 字段（两份合同共用）
+// 制作团队（6 个角色，每个含姓名 + 身份证件，均非必填）
+var CREW_DEF = [
+  { key: 'producer', label: '总制片/统筹' },
+  { key: 'director', label: '导演' },
+  { key: 'illustrator', label: '核心原画师' },
+  { key: 'asset', label: '资产师' },
+  { key: 'gacha', label: '抽卡师' },
+  { key: 'voice', label: '声优负责人' }
+];
+function emptyCrew() {
+  var o = {};
+  CREW_DEF.forEach(function (c) { o[c.key] = { name: '', idNo: '' }; });
+  return o;
+}
+
 function pb(company, addr, contact, phone, email, bankName, bankAccount, bankEn) {
   return [
     { label: '乙方公司全称', value: company },
@@ -1628,11 +1647,30 @@ document.addEventListener('click', function (e) {
   }
 
   // ========== 信息查看（仅展示乙方信息，不展示模块标题） ==========
-  function viewContract(no) {
+  // 演示：合同都带一份空制作团队，前两份填入示例
+DEMO_CONTRACTS.forEach(function (c) { c.crew = emptyCrew(); });
+(function () {
+  var a = DEMO_CONTRACTS[0].crew;
+  a.producer = { name: '陈立', idNo: '330106198805124512' };
+  a.director = { name: '周遥', idNo: '330102199001083321' };
+  a.illustrator = { name: '许南', idNo: '330105199611204417' };
+  a.voice = { name: '林可', idNo: '330108199209075526' };
+  var b = DEMO_CONTRACTS[2].crew;
+  b.producer = { name: '钱多', idNo: '330110198702031119' };
+  b.asset = { name: '吴凯', idNo: '330104199409276613' };
+})();
+
+function viewContract(no) {
     var c = findContract(no);
     var html = '';
     html += fieldRow(t('合作类型'), c.coopType || '—');
     c.partyB.forEach(function (f) { html += fieldRow(f.label, f.value); });
+    var crew = c.crew || {};
+    CREW_DEF.forEach(function (k) {
+      var v = crew[k.key] || {};
+      var txt = (v.name || v.idNo) ? ((v.name || '—') + (v.idNo ? '　证件：' + v.idNo : '')) : '—';
+      html += fieldRow(t(k.label), txt);
+    });
     document.getElementById('viewModalBody').innerHTML = html;
     openModal('viewModal');
   }
@@ -1675,6 +1713,18 @@ document.addEventListener('click', function (e) {
         '</div>';
     });
 
+    // 制作团队（可填，非必填）
+    var crew = c.crew || {};
+    html += '<div class="form-group-title" style="margin-top:18px">' + t('制作团队') + '</div>';
+    html += CREW_DEF.map(function (k) {
+      var v = crew[k.key] || {};
+      return '<div class="crew-row">' +
+        '<div class="crew-label">' + t(k.label) + '</div>' +
+        '<input class="form-input fill-crew" data-key="' + k.key + '" data-sub="name" placeholder="' + t('姓名') + '" value="' + (v.name || '') + '">' +
+        '<input class="form-input fill-crew" data-key="' + k.key + '" data-sub="idNo" placeholder="' + t('身份证件') + '" value="' + (v.idNo || '') + '">' +
+      '</div>';
+    }).join('');
+
     document.getElementById('fillModalBody').innerHTML = html;
     openModal('fillModal');
   }
@@ -1689,6 +1739,13 @@ document.addEventListener('click', function (e) {
     fields.forEach(function (el) {
       var idx = parseInt(el.getAttribute('data-index'), 10);
       if (c.partyB[idx]) c.partyB[idx].value = el.value.trim() || c.partyB[idx].value;
+    });
+    c.crew = c.crew || emptyCrew();
+    var crewInputs = document.querySelectorAll('#fillModalBody .fill-crew');
+    crewInputs.forEach(function (el) {
+      var k = el.getAttribute('data-key'), sub = el.getAttribute('data-sub');
+      if (!c.crew[k]) c.crew[k] = { name: '', idNo: '' };
+      c.crew[k][sub] = el.value.trim();
     });
     c.status = 'generating';
     closeModal('fillModal');
